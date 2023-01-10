@@ -1,6 +1,3 @@
-import sys
-sys.path.append("/docker/home/hasegawa/docker-gpu/msot-resnet/class/one/model/")
-
 import pickle
 import numpy as np
 import tensorflow as tf
@@ -30,7 +27,7 @@ def main():
     #---1. dataset
     tors = 'predictors_coarse_std_Apr_msot'
     tant = 'pr_1x1_std_MJJASO_one_5'
-    savefile = f"/docker/mnt/d/research/D2/resnet/train_val/class/{tors}-{tant}.pickle"
+    savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/class/{tors}-{tant}.pickle"
     if exists(savefile) is True and train_flag is False:
         with open(savefile, 'rb') as f:
             data = pickle.load(f)
@@ -49,10 +46,10 @@ def main():
     optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
     loss = tf.keras.losses.CategoricalCrossentropy()
     metrics = tf.keras.metrics.CategoricalAccuracy()
-    model = ResNet((lat, lon, var_num), class_num)
+    model = build_model((lat, lon, var_num), class_num)
     model = model.build(input_shape=(lat, lon, var_num))
     model.compile(optimizer=optimizer, loss=loss, metrics=[metrics])
-    weights_path = f"/docker/mnt/d/research/D2/resnet/weights/class/{tors}-{tant}.h5"
+    weights_path = f"/docker/mnt/d/research/D2/cnn3/weights/class/{tors}-{tant}.h5"
     if exists(weights_path) is True and train_flag is False:
         model.load_weights(weights_path)
     else:
@@ -74,8 +71,8 @@ def main():
     #---4. save state
     if train_flag is True:
         model.save_weights(weights_path)
-        dct = {'x_train': x_train, 'y_train_one_hot': y_train_one_hot,
-               'x_val': x_val, 'y_val_one_hot': y_val_one_hot,
+        dct = {'x_train': x_train, 'y_train': y_train,
+               'x_val': x_val, 'y_val': y_val,
                'train_dct': train_dct, 'val_dct': val_dct}
         with open(savefile, 'wb') as f:
             pickle.dump(dct, f)
