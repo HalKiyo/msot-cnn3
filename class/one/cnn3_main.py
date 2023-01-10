@@ -13,16 +13,16 @@ disable_eager_execution()
 
 def main():
     #---0. initial setting
-    train_flag = False#MODIFALABLE
+    train_flag = True#MODIFALABLE
     vsample = 1000#MODIFALABLE
     seed = 1#MODIFALABLE
     class_num = 5#MODIFALABLE
-    batch_size = 512#MODIFALABLE
-    epochs = 5#MODIFALABLE
+    batch_size = 256#MODIFALABLE
+    epochs = 150#MODIFALABLE
     lr = 0.0001#MODIFALABLE
     var_num = 4#MODIFALABLE
     gradcam_index = 100#MODIFALABLE
-    layer_name = 'res__block_3'#MODIFALABLE
+    layer_name = 'conv2d_2'#MODIFALABLE
 
     #---1. dataset
     tors = 'predictors_coarse_std_Apr_msot'
@@ -47,7 +47,6 @@ def main():
     loss = tf.keras.losses.CategoricalCrossentropy()
     metrics = tf.keras.metrics.CategoricalAccuracy()
     model = build_model((lat, lon, var_num), class_num)
-    model = model.build(input_shape=(lat, lon, var_num))
     model.compile(optimizer=optimizer, loss=loss, metrics=[metrics])
     weights_path = f"/docker/mnt/d/research/D2/cnn3/weights/class/{tors}-{tant}.h5"
     if exists(weights_path) is True and train_flag is False:

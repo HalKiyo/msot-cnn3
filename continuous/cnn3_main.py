@@ -35,6 +35,8 @@ def main():
     lr = 0.0001#MODIFALABLE
     model = build_model((lat, lon, val_nm))
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss='mse', metrics=['mae'])
+    model.summary()
+    exit()
     weights_path = f"/docker/mnt/d/research/D2/cnn3/weights/{tors}-{tant}.h5"
     if exists(weights_path) is True and save_flag is False:
         model.load_weights(weights_path)
