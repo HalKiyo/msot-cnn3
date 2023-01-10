@@ -7,7 +7,7 @@ import tensorflow as tf
 from os.path import exists
 from tensorflow.python.framework.ops import disable_eager_execution
 
-from model50 import ResNet
+from model3 import build_model
 from view import draw_val
 from util import load, shuffle, mask
 from gradcam import grad_cam, show_heatmap, image_preprocess

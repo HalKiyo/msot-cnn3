@@ -16,7 +16,7 @@ def main():
     vsample = 1000#MODIFALABLE
     tors = 'predictors_coarse_std_Apr_t'#MODIFALABLE
     tant = 'pr_1x1_std_MJJASO_one'#MODIFALABLE
-    savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/{tors}-{tant}.pickle"
+    savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous/{tors}-{tant}.pickle"
     if exists(savefile) is True and save_flag is False:
         with open(savefile, 'rb') as f:
             data = pickle.load(f)
