@@ -13,7 +13,7 @@ disable_eager_execution()
 
 def main():
     #---0. initial setting
-    train_flag = True#MODIFALABLE
+    train_flag = False#MODIFALABLE
     vsample = 1000#MODIFALABLE
     seed = 1#MODIFALABLE
     class_num = 5#MODIFALABLE

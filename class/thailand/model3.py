@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras import layers, models 
 
-def build_model(input_shape):
+def build_model(input_shape, output_dim):
     model = models.Sequential()
     model.add(layers.Conv2D(32, (4,8), activation=tf.nn.relu, input_shape=input_shape, padding='same'))
     model.add(layers.MaxPooling2D((2,2)))
@@ -10,6 +10,6 @@ def build_model(input_shape):
     model.add(layers.Conv2D(32, (2,4), activation=tf.nn.relu, padding='same'))
     model.add(layers.Flatten())
     model.add(layers.Dense(50, activation=tf.nn.relu))
-    model.add(layers.Dense(1, activation='linear'))
+    model.add(layers.Dense(output_dim, activation='softmax'))
     return model
 

@@ -2,8 +2,8 @@ import numpy as np
 import numpy.ma as ma
 
 def load(inkey, outkey):
-    infile = f"/docker/mnt/d/research/D2/resnet/predictors/{inkey}.npy"
-    outfile = f"/docker/mnt/d/research/D2/resnet/predictant/class/{outkey}.npy"
+    infile = f"/docker/mnt/d/research/D2/cnn3/predictors/{inkey}.npy"
+    outfile = f"/docker/mnt/d/research/D2/cnn3/predictant/class/{outkey}.npy"
     predictors = np.load(infile)
     predictant = np.load(outfile)
     return predictors, predictant

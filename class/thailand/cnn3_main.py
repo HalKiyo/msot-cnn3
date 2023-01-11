@@ -1,13 +1,10 @@
-import sys
-sys.path.append("/docker/home/hasegawa/docker-gpu/msot-resnet/class/one/model/")
-
 import pickle
 import numpy as np
 import tensorflow as tf
 from os.path import exists
 from tensorflow.python.framework.ops import disable_eager_execution
 
-from model50 import ResNet
+from model3 import build_model
 from view import draw_val
 from util import load, shuffle, mask
 from gradcam import grad_cam, show_heatmap, image_preprocess
@@ -16,21 +13,21 @@ disable_eager_execution()
 
 def main():
     #---0. initial setting
-    train_flag = False#MODIFALABLE
+    train_flag = False#MODIFALABiLE
     vsample = 1000#MODIFALABLE
     seed = 1#MODIFALABLE
     class_num = 5#MODIFALABLE
-    batch_size = 512#MODIFALABLE
-    epochs = 5#MODIFALABLE
+    batch_size = 256#MODIFALABLE
+    epochs = 150#MODIFALABLE
     lr = 0.0001#MODIFALABLE
     var_num = 4#MODIFALABLE
     gradcam_index = 100#MODIFALABLE
-    layer_name = 'res__block_3'#MODIFALABLE
+    layer_name = 'conv2d_2'#MODIFALABLE
 
     #---1. dataset
     tors = 'predictors_coarse_std_Apr_msot'
-    tant = 'pr_1x1_std_MJJASO_one_5'
-    savefile = f"/docker/mnt/d/research/D2/resnet/train_val/class/{tors}-{tant}.pickle"
+    tant = 'pr_5x5_coarse_std_MJJASO_thailand_5'
+    savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/class/{tors}-{tant}.pickle"
     if exists(savefile) is True and train_flag is False:
         with open(savefile, 'rb') as f:
             data = pickle.load(f)
@@ -49,10 +46,9 @@ def main():
     optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
     loss = tf.keras.losses.CategoricalCrossentropy()
     metrics = tf.keras.metrics.CategoricalAccuracy()
-    model = ResNet((lat, lon, var_num), class_num)
-    model = model.build(input_shape=(lat, lon, var_num))
+    model = build_model((lat, lon, var_num), class_num)
     model.compile(optimizer=optimizer, loss=loss, metrics=[metrics])
-    weights_path = f"/docker/mnt/d/research/D2/resnet/weights/class/{tors}-{tant}.h5"
+    weights_path = f"/docker/mnt/d/research/D2/cnn3/weights/class/{tors}-{tant}.h5"
     if exists(weights_path) is True and train_flag is False:
         model.load_weights(weights_path)
     else:
@@ -74,8 +70,8 @@ def main():
     #---4. save state
     if train_flag is True:
         model.save_weights(weights_path)
-        dct = {'x_train': x_train, 'y_train_one_hot': y_train_one_hot,
-               'x_val': x_val, 'y_val_one_hot': y_val_one_hot,
+        dct = {'x_train': x_train, 'y_train': y_train,
+               'x_val': x_val, 'y_val': y_val,
                'train_dct': train_dct, 'val_dct': val_dct}
         with open(savefile, 'wb') as f:
             pickle.dump(dct, f)
