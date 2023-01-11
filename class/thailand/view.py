@@ -60,4 +60,3 @@ def show_class5(image):
 
     plt.show()
 
-

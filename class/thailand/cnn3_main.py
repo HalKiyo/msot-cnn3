@@ -5,79 +5,114 @@ from os.path import exists
 from tensorflow.python.framework.ops import disable_eager_execution
 
 from model3 import build_model
-from view import draw_val
+from view import show_class5, view_accuracy
 from util import load, shuffle, mask
 from gradcam import grad_cam, show_heatmap, image_preprocess
 
 disable_eager_execution()
 
-def main():
-    #---0. initial setting
-    train_flag = False#MODIFALABiLE
-    vsample = 1000#MODIFALABLE
-    seed = 1#MODIFALABLE
-    class_num = 5#MODIFALABLE
-    batch_size = 256#MODIFALABLE
-    epochs = 150#MODIFALABLE
-    lr = 0.0001#MODIFALABLE
-    var_num = 4#MODIFALABLE
-    gradcam_index = 100#MODIFALABLE
-    layer_name = 'conv2d_2'#MODIFALABLE
+class Pixcel():
+    def __init__(self):
+        self.tors = 'predictors_coarse_std_Apr_msot'
+        self.tant = 'pr_5x5_coarse_std_MJJASO_thailand_5'
+        self.seed = 1
+        self.vsample = 1000
+        self.class_num = 5
+        self.lat, self.lon = 24, 72
+        self.var_num = 4
+        self.grid_num = 4*4
+        self.batch_size = 256
+        self.epochs = 100
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
+        self.loss = tf.keras.losses.CategoricalCrossentropy()
+        self.metrics = tf.keras.metrics.CategoricalAccuracy()
+        self.savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/class/{self.tors}-{self.tant}.pickle"
+        self.weights_dir = '/docker/mnt/d/research/D2/cnn3/weights/class'
 
-    #---1. dataset
-    tors = 'predictors_coarse_std_Apr_msot'
-    tant = 'pr_5x5_coarse_std_MJJASO_thailand_5'
-    savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/class/{tors}-{tant}.pickle"
-    if exists(savefile) is True and train_flag is False:
-        with open(savefile, 'rb') as f:
-            data = pickle.load(f)
-        x_val, y_val = data['x_val'], data['y_val']
-        y_val_one_hot = tf.keras.utils.to_categorical(y_val, class_num)
-    else:
-        predictors, predictant = load(tors, tant)
-        x_train, y_train, x_val, y_val, train_dct, val_dct = shuffle(predictors, predictant, vsample, seed)
+    def training(self, x_train, y_train, x_val, y_val, train_dct, val_dct):
         x_train, x_val = mask(x_train), mask(x_val)
-        x_train, x_val = x_train.transpose(0,2,3,1), x_val.transpose(0,2,3,1)
-        y_train_one_hot = tf.keras.utils.to_categorical(y_train, class_num)
-        y_val_one_hot = tf.keras.utils.to_categorical(y_val, class_num)
-
-    #---2, training
-    lat, lon = 24, 72
-    optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
-    loss = tf.keras.losses.CategoricalCrossentropy()
-    metrics = tf.keras.metrics.CategoricalAccuracy()
-    model = build_model((lat, lon, var_num), class_num)
-    model.compile(optimizer=optimizer, loss=loss, metrics=[metrics])
-    weights_path = f"/docker/mnt/d/research/D2/cnn3/weights/class/{tors}-{tant}.h5"
-    if exists(weights_path) is True and train_flag is False:
-        model.load_weights(weights_path)
-    else:
-        his = model.fit(x_train, y_train_one_hot, batch_size=batch_size, epochs=epochs)
-        #model.summary()
-
-    #---3. test
-    results = model.evaluate(x_val, y_val_one_hot)
-    print(f"CategoricalAccuracy: {results[1]}")
-    pred_val = (model.predict(x_val))
-    draw_val(pred_val, y_val_one_hot)
-
-    #---3. gradcam
-    preprocessed_image = image_preprocess(x_val, gradcam_index)
-    heatmap = grad_cam(model, preprocessed_image, y_val[gradcam_index], layer_name,
-                       lat, lon, class_num)
-    show_heatmap(heatmap)
-
-    #---4. save state
-    if train_flag is True:
-        model.save_weights(weights_path)
+        x_train, x_val = x_train.transpose(0, 2, 3, 1), x_val.transpose(0, 2, 3, 1)
+        y_train, y_val = y_train.reshape(len(y_train), self.grid_num), y_val.reshape(len(y_val), self.grid_num)
+        for i in range(self.grid_num):
+            y_train_px = y_train[:, i]
+            y_train_one_hot = tf.keras.utils.to_categorical(y_train_px, self.class_num)
+            model = build_model((self.lat, self.lon, self.var_num), self.class_num)
+            model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+            his = model.fit(x_train, y_train_one_hot, batch_size=self.batch_size, epochs=self.epochs)
+            weights_path = f"{self.weights_dir}/{self.tors}-{self.tant}_{i}.h5"
+            model.save_weights(weights_path)
         dct = {'x_train': x_train, 'y_train': y_train,
                'x_val': x_val, 'y_val': y_val,
                'train_dct': train_dct, 'val_dct': val_dct}
-        with open(savefile, 'wb') as f:
+        with open(self.savefile, 'wb') as f:
             pickle.dump(dct, f)
-        print(f"{savefile} and weights are saved")
+
+    def validation(self):
+        with open(self.savefile, 'rb') as f:
+            data = pickle.load(f)
+        x_val, y_val = data['x_val'], data['y_val']
+        acc = []
+        for i in range(self.grid_num):
+            y_val_px = y_val[:, i]
+            y_val_one_hot = tf.keras.utils.to_categorical(y_val_px, self.class_num)
+            model = build_model((self.lat, self.lon, self.var_num), self.class_num)
+            model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+            weights_path = f"{self.weights_dir}/{self.tors}-{self.tant}_{i}.h5"
+            model.load_weights(weights_path)
+            result = model.evaluate(x_val, y_val_one_hot)
+            acc.append(result[1])
+            print(f"CategoricalAccuracy of pixcel{i}: {result[1]}")
+        acc = np.array(acc)
+        acc = acc.reshape(4,4)
+        view_accuracy(acc)
+
+    def gradcam(self, px_index, gradcam_index, layer_name):
+        with open(self.savefile, 'rb') as f:
+            data = pickle.load(f)
+        x_val, y_val = data['x_val'], data['y_val']
+        y_val_px = y_val[:, px_index]
+
+        model = build_model((self.lat, self.lon, self.var_num), self.class_num)
+        model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+        weights_path = f"{self.weights_dir}/{self.tors}-{self.tant}_{px_index}.h5"
+        model.load_weights(weights_path)
+
+        preprocessed_image = image_preprocess(x_val, gradcam_index)
+        heatmap = grad_cam(model, preprocessed_image, y_val[gradcam_index], layer_name,
+                           self.lat, self.lon, self.class_num)
+        show_heatmap(heatmap)
+
+    def show(self, val_index):
+        with open(self.savefile, 'rb') as f:
+            data = pickle.load(f)
+        x_val, y_val = data[val_index], data['y_val']
+        y_val_px = y_val[val_index].reshape(4, 4)
+        show_class5(y_val_px)
+
+        model = build_model((self.lat, self.lon, self.var_num), self.class_num)
+        model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+        pred_lst = []
+        for i in range(self.grid_num):
+            weights_path = f"{self.weights_dir}/{self.tors}-{self.tant}_{i}.h5"
+            model.load_weights(weights_path)
+            pred = model.predict(x_val)
+            label = np.argmax(pred[val_index])
+            pred_lst.append(label)
+        pred_arr = np.array(pred_lst)
+        pred_arr = pred_arr.reshape(4,4)
+        show_class5(pred_arr)
+
+def main():
+    train_flag = False # modifiable
+    px = Pixcel()
+    if train_flag is True:
+        predictors, predictant = load(px.tors, px.tant)
+        px.training(*shuffle(predictors, predictant, px.vsample, px.seed))
+        print(f"{px.weights_dir}: SAVED")
+        print(f"{px.savefile}: SAVED")
     else:
         print(f"train_flag is {train_flag}: not saved")
+    px.show(0)
 
 
 if __name__ == '__main__':

@@ -10,14 +10,14 @@ def load(inkey, outkey):
 
 def mask(x):
     m = ma.masked_where(x>9999, x)
-    z = ma.masked_where(m==0, m)
+    z = ma.masked_where(m==0, m) # = =
     f = ma.filled(z, 0)
     return f
 
 def shuffle(indata, outdata, vsample, seed):
     rng = np.random.default_rng(seed)
 
-    outdata = outdata.reshape(42, 165)
+    outdata = outdata.reshape(42, 165, 4, 4)
     random_number = indata.shape[1]*indata.shape[2]
     random_index = rng.choice(random_number, random_number, replace=False)
 
@@ -26,7 +26,7 @@ def shuffle(indata, outdata, vsample, seed):
                  'year': train_index%indata.shape[2]}
     x_train = np.array([ indata[:, m, y] for m, y in zip(
                          train_dct['model'], train_dct['year']) ])
-    y_train = np.array([ outdata[m, y] for m, y in zip(
+    y_train = np.array([ outdata[m, y, :, :] for m, y in zip(
                          train_dct['model'], train_dct['year']) ])
 
     val_index = random_index[-vsample:]
@@ -34,7 +34,7 @@ def shuffle(indata, outdata, vsample, seed):
                  'year': val_index%indata.shape[2]}
     x_val = np.array([ indata[:, m, y] for m, y in zip(
                          val_dct['model'], train_dct['year']) ])
-    y_val = np.array([ outdata[m, y] for m, y in zip(
+    y_val = np.array([ outdata[m, y, :, :] for m, y in zip(
                          val_dct['model'], train_dct['year']) ])
     return x_train, y_train, x_val, y_val, train_dct, val_dct
 
