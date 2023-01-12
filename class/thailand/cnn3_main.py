@@ -12,10 +12,25 @@ from gradcam import grad_cam, show_heatmap, image_preprocess
 
 disable_eager_execution()
 
+def main():
+    train_flag = True # modifiable
+    px = Pixcel()
+    if train_flag is True:
+        predictors, predictant = load(px.tors, px.tant)
+        px.training(*shuffle(predictors, predictant, px.vsample, px.seed))
+        print(f"{px.weights_dir}: SAVED")
+        print(f"{px.savefile}: SAVED")
+    else:
+        print(f"train_flag is {train_flag}: not saved")
+
+    px.validation()
+    px.show(val_index=0)
+    px.label_dist(px_index=6)
+
 class Pixcel():
     def __init__(self):
         self.tors = 'predictors_coarse_std_Apr_msot'
-        self.tant = 'pr_5x5_coarse_std_MJJASO_thailand_5'
+        self.tant = 'pr_5x5_coarse_std_MJJASO_thailand_EFD_5'
         self.seed = 1
         self.vsample = 1000
         self.class_num = 5
@@ -23,7 +38,7 @@ class Pixcel():
         self.var_num = 4
         self.grid_num = 4*4
         self.batch_size = 256
-        self.epochs = 200
+        self.epochs = 10
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
         self.loss = tf.keras.losses.CategoricalCrossentropy()
         self.metrics = tf.keras.metrics.CategoricalAccuracy()
@@ -116,21 +131,6 @@ class Pixcel():
         model.load_weights(weights_path)
         pred = model.predict(x_val)
         draw_val(pred, y_val_one_hot)
-
-def main():
-    train_flag = True # modifiable
-    px = Pixcel()
-    if train_flag is True:
-        predictors, predictant = load(px.tors, px.tant)
-        px.training(*shuffle(predictors, predictant, px.vsample, px.seed))
-        print(f"{px.weights_dir}: SAVED")
-        print(f"{px.savefile}: SAVED")
-    else:
-        print(f"train_flag is {train_flag}: not saved")
-
-    px.validation()
-    px.show(val_index=0)
-    px.label_dist(px_index=6)
 
 
 if __name__ == '__main__':

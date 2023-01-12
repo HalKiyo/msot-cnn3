@@ -26,7 +26,7 @@ def main():
 
     #---1. dataset
     tors = 'predictors_coarse_std_Apr_msot'
-    tant = 'pr_1x1_std_MJJASO_one_5'
+    tant = 'pr_1x1_std_MJJASO_one_EFD_5'
     savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/class/{tors}-{tant}.pickle"
     if exists(savefile) is True and train_flag is False:
         with open(savefile, 'rb') as f:
