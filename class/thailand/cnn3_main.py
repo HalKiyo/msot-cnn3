@@ -5,7 +5,7 @@ from os.path import exists
 from tensorflow.python.framework.ops import disable_eager_execution
 
 from model3 import build_model
-from view import show_class5, view_accuracy
+from view import draw_val, show_class5, view_accuracy
 from util import load, shuffle, mask
 from gradcam import grad_cam, show_heatmap, image_preprocess
 
@@ -60,7 +60,7 @@ class Pixcel():
             weights_path = f"{self.weights_dir}/{self.tors}-{self.tant}_{i}.h5"
             model.load_weights(weights_path)
             result = model.evaluate(x_val, y_val_one_hot)
-            acc.append(result[1])
+            acc.append(round(result[1], 2))
             print(f"CategoricalAccuracy of pixcel{i}: {result[1]}")
         acc = np.array(acc)
         acc = acc.reshape(4,4)
@@ -85,7 +85,7 @@ class Pixcel():
     def show(self, val_index):
         with open(self.savefile, 'rb') as f:
             data = pickle.load(f)
-        x_val, y_val = data[val_index], data['y_val']
+        x_val, y_val = data['x_val'], data['y_val']
         y_val_px = y_val[val_index].reshape(4, 4)
         show_class5(y_val_px)
 
@@ -102,6 +102,19 @@ class Pixcel():
         pred_arr = pred_arr.reshape(4,4)
         show_class5(pred_arr)
 
+    def label_dist(self, px_index):
+        with open(self.savefile, 'rb') as f:
+            data = pickle.load(f)
+        x_val, y_val = data['x_val'], data['y_val']
+        y_val_px = y_val[:, px_index]
+        y_val_one_hot = tf.keras.utils.to_categorical(y_val_px, self.class_num)
+        model = build_model((self.lat, self.lon, self.var_num), self.class_num)
+        model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+        weights_path = f"{self.weights_dir}/{self.tors}-{self.tant}_{px_index}.h5"
+        model.load_weights(weights_path)
+        pred = model.predict(x_val)
+        draw_val(pred, y_val_one_hot)
+
 def main():
     train_flag = False # modifiable
     px = Pixcel()
@@ -112,7 +125,10 @@ def main():
         print(f"{px.savefile}: SAVED")
     else:
         print(f"train_flag is {train_flag}: not saved")
-    px.show(0)
+
+    px.validation()
+    px.show(val_index=0)
+    px.label_dist(px_index=6)
 
 
 if __name__ == '__main__':

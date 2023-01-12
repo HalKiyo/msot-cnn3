@@ -60,3 +60,22 @@ def show_class5(image):
 
     plt.show()
 
+def view_accuracy(acc):
+    projection = ccrs.PlateCarree(central_longitude=180)
+    img_extent = (-90, -70, 5, 25) # location = (N5-25, E90-110)
+
+    fig = plt.figure()
+    ax = plt.subplot(projection=projection)
+    ax.coastlines()
+    mat = ax.matshow(acc,
+                     origin='upper',
+                     extent=img_extent,
+                     transform=projection,
+                     vmin=0, vmax=1,
+                     cmap='Oranges')
+    for i, lat in enumerate([22, 17, 12, 7]):
+        for j, lon in enumerate([-89, -84, -79, -74]):
+            ax.text(lon, lat, acc[i,j], color='white', fontsize='15')
+    cbar = fig.colorbar(mat, ax=ax)
+    plt.show()
+
