@@ -1,3 +1,4 @@
+import os
 import pickle
 import numpy as np
 import tensorflow as tf
@@ -22,24 +23,25 @@ class Pixcel():
         self.var_num = 4
         self.grid_num = 4*4
         self.batch_size = 256
-        self.epochs = 100
+        self.epochs = 200
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
         self.loss = tf.keras.losses.CategoricalCrossentropy()
         self.metrics = tf.keras.metrics.CategoricalAccuracy()
         self.savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/class/{self.tors}-{self.tant}.pickle"
-        self.weights_dir = '/docker/mnt/d/research/D2/cnn3/weights/class'
+        self.weights_dir = f"/docker/mnt/d/research/D2/cnn3/weights/class/{self.tors}-{self.tant}"
 
     def training(self, x_train, y_train, x_val, y_val, train_dct, val_dct):
         x_train, x_val = mask(x_train), mask(x_val)
         x_train, x_val = x_train.transpose(0, 2, 3, 1), x_val.transpose(0, 2, 3, 1)
         y_train, y_val = y_train.reshape(len(y_train), self.grid_num), y_val.reshape(len(y_val), self.grid_num)
+        os.makedirs(self.weights_dir, exist_ok=True) # create weight directory
         for i in range(self.grid_num):
             y_train_px = y_train[:, i]
             y_train_one_hot = tf.keras.utils.to_categorical(y_train_px, self.class_num)
             model = build_model((self.lat, self.lon, self.var_num), self.class_num)
             model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
             his = model.fit(x_train, y_train_one_hot, batch_size=self.batch_size, epochs=self.epochs)
-            weights_path = f"{self.weights_dir}/{self.tors}-{self.tant}_{i}.h5"
+            weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
             model.save_weights(weights_path)
         dct = {'x_train': x_train, 'y_train': y_train,
                'x_val': x_val, 'y_val': y_val,
@@ -57,7 +59,7 @@ class Pixcel():
             y_val_one_hot = tf.keras.utils.to_categorical(y_val_px, self.class_num)
             model = build_model((self.lat, self.lon, self.var_num), self.class_num)
             model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
-            weights_path = f"{self.weights_dir}/{self.tors}-{self.tant}_{i}.h5"
+            weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
             model.load_weights(weights_path)
             result = model.evaluate(x_val, y_val_one_hot)
             acc.append(round(result[1], 2))
@@ -74,7 +76,7 @@ class Pixcel():
 
         model = build_model((self.lat, self.lon, self.var_num), self.class_num)
         model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
-        weights_path = f"{self.weights_dir}/{self.tors}-{self.tant}_{px_index}.h5"
+        weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{px_index}.h5"
         model.load_weights(weights_path)
 
         preprocessed_image = image_preprocess(x_val, gradcam_index)
@@ -93,7 +95,7 @@ class Pixcel():
         model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
         pred_lst = []
         for i in range(self.grid_num):
-            weights_path = f"{self.weights_dir}/{self.tors}-{self.tant}_{i}.h5"
+            weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
             model.load_weights(weights_path)
             pred = model.predict(x_val)
             label = np.argmax(pred[val_index])
@@ -110,13 +112,13 @@ class Pixcel():
         y_val_one_hot = tf.keras.utils.to_categorical(y_val_px, self.class_num)
         model = build_model((self.lat, self.lon, self.var_num), self.class_num)
         model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
-        weights_path = f"{self.weights_dir}/{self.tors}-{self.tant}_{px_index}.h5"
+        weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{px_index}.h5"
         model.load_weights(weights_path)
         pred = model.predict(x_val)
         draw_val(pred, y_val_one_hot)
 
 def main():
-    train_flag = False # modifiable
+    train_flag = True # modifiable
     px = Pixcel()
     if train_flag is True:
         predictors, predictant = load(px.tors, px.tant)
