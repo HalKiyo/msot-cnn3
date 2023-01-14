@@ -29,11 +29,12 @@ def main():
 
 class Pixcel():
     def __init__(self):
+        self.class_num = 5
+        self.descrete_mode = 'EFD'
         self.tors = 'predictors_coarse_std_Apr_msot'
-        self.tant = 'pr_5x5_coarse_std_MJJASO_thailand_EFD_5'
+        self.tant = f"pr_5x5_coarse_std_MJJASO_thailand_{self.descrete_mode}_{self.class_num}"
         self.seed = 1
         self.vsample = 1000
-        self.class_num = 5
         self.lat, self.lon = 24, 72
         self.var_num = 4
         self.grid_num = 4*4

@@ -1,11 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def draw_val(val_pred, val_label):
+def draw_val(val_pred, val_label, class_num=5):
     fig = plt.figure()
     ax = plt.subplot()
 
-    val_list = [1, 2, 3, 4, 5]
+    val_list = [i for i in range(class_num)]
     width, linewidth, align = 0.5, 0.5, 'center'
 
     # count

@@ -1,7 +1,7 @@
+import os
 import pickle
 import numpy as np
 import tensorflow as tf
-from os.path import exists
 from tensorflow.python.framework.ops import disable_eager_execution
 
 from model3 import build_model
@@ -13,22 +13,23 @@ disable_eager_execution()
 
 def main():
     #---0. initial setting
-    train_flag = False#MODIFALABLE
+    train_flag = True#MODIFALABLE
     vsample = 1000#MODIFALABLE
     seed = 1#MODIFALABLE
-    class_num = 5#MODIFALABLE
+    class_num = 10#MODIFALABLE
     batch_size = 256#MODIFALABLE
-    epochs = 150#MODIFALABLE
+    epochs = 200#MODIFALABLE
     lr = 0.0001#MODIFALABLE
     var_num = 4#MODIFALABLE
     gradcam_index = 100#MODIFALABLE
     layer_name = 'conv2d_2'#MODIFALABLE
+    descrete_mode = 'EFD' #MODIFALABLE
 
     #---1. dataset
     tors = 'predictors_coarse_std_Apr_msot'
-    tant = 'pr_1x1_std_MJJASO_one_EFD_5'
+    tant = f"pr_1x1_std_MJJASO_one_{descrete_mode}_{class_num}"
     savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/class/{tors}-{tant}.pickle"
-    if exists(savefile) is True and train_flag is False:
+    if os.path.exists(savefile) is True and train_flag is False:
         with open(savefile, 'rb') as f:
             data = pickle.load(f)
         x_val, y_val = data['x_val'], data['y_val']
@@ -48,8 +49,10 @@ def main():
     metrics = tf.keras.metrics.CategoricalAccuracy()
     model = build_model((lat, lon, var_num), class_num)
     model.compile(optimizer=optimizer, loss=loss, metrics=[metrics])
-    weights_path = f"/docker/mnt/d/research/D2/cnn3/weights/class/{tors}-{tant}.h5"
-    if exists(weights_path) is True and train_flag is False:
+    weights_dir = f"/docker/mnt/d/research/D2/cnn3/weights/class/{tors}-{tant}"
+    os.makedirs(weights_dir, exist_ok=True) # create weight directory
+    weights_path = weights_dir + f"/class{class_num}_epoch{epochs}_batch{batch_size}.h5"
+    if os.path.exists(weights_path) is True and train_flag is False:
         model.load_weights(weights_path)
     else:
         his = model.fit(x_train, y_train_one_hot, batch_size=batch_size, epochs=epochs)
@@ -59,7 +62,7 @@ def main():
     results = model.evaluate(x_val, y_val_one_hot)
     print(f"CategoricalAccuracy: {results[1]}")
     pred_val = (model.predict(x_val))
-    draw_val(pred_val, y_val_one_hot)
+    draw_val(pred_val, y_val_one_hot, class_num=class_num)
 
     #---3. gradcam
     preprocessed_image = image_preprocess(x_val, gradcam_index)
