@@ -6,7 +6,7 @@ from os.path import exists
 from tensorflow.python.framework.ops import disable_eager_execution
 
 from model3 import build_model
-from view import draw_val, show_class5, view_accuracy
+from view import draw_val, show_class, view_accuracy
 from util import load, shuffle, mask
 from gradcam import grad_cam, show_heatmap, image_preprocess
 
@@ -29,7 +29,7 @@ def main():
 
 class Pixcel():
     def __init__(self):
-        self.class_num = 5
+        self.class_num = 30
         self.descrete_mode = 'EFD'
         self.tors = 'predictors_coarse_std_Apr_msot'
         self.tant = f"pr_5x5_coarse_std_MJJASO_thailand_{self.descrete_mode}_{self.class_num}"
@@ -37,9 +37,10 @@ class Pixcel():
         self.vsample = 1000
         self.lat, self.lon = 24, 72
         self.var_num = 4
-        self.grid_num = 4*4
+        self.lat_grid, self.lon_grid = 4, 4
+        self.grid_num = self.lat_grid*self.lon_grid 
         self.batch_size = 256
-        self.epochs = 10
+        self.epochs = 150
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
         self.loss = tf.keras.losses.CategoricalCrossentropy()
         self.metrics = tf.keras.metrics.CategoricalAccuracy()
@@ -105,7 +106,7 @@ class Pixcel():
             data = pickle.load(f)
         x_val, y_val = data['x_val'], data['y_val']
         y_val_px = y_val[val_index].reshape(4, 4)
-        show_class5(y_val_px)
+        show_class(y_val_px, class_num=self.class_num)
 
         model = build_model((self.lat, self.lon, self.var_num), self.class_num)
         model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
@@ -118,7 +119,7 @@ class Pixcel():
             pred_lst.append(label)
         pred_arr = np.array(pred_lst)
         pred_arr = pred_arr.reshape(4,4)
-        show_class5(pred_arr)
+        show_class(pred_arr, class_num=self.class_num)
 
     def label_dist(self, px_index):
         with open(self.savefile, 'rb') as f:
@@ -131,7 +132,7 @@ class Pixcel():
         weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{px_index}.h5"
         model.load_weights(weights_path)
         pred = model.predict(x_val)
-        draw_val(pred, y_val_one_hot)
+        draw_val(pred, y_val_one_hot, class_num=self.class_num)
 
 
 if __name__ == '__main__':

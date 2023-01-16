@@ -13,17 +13,17 @@ disable_eager_execution()
 
 def main():
     #---0. initial setting
-    train_flag = True#MODIFALABLE
+    train_flag = False#MODIFALABLE
     vsample = 1000#MODIFALABLE
     seed = 1#MODIFALABLE
-    class_num = 10#MODIFALABLE
+    class_num = 5#MODIFALABLE
     batch_size = 256#MODIFALABLE
     epochs = 200#MODIFALABLE
     lr = 0.0001#MODIFALABLE
     var_num = 4#MODIFALABLE
     gradcam_index = 100#MODIFALABLE
     layer_name = 'conv2d_2'#MODIFALABLE
-    descrete_mode = 'EFD' #MODIFALABLE
+    descrete_mode = 'EWD' #MODIFALABLE
 
     #---1. dataset
     tors = 'predictors_coarse_std_Apr_msot'
