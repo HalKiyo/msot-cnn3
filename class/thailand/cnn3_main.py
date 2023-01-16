@@ -14,6 +14,7 @@ disable_eager_execution()
 
 def main():
     train_flag = True # modifiable
+
     px = Pixcel()
     if train_flag is True:
         predictors, predictant = load(px.tors, px.tant)
@@ -40,7 +41,7 @@ class Pixcel():
         self.lat_grid, self.lon_grid = 4, 4
         self.grid_num = self.lat_grid*self.lon_grid 
         self.batch_size = 256
-        self.epochs = 150
+        self.epochs = 250
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
         self.loss = tf.keras.losses.CategoricalCrossentropy()
         self.metrics = tf.keras.metrics.CategoricalAccuracy()
