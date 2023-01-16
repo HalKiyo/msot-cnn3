@@ -150,8 +150,8 @@ class Pixcel():
             pred = model.predict(x_val)
             pred_lst.append(pred)
             y_val_lst.append(y_val_one_hot)
-        pred_arr = np.array(pred_lst).reshape(16*1000, 30)
-        y_val_arr = np.array(y_val_lst).reshape(16*1000, 30)
+        pred_arr = np.array(pred_lst).reshape(self.grid_num*self.vsample, self.class_num)
+        y_val_arr = np.array(y_val_lst).reshape(self.grid_num*self.vsample, self.class_num)
         draw_val(pred_arr, y_val_arr, class_num=self.class_num)
 
 
