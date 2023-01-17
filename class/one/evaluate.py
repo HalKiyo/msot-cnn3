@@ -13,10 +13,9 @@ from gradcam import grad_cam, show_heatmap, image_preprocess
 
 def main():
     #---0. initial setting
-    train_flag = False#MODIFALABLE
     class_num = 30#MODIFALABLE
-    epochs = 350#MODIFALABLE
-    descrete_mode = 'EWD' #MODIFALABLE
+    epochs = 200#MODIFALABLE
+    descrete_mode = 'EFD' #MODIFALABLE
     batch_size = 256#MODIFALABLE
     vsample = 1000#MODIFALABLE
     seed = 1#MODIFALABLE
@@ -33,11 +32,10 @@ def main():
     tors = 'predictors_coarse_std_Apr_msot'
     tant = f"pr_1x1_std_MJJASO_one_{descrete_mode}_{class_num}"
     savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/class/{tors}-{tant}.pickle"
-    if os.path.exists(savefile) is True and train_flag is False:
-        with open(savefile, 'rb') as f:
-            data = pickle.load(f)
-        x_val, y_val = data['x_val'], data['y_val']
-        y_val_one_hot = tf.keras.utils.to_categorical(y_val, class_num)
+    with open(savefile, 'rb') as f:
+        data = pickle.load(f)
+    x_val, y_val = data['x_val'], data['y_val']
+    y_val_one_hot = tf.keras.utils.to_categorical(y_val, class_num)
 
     #---2. validation
     model = build_model((lat, lon, var_num), class_num)
@@ -50,10 +48,13 @@ def main():
 
     #---2.5 individual validation
     pred_val = model.predict(x_val)
-    validation_label = 2
-    for i, j in zip(pred_val, y_val_one_hot):
-        if np.argmax(i) != np.argmax(j) and int(np.argmax(j)) == validation_label:
-            print(np.argmax(i))
+    for validation_label in range(class_num):
+        print(f"validation_label={validation_label}")
+        wrong = []
+        for i, j in zip(pred_val, y_val_one_hot):
+            if np.argmax(i) != np.argmax(j) and int(np.argmax(j)) == validation_label:
+                wrong.append(np.argmax(i))
+        print(wrong)
 
     #---3. visualization
     #class_label, counts = draw_val(pred_val, y_val_one_hot, class_num=class_num)
