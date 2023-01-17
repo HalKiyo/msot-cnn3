@@ -22,7 +22,7 @@ def target_category_loss(x, category_index, class_num):
 def target_category_loss_output_shape(input_shape):
     return input_shape
 
-def image_preprocess(val, index):
+def image_preprocess(val, gradcam_index=0):
     img = val.copy()
     x = img[index]
     x = np.expand_dims(x, axis=0)
@@ -68,7 +68,7 @@ def show_heatmap(heatmap):
     cbar = fig.colorbar(mat, ax=ax, orientation='horizontal')
     plt.show()
 
-def average_heatmap(x_val, input_model, y_val, layer_name, lat, lon, class_num, num=300):
+def average_heatmap(x_val, input_model, y_val, layer_name, lat, lon, class_num, num=100):
     saliency = np.empty(x_val.shape[:3])[:num,:,:]
     for i in range(num):
         preprocessed_input = image_preprocess(x_val, index=i)

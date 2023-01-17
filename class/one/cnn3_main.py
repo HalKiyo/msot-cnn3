@@ -9,7 +9,6 @@ import tensorflow as tf
 from model3 import build_model
 from view import draw_val
 from util import load, shuffle, mask
-from gradcam import grad_cam, show_heatmap, image_preprocess
 
 def main():
     #---0. initial setting
@@ -71,12 +70,6 @@ def main():
     class_label, counts = draw_val(pred_val, y_val_one_hot, class_num=class_num)
     print(f"class_label: {class_label}\n" \
           f"counts: {counts}")
-
-    #---3. gradcam
-    preprocessed_image = image_preprocess(x_val, gradcam_index)
-    heatmap = grad_cam(model, preprocessed_image, y_val[gradcam_index], layer_name,
-                       lat, lon, class_num)
-    show_heatmap(heatmap)
 
     #---4. save state
     if train_flag is True:
