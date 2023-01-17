@@ -10,6 +10,9 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 from matplotlib.colors import Normalize
 
+from tensorflow.python.framework.ops import disable_eager_execution
+disable_eager_execution()
+
 def normalize(x):
     return x / (K.sqrt(K.mean(K.square(x))) + 1e-5)
 

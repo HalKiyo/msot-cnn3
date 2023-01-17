@@ -1,10 +1,10 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+import warnings
+warnings.filterwarnings('ignore')
 import pickle
 import numpy as np
 import tensorflow as tf
-from tensorflow.python.framework.ops import disable_eager_execution
-disable_eager_execution()
 
 from model3 import build_model
 from view import draw_val, show_class, view_accuracy
@@ -14,7 +14,7 @@ from gradcam import grad_cam, show_heatmap, image_preprocess
 def main():
     train_flag = False # modifiable
 
-    px = Pixcel()
+    px = Pixel()
     if train_flag is True:
         predictors, predictant = load(px.tors, px.tant)
         px.training(*shuffle(predictors, predictant, px.vsample, px.seed))
@@ -27,7 +27,7 @@ def main():
     px.show(val_index=0)
     px.label_dist_multigrid()
 
-class Pixcel():
+class Pixel():
     def __init__(self):
         self.class_num = 5
         self.descrete_mode = 'EWD'
@@ -82,7 +82,7 @@ class Pixcel():
             acc.append(round(result[1], 2))
             print(f"CategoricalAccuracy of pixcel{i}: {result[1]}")
         acc = np.array(acc)
-        acc = acc.reshape(4,4)
+        acc = acc.reshape(self.lat_grid, self.lon_grid)
         view_accuracy(acc)
 
     def gradcam(self, px_index, gradcam_index, layer_name):
@@ -105,7 +105,7 @@ class Pixcel():
         with open(self.savefile, 'rb') as f:
             data = pickle.load(f)
         x_val, y_val = data['x_val'], data['y_val']
-        y_val_px = y_val[val_index].reshape(4, 4)
+        y_val_px = y_val[val_index].reshape(self.lat_grid, self.lon_grid)
         show_class(y_val_px, class_num=self.class_num)
 
         pred_lst = []
@@ -118,7 +118,7 @@ class Pixcel():
             label = np.argmax(pred[val_index])
             pred_lst.append(label)
         pred_arr = np.array(pred_lst)
-        pred_arr = pred_arr.reshape(4,4)
+        pred_arr = pred_arr.reshape(self.lat_grid, self.lon_grid)
         show_class(pred_arr, class_num=self.class_num)
 
     def label_dist(self, px_index):
@@ -133,7 +133,7 @@ class Pixcel():
         model.load_weights(weights_path)
         pred = model.predict(x_val)
         class_label, counts = draw_val(pred, y_val_one_hot, class_num=self.class_num)
-        print(f"class_label: {class_label}" \
+        print(f"class_label: {class_label}\n" \
               f"counts: {counts}")
 
     def label_dist_multigrid(self):
@@ -155,7 +155,7 @@ class Pixcel():
         pred_arr = np.array(pred_lst).reshape(self.grid_num*self.vsample, self.class_num)
         y_val_arr = np.array(y_val_lst).reshape(self.grid_num*self.vsample, self.class_num)
         class_label, counts = draw_val(pred_arr, y_val_arr, class_num=self.class_num)
-        print(f"class_label: {class_label}" \
+        print(f"class_label: {class_label}\n" \
               f"counts: {counts}")
 
 
