@@ -24,7 +24,7 @@ def target_category_loss_output_shape(input_shape):
 
 def image_preprocess(val, gradcam_index=0):
     img = val.copy()
-    x = img[index]
+    x = img[gradcam_index]
     x = np.expand_dims(x, axis=0)
     #x = preprocess_input(x)
     return x
