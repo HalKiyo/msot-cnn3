@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import cartopy.crs as ccrs
 
-def draw_val(val_pred, val_label, class_num=5):
+def draw_val(val_pred, val_label_onehot, class_num=5):
     fig = plt.figure()
     ax = plt.subplot()
 
@@ -14,7 +14,7 @@ def draw_val(val_pred, val_label, class_num=5):
     # count
     val_true = []
     val_false = []
-    for i, j in zip(val_pred, val_label):
+    for i, j in zip(val_pred, val_label_onehot):
         if np.argmax(i) == np.argmax(j):
             val_true.append(val_list[np.argmax(j)])
         else:
@@ -30,7 +30,12 @@ def draw_val(val_pred, val_label, class_num=5):
     ax.bar(val_list, val_fcount,
            color='orange', bottom=val_tcount, width=width, linewidth=linewidth, align=align, alpha=.8)
 
+    # count
+    val_label_class =  [np.argmax(i) for i in val_label_onehot]
+    u, counts = np.unique(val_label_class, return_counts=True)
+
     plt.show()
+    return u, counts
 
 def show_class(image, class_num=5, lat_grid=4, lon_grid=4):
     cmap = plt.cm.get_cmap('BrBG', class_num)

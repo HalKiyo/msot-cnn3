@@ -30,7 +30,9 @@ def main():
 class Pixcel():
     def __init__(self):
         self.class_num = 5
-        self.descrete_mode = 'EFD'
+        self.descrete_mode = 'EWD'
+        self.epochs = 150
+        self.batch_size = 256
         self.tors = 'predictors_coarse_std_Apr_msot'
         self.tant = f"pr_5x5_coarse_std_MJJASO_thailand_{self.descrete_mode}_{self.class_num}"
         self.seed = 1
@@ -39,8 +41,6 @@ class Pixcel():
         self.var_num = 4
         self.lat_grid, self.lon_grid = 4, 4
         self.grid_num = self.lat_grid*self.lon_grid 
-        self.batch_size = 256
-        self.epochs = 150
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
         self.loss = tf.keras.losses.CategoricalCrossentropy()
         self.metrics = tf.keras.metrics.CategoricalAccuracy()
@@ -132,7 +132,9 @@ class Pixcel():
         weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{px_index}.h5"
         model.load_weights(weights_path)
         pred = model.predict(x_val)
-        draw_val(pred, y_val_one_hot, class_num=self.class_num)
+        class_label, counts = draw_val(pred, y_val_one_hot, class_num=self.class_num)
+        print(f"class_label: {class_label}" \
+              f"counts: {counts}")
 
     def label_dist_multigrid(self):
         with open(self.savefile, 'rb') as f:
@@ -152,7 +154,9 @@ class Pixcel():
             y_val_lst.append(y_val_one_hot)
         pred_arr = np.array(pred_lst).reshape(self.grid_num*self.vsample, self.class_num)
         y_val_arr = np.array(y_val_lst).reshape(self.grid_num*self.vsample, self.class_num)
-        draw_val(pred_arr, y_val_arr, class_num=self.class_num)
+        class_label, counts = draw_val(pred_arr, y_val_arr, class_num=self.class_num)
+        print(f"class_label: {class_label}" \
+              f"counts: {counts}")
 
 
 if __name__ == '__main__':
