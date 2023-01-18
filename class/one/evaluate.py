@@ -7,21 +7,23 @@ import numpy as np
 import tensorflow as tf
 
 from model3 import build_model
-from view import draw_val
+from view import draw_val, view_probability
 from util import load, shuffle, mask
 from gradcam import grad_cam, show_heatmap, image_preprocess
 
 def main():
     #---0. initial setting
-    class_num = 30#MODIFALABLE
+    class_num = 10#MODIFALABLE
     epochs = 200#MODIFALABLE
-    descrete_mode = 'EFD' #MODIFALABLE
+    descrete_mode = 'EWD' #MODIFALABLE
     batch_size = 256#MODIFALABLE
     vsample = 1000#MODIFALABLE
     seed = 1#MODIFALABLE
     lr = 0.0001#MODIFALABLE
     var_num = 4#MODIFALABLE
-    gradcam_index = 100#MODIFALABLE
+    prob_label = 0#MODIFALABLE
+    false_index = 1#MODIFALABLE
+    #gradcam_index = 100#MODIFALABLE
     layer_name = 'conv2d_2'#MODIFALABLE
     lat, lon = 24, 72
     optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
@@ -56,15 +58,30 @@ def main():
                 wrong.append(np.argmax(i))
         print(wrong)
 
+    #---2.6 probabilistic CategoricalCrossentropy
+    false_lst = []
+    true_lst = []
+    for ind, (pr, y) in enumerate(zip(pred_val, y_val_one_hot)):
+        if np.argmax(pr) != np.argmax(y) and int(np.argmax(y)) == prob_label:
+            false_lst.append(ind)
+        elif np.argmax(pr) == np.argmax(y) and int(np.argmax(y)) == prob_label:
+            true_lst.append(ind)
+    val_index = false_lst[false_index]
+    print(f"prediction output of label:{np.argmax(y_val_one_hot[val_index])}")
+    view_probability(pred_val, val_index=val_index)
+    print(f"false_index: {false_lst}")
+    print(f"true_index: {true_lst}")
+
     #---3. visualization
-    #class_label, counts = draw_val(pred_val, y_val_one_hot, class_num=class_num)
-    #print(f"class_label: {class_label} \ncounts: {counts}")
+    class_label, counts = draw_val(pred_val, y_val_one_hot, class_num=class_num)
+    print(f"class_label: {class_label} \ncounts: {counts}")
 
     #---4. gradcam
+    gradcam_index = false_lst[false_index]
     preprocessed_image = image_preprocess(x_val, gradcam_index=gradcam_index)
     heatmap = grad_cam(model, preprocessed_image, y_val[gradcam_index], layer_name,
                        lat, lon, class_num)
-    #show_heatmap(heatmap)
+    show_heatmap(heatmap)
 
 
 if __name__ == '__main__':

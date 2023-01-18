@@ -34,5 +34,15 @@ def draw_val(val_pred, val_label_one_hot, class_num=5):
     plt.show()
     return u, counts
 
+def view_probability(val_pred, val_index=0):
+    print(val_pred[val_index])
 
+    fig = plt.figure()
+    ax = plt.subplot()
+    width, linewidth, align = 0.5, 0.5, 'center'
+
+    output = val_pred[val_index]
+    ticks = np.arange(len(output))
+    ax.bar(ticks, output, color='darkslategray', width=width, linewidth=linewidth, align=align)
+    plt.show()
 
