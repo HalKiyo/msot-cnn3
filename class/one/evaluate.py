@@ -12,20 +12,28 @@ from util import load, shuffle, mask
 from gradcam import grad_cam, show_heatmap, image_preprocess
 
 def main():
-    #---0. initial setting
-    class_num = 10#MODIFALABLE
-    epochs = 200#MODIFALABLE
+    #---0. file init
+    class_num = 10 #MODIFALABLE
+    epochs = 200 #MODIFALABLE
     descrete_mode = 'EWD' #MODIFALABLE
-    batch_size = 256#MODIFALABLE
-    vsample = 1000#MODIFALABLE
-    seed = 1#MODIFALABLE
-    lr = 0.0001#MODIFALABLE
-    var_num = 4#MODIFALABLE
-    prob_label = 0#MODIFALABLE
-    false_index = 1#MODIFALABLE
-    #gradcam_index = 100#MODIFALABLE
-    layer_name = 'conv2d_2'#MODIFALABLE
+    batch_size = 256 #MODIFALABLE
+    vsample = 1000 #MODIFALABLE
+    seed = 1 #MODIFALABLE
+    var_num = 4 #MODIFALABLE
+    #---0.1 prob init
+    prob_view_flag = True
+    prob_flag = True #MODIFALABLE
+    prob_label = 2 #MODIFALABLE
+    false_index = 0 #MODIFALABLE
+    true_index = 4 #MODIFALABLE
+    #---0.2 gradcam init
+    grad_view_flag = True
+    layer_name = 'conv2d_2' #MODIFALABLE
+    #---0.3 validation init
+    validation_view_flag = False
+    #---0.4 model init
     lat, lon = 24, 72
+    lr = 0.0001
     optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
     loss = tf.keras.losses.CategoricalCrossentropy()
     metrics = tf.keras.metrics.CategoricalAccuracy()
@@ -48,7 +56,7 @@ def main():
     loss, acc = model.evaluate(x_val, y_val_one_hot)
     print(f"CategoricalAccuracy: {acc}")
 
-    #---2.5 individual validation
+    #---2.1 individual validation
     pred_val = model.predict(x_val)
     for validation_label in range(class_num):
         print(f"validation_label={validation_label}")
@@ -58,30 +66,39 @@ def main():
                 wrong.append(np.argmax(i))
         print(wrong)
 
-    #---2.6 probabilistic CategoricalCrossentropy
-    false_lst = []
-    true_lst = []
-    for ind, (pr, y) in enumerate(zip(pred_val, y_val_one_hot)):
-        if np.argmax(pr) != np.argmax(y) and int(np.argmax(y)) == prob_label:
-            false_lst.append(ind)
-        elif np.argmax(pr) == np.argmax(y) and int(np.argmax(y)) == prob_label:
-            true_lst.append(ind)
-    val_index = false_lst[false_index]
-    print(f"prediction output of label:{np.argmax(y_val_one_hot[val_index])}")
-    view_probability(pred_val, val_index=val_index)
-    print(f"false_index: {false_lst}")
-    print(f"true_index: {true_lst}")
+    #---2.2 probabilistic CategoricalCrossentropy
+    if prob_view_flag is True:
+        false_lst = []
+        true_lst = []
+        for ind, (pr, y) in enumerate(zip(pred_val, y_val_one_hot)):
+            if np.argmax(pr) != np.argmax(y) and int(np.argmax(y)) == prob_label:
+                false_lst.append(ind)
+            elif np.argmax(pr) == np.argmax(y) and int(np.argmax(y)) == prob_label:
+                true_lst.append(ind)
+        if prob_flag is True:
+            val_index = true_lst[true_index]
+            print(f"true_index: {true_lst}")
+        else:
+            val_index = false_lst[false_index]
+            print(f"false_index: {false_lst}")
+        print(f"prediction output of label:{np.argmax(y_val_one_hot[val_index])}")
+        view_probability(pred_val, val_index=val_index)
 
     #---3. visualization
-    class_label, counts = draw_val(pred_val, y_val_one_hot, class_num=class_num)
-    print(f"class_label: {class_label} \ncounts: {counts}")
+    if validation_view_flag is True:
+        class_label, counts = draw_val(pred_val, y_val_one_hot, class_num=class_num)
+        print(f"class_label: {class_label} \ncounts: {counts}")
 
     #---4. gradcam
-    gradcam_index = false_lst[false_index]
-    preprocessed_image = image_preprocess(x_val, gradcam_index=gradcam_index)
-    heatmap = grad_cam(model, preprocessed_image, y_val[gradcam_index], layer_name,
-                       lat, lon, class_num)
-    show_heatmap(heatmap)
+    if grad_view_flag is True:
+        if prob_flag is True:
+            gradcam_index = true_lst[true_index]
+        else:
+            gradcam_index = false_lst[false_index]
+        preprocessed_image = image_preprocess(x_val, gradcam_index=gradcam_index)
+        heatmap = grad_cam(model, preprocessed_image, y_val[gradcam_index], layer_name,
+                           lat, lon, class_num)
+        show_heatmap(heatmap)
 
 
 if __name__ == '__main__':
