@@ -61,20 +61,17 @@ def box_crossentropy(val_pred, val_label_one_hot, class_num=5):
         else:
             false[f"true{int(pred_class)}, false{int(pred_class)}"].append(max_cross)
 
-    # for key which doesn't have value in it
-    for i in range(class_num):
-        for key in [true, false]:
-            if bool(key[f"true{i}, false{i}"]) is False:
-                key[f"true{i}, false{i}"].append(0)
-
     label = np.arange(class_num)
     xs = {key:val for key, val in zip(true.keys(), label)}
     shift = 0.1
+    whiskerprops = None
 
     fig, ax = plt.subplots()
     for key in true.keys():
-        ax.boxplot(true[key], positions=[xs[key] - shift], boxprops=dict(color='b'))
-        ax.boxplot(false[key], positions=[xs[key] + shift], boxprops=dict(color='r'))
+        ax.boxplot(true[key], positions=[xs[key] - shift], boxprops=dict(color='b'),
+                   showfliers=False)
+        ax.boxplot(false[key], positions=[xs[key] + shift], boxprops=dict(color='r'),
+                   showfliers=False)
     ax.set_xticks(range(class_num))
     ax.set_xticklabels(true.keys())
     plt.show()
