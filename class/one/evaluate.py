@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 
 from model3 import build_model
-from view import draw_val, view_probability
+from view import draw_val, view_probability, box_crossentropy
 from util import load, shuffle, mask
 from gradcam import grad_cam, show_heatmap, image_preprocess
 
@@ -21,13 +21,15 @@ def main():
     seed = 1 #MODIFALABLE
     var_num = 4 #MODIFALABLE
     #---0.1 prob init
-    prob_view_flag = True
+    prob_view_flag = False
     prob_flag = True #MODIFALABLE
     prob_label = 2 #MODIFALABLE
     false_index = 0 #MODIFALABLE
     true_index = 4 #MODIFALABLE
+    #---0.11 box init
+    box_flag = True
     #---0.2 gradcam init
-    grad_view_flag = True
+    grad_view_flag = False
     layer_name = 'conv2d_2' #MODIFALABLE
     #---0.3 validation init
     validation_view_flag = False
@@ -83,6 +85,10 @@ def main():
             print(f"false_index: {false_lst}")
         print(f"prediction output of label:{np.argmax(y_val_one_hot[val_index])}")
         view_probability(pred_val, val_index=val_index)
+
+    #---2.3 boxprot of CategoricalCrossentropy
+    if box_flag is True:
+        box_crossentropy(pred_val, y_val_one_hot, class_num=class_num)
 
     #---3. visualization
     if validation_view_flag is True:
