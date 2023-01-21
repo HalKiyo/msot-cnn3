@@ -7,30 +7,31 @@ import numpy as np
 import tensorflow as tf
 
 from model3 import build_model
-from view import draw_val, view_probability, box_crossentropy
 from util import load, shuffle, mask
-from gradcam import grad_cam, show_heatmap, image_preprocess
+from view import draw_val, view_probability, box_crossentropy
+from gradcam import grad_cam, show_heatmap, image_preprocess, box_gradcam
 
 def main():
     #---0. file init
-    class_num = 10 #MODIFALABLE
-    epochs = 200 #MODIFALABLE
-    descrete_mode = 'EWD' #MODIFALABLE
-    batch_size = 256 #MODIFALABLE
-    vsample = 1000 #MODIFALABLE
-    seed = 1 #MODIFALABLE
-    var_num = 4 #MODIFALABLE
+    class_num = 10 
+    epochs = 200 
+    descrete_mode = 'EFD' 
+    batch_size = 256 
+    vsample = 1000 
+    seed = 1 
+    var_num = 4 
     #---0.1 prob init
     prob_view_flag = False
-    prob_flag = True #MODIFALABLE
-    prob_label = 2 #MODIFALABLE
-    false_index = 0 #MODIFALABLE
-    true_index = 4 #MODIFALABLE
+    prob_flag = True #true prediction or false prediction
+    prob_label = 9 
+    false_index = 0 
+    true_index = 0 
     #---0.11 box init
-    box_flag = True
+    box_flag = False
     #---0.2 gradcam init
     grad_view_flag = False
-    layer_name = 'conv2d_2' #MODIFALABLE
+    grad_box_flag = True
+    layer_name = 'conv2d_2' 
     #---0.3 validation init
     validation_view_flag = False
     #---0.4 model init
@@ -90,12 +91,12 @@ def main():
     if box_flag is True:
         box_crossentropy(pred_val, y_val_one_hot, class_num=class_num)
 
-    #---3. visualization
+    #---3. true/false barplot
     if validation_view_flag is True:
         class_label, counts = draw_val(pred_val, y_val_one_hot, class_num=class_num)
         print(f"class_label: {class_label} \ncounts: {counts}")
 
-    #---4. gradcam
+    #---4. individual gradcam
     if grad_view_flag is True:
         if prob_flag is True:
             gradcam_index = true_lst[true_index]
@@ -103,8 +104,19 @@ def main():
             gradcam_index = false_lst[false_index]
         preprocessed_image = image_preprocess(x_val, gradcam_index=gradcam_index)
         heatmap = grad_cam(model, preprocessed_image, y_val[gradcam_index], layer_name,
-                           lat, lon, class_num)
+                           lat=24, lon=72, class_num=class_num)
         show_heatmap(heatmap)
+
+    #---4. boxplot of gradcam 
+    if grad_box_flag is True:
+        heatmap_arr = np.empty((vsample, lat, lon))
+        for index, (pr, y) in enumerate(zip(pred_val, y_val_one_hot)):
+            preprocessed_image = image_preprocess(x_val, gradcam_index=index)
+            heatmap = grad_cam(model, preprocessed_image, y_val[index], layer_name,
+                               lat=24, lon=72, class_num=class_num)
+            heatmap_arr[index] = heatmap
+            print(index)
+        box_gradcam(heatmap_arr, pred_val, y_val_one_hot, class_num=class_num)
 
 
 if __name__ == '__main__':

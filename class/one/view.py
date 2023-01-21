@@ -64,7 +64,6 @@ def box_crossentropy(val_pred, val_label_one_hot, class_num=5):
     label = np.arange(class_num)
     xs = {key:val for key, val in zip(true.keys(), label)}
     shift = 0.1
-    whiskerprops = None
 
     fig, ax = plt.subplots()
     for key in true.keys():

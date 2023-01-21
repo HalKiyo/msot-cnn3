@@ -13,9 +13,9 @@ from util import load, shuffle, mask
 def main():
     #---0. initial setting
     train_flag = False#MODIFALABLE
-    class_num = 30#MODIFALABLE
-    epochs = 350#MODIFALABLE
-    descrete_mode = 'EWD' #MODIFALABLE
+    class_num = 10#MODIFALABLE
+    epochs = 200#MODIFALABLE
+    descrete_mode = 'EFD' #MODIFALABLE
     batch_size = 256#MODIFALABLE
     vsample = 1000#MODIFALABLE
     seed = 1#MODIFALABLE
