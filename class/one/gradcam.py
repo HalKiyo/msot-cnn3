@@ -81,13 +81,13 @@ def average_heatmap(x_val, input_model, y_val, layer_name, lat=24, lon=72, class
     show_heatmap(saliency)
 
 def box_gradcam(heatmap, pred_class, label_class, class_num=5):
-    # heatmap(1000, 24, 72, bool) bool is for true or false prediction 
+    # heatmap(1000, 24, 72) 
     # box true -> number of pixel which exceeds 0.6 color if prediction is correct
-    true = {f"ture{i}, false{i}": [] for i in range(class_num)}
-    false = {f"ture{i}, false{i}": [] for i in range(class_num)}
-
     threshold = 0.6
     colored_pixel = np.count_nonzero(heatmap >= threshold)
+
+    true = {f"ture{i}, false{i}": [] for i in range(class_num)}
+    false = {f"ture{i}, false{i}": [] for i in range(class_num)}
 
     for i in range(len(heatmap)):
         colored_pixel = np.count_nonzero(heatmap[i] >= threshold)
