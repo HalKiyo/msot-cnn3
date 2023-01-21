@@ -109,13 +109,20 @@ def main():
 
     #---4. boxplot of gradcam 
     if grad_box_flag is True:
-        heatmap_arr = np.empty((vsample, lat, lon))
-        for index, (pr, y) in enumerate(zip(pred_val, y_val_one_hot)):
-            preprocessed_image = image_preprocess(x_val, gradcam_index=index)
-            heatmap = grad_cam(model, preprocessed_image, y_val[index], layer_name,
-                               lat=24, lon=72, class_num=class_num)
-            heatmap_arr[index] = heatmap
-            print(index)
+        heatmap_dir = f"/docker/mnt/d/research/D2/cnn3/heatmap/class/{tors}-{tant}"
+        heatmap_path = heatmap_dir + f"/class{class_num}_epoch{epochs}_batch{batch_size}.npy"
+        if os.path.exists(heatmap_path) is True:
+            heatmap_arr = np.load(heatmap_arr)
+        else:
+            heatmap_arr = np.empty((vsample, lat, lon))
+            for index, (pr, y) in enumerate(zip(pred_val, y_val_one_hot)):
+                preprocessed_image = image_preprocess(x_val, gradcam_index=index)
+                heatmap = grad_cam(model, preprocessed_image, y_val[index], layer_name,
+                                   lat=24, lon=72, class_num=class_num)
+                heatmap_arr[index] = heatmap
+                print(index)
+            os.makedirs(heatmap_dir, exist_ok=True)
+            np.save(heatmap_path, heatmap_arr)
         box_gradcam(heatmap_arr, pred_val, y_val_one_hot, class_num=class_num)
 
 

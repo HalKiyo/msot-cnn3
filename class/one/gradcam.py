@@ -87,9 +87,10 @@ def box_gradcam(heatmap, pred_class, label_class, class_num=5):
     false = {f"ture{i}, false{i}": [] for i in range(class_num)}
 
     threshold = 0.6
-    colored_pixcel = np.count_nonzero(x >= threshold)
+    colored_pixel = np.count_nonzero(heatmap >= threshold)
 
     for i in range(len(heatmap)):
+        colored_pixel = np.count_nonzero(heatmap[i] >= threshold)
         if pred_class == label_class:
             true[f"ture{int(pred_class)}, false{int(pred_class)}"].append(colored_pixel)
         else:
