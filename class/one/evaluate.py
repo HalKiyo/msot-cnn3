@@ -15,7 +15,7 @@ def main():
     #---0. file init
     class_num = 10 
     epochs = 200 
-    descrete_mode = 'EFD' 
+    descrete_mode = 'EWD' 
     batch_size = 256 
     vsample = 1000 
     seed = 1 
@@ -31,10 +31,11 @@ def main():
     #---0.2 gradcam init
     grad_view_flag = False
     grad_box_flag = True
+    threshold = 0.6
     #---0.21 gradmean init
     gradmean_view_flag = True
-    gradmean_flag = "SameLabelFalse" # 4types of flags 
-    gradmean_label = 0 
+    gradmean_flag = "PredictionTrue" # 4types of flags 
+    gradmean_label = 7
     layer_name = 'conv2d_2' 
     #---0.3 validation init
     validation_view_flag = False
@@ -127,7 +128,7 @@ def main():
                 print(index)
             os.makedirs(heatmap_dir, exist_ok=True)
             np.save(heatmap_path, heatmap_arr)
-        box_gradcam(heatmap_arr, pred_val, y_val_one_hot, class_num=class_num)
+        box_gradcam(heatmap_arr, pred_val, y_val_one_hot, threshold=threshold, class_num=class_num)
 
     #---4.2 heatmap average of gradcam
         if gradmean_view_flag is True:
@@ -151,7 +152,7 @@ def main():
                 # predicted label is the same
                 same_label_prediction = [] 
                 for ind, pr in enumerate(pred_val):
-                    if int(np.argmax(y)) == gradmean_label:
+                    if int(np.argmax(pr)) == gradmean_label:
                         same_label_prediction.append(ind)
                 indeces = same_label_prediction
                 print(f"gradmean result; sample: {len(indeces)}, label: {gradmean_label}, flag: {gradmean_flag}")

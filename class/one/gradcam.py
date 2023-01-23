@@ -69,10 +69,9 @@ def show_heatmap(heatmap):
     cbar = fig.colorbar(mat, ax=ax, orientation='horizontal')
     plt.show()
 
-def box_gradcam(heatmap, pred_class, label_class, class_num=5):
+def box_gradcam(heatmap, pred_class, label_class, threshold=0.6, class_num=5):
     # heatmap(1000, 24, 72) 
     # box true -> number of pixel which exceeds 0.6 color if prediction is correct
-    threshold = 0.9
     colored_pixel = np.count_nonzero(heatmap >= threshold)
 
     true = {f"ture{i}, false{i}": [] for i in range(class_num)}
