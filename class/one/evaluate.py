@@ -31,6 +31,10 @@ def main():
     #---0.2 gradcam init
     grad_view_flag = False
     grad_box_flag = True
+    #---0.21 gradmean init
+    gradmean_view_flag = True
+    gradmean_flag = "SameLabelFalse" # 4types of flags 
+    gradmean_label = 0 
     layer_name = 'conv2d_2' 
     #---0.3 validation init
     validation_view_flag = False
@@ -107,23 +111,64 @@ def main():
                            lat=24, lon=72, class_num=class_num)
         show_heatmap(heatmap)
 
-    #---4. boxplot of gradcam 
+    #---4.1 boxplot of gradcam 
     if grad_box_flag is True:
         heatmap_dir = f"/docker/mnt/d/research/D2/cnn3/heatmap/class/{tors}-{tant}"
         heatmap_path = heatmap_dir + f"/class{class_num}_epoch{epochs}_batch{batch_size}.npy"
         if os.path.exists(heatmap_path) is True:
-            heatmap_arr = np.load(heatmap_arr)
+            heatmap_arr = np.load(heatmap_path)
         else:
-            heatmap_arr = np.empty((vsample, lat, lon))
+            heatmap_arr = np.empty((vsample, lat, lon)) # shape=(1000, 24, 72)
             for index, (pr, y) in enumerate(zip(pred_val, y_val_one_hot)):
                 preprocessed_image = image_preprocess(x_val, gradcam_index=index)
                 heatmap = grad_cam(model, preprocessed_image, y_val[index], layer_name,
                                    lat=24, lon=72, class_num=class_num)
-                heatmap_arr[index] = heatmap
+                heatmap_arr[index] = heatmap 
                 print(index)
             os.makedirs(heatmap_dir, exist_ok=True)
             np.save(heatmap_path, heatmap_arr)
         box_gradcam(heatmap_arr, pred_val, y_val_one_hot, class_num=class_num)
+
+    #---4.2 heatmap average of gradcam
+        if gradmean_view_flag is True:
+            if gradmean_flag == "PredictionTrue":
+                # predicted label is the same, prediction is true
+                prediction_true = []
+                for ind, (pr, y) in enumerate(zip(pred_val, y_val_one_hot)):
+                    if np.argmax(pr) == np.argmax(y) and int(np.argmax(y)) == gradmean_label:
+                        prediction_true.append(ind)
+                indeces = prediction_true
+                print(f"gradmean result; sample: {len(indeces)}, label: {gradmean_label}, flag: {gradmean_flag}")
+            elif gradmean_flag == "PredctionFalse":
+                # predicted label is the random, prediction is false
+                prediction_false = []
+                for ind, (pr, y) in enumerate(zip(pred_val, y_val_one_hot)):
+                    if np.argmax(pr) != np.argmax(y) and int(np.argmax(y)) == gradmean_label:
+                        prediction_false.append(ind)
+                indeces = prediction_false
+                print(f"gradmean result; sample: {len(indeces)}, label: {gradmean_label}, flag: {gradmean_flag}")
+            elif gradmean_flag == "SameLabelPrediction":
+                # predicted label is the same
+                same_label_prediction = [] 
+                for ind, pr in enumerate(pred_val):
+                    if int(np.argmax(y)) == gradmean_label:
+                        same_label_prediction.append(ind)
+                indeces = same_label_prediction
+                print(f"gradmean result; sample: {len(indeces)}, label: {gradmean_label}, flag: {gradmean_flag}")
+            elif gradmean_flag == "SameLabelFalse":
+                # predicte label is the same and predition is false
+                same_label_false = [] 
+                for ind, (pr, y) in enumerate(zip(pred_val, y_val_one_hot)):
+                    if np.argmax(pr) != np.argmax(y) and int(np.argmax(pr)) == gradmean_label:
+                        same_label_false.append(ind)
+                indeces = same_label_false
+                print(f"gradmean result; sample: {len(indeces)}, label: {gradmean_label}, flag: {gradmean_flag}")
+            else:
+                print("error gradmean_flag is wrong")
+                exit()
+
+            heatmap_mean = heatmap_arr[indeces].mean(axis=0)
+            show_heatmap(heatmap_mean)
 
 
 if __name__ == '__main__':
