@@ -12,7 +12,7 @@ from gradcam import image_preprocess, grad_cam, show_heatmap, average_heatmap
 
 def main():
     #---0. initial setting
-    train_flag = False
+    train_flag = True
     epochs = 100
     batch_size = 256
     vsample = 1000
@@ -46,7 +46,9 @@ def main():
     metrics = tf.keras.metrics.MeanSquaredError()
     model = build_model((lat, lon, var_num))
     model.compile(optimizer=optimizer, loss=loss , metrics=[metrics])
-    weights_path = f"/docker/mnt/d/research/D2/cnn3/weights/{tors}-{tant}.h5"
+    weights_dir = f"/docker/mnt/d/research/D2/cnn3/weights/continuous/{tors}-{tant}"
+    os.makedirs(weights_dir, exist_ok=True) # create weight directory
+    weights_path = weights_dir + f"/epoch{epochs}_batch{batch_size}_seed{seed}.h5"
     if os.path.exists(weights_path) is True and train_flag is False:
         model.load_weights(weights_path)
     elif os.path.exists(weights_path) is False and train_flag is False:
