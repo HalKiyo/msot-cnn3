@@ -22,8 +22,8 @@ def image_preprocess(x_val, gradcam_index=0):
     return x
 
 def grad_cam(input_model, preprocessed_x_val, y_val, layer_name, lat=24, lon=72):
-    # preprocessed_x_val is expected to be a image with depth (lat, lon, variables_num)
-    # y_val is expected to be actual label (1,)
+    # preprocessed_x_val is expected to be a image with depth = (lat, lon, variables_num)
+    # y_val is expected to be a actual label = (1,)
     pred_val = input_model.output[0]
     y_val = tf.convert_to_tensor(y_val.astype(np.float32))
     loss = K.mean(K.square(pred_val - y_val))

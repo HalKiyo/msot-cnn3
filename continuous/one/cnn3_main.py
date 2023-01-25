@@ -62,13 +62,11 @@ def main():
     plt.scatter(pred, y_val, color='pink')
     plt.plot(np.linspace(-1, 1, 100), np.linspace(-1, 1, 100), color='green')
     plt.title(f"{corr}")
-    plt.show()
+    #plt.show()
 
     #---4. gradcam
-    gradcam_index = 700#MODIFALABLE
-    layer_name = 'conv2d_2'#MODIFALABLE
     preprocessed_image = image_preprocess(x_val, gradcam_index)
-    heatmap = grad_cam(model, preprocessed_image, y_val, layer_name, lat=lat, lon=lon)
+    heatmap = grad_cam(model, preprocessed_image, y_val[gradcam_index], layer_name, lat=lat, lon=lon)
     show_heatmap(heatmap)
     #average_heatmap(x_val, model, y_val, layer_name, lat=lat, lon=lon, num=300)
 
