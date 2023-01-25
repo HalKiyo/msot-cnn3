@@ -71,34 +71,34 @@ def average_heatmap(x_val, input_model, y_val, layer_name, lat=24, lon=72, num=3
     saliency = saliency.mean(axis=0)
     show_heatmap(saliency)
 
-def box_gradcam(heatmap, pred_class, label_class, threshold=0.6, class_num=5):
+def box_gradcam(heatmap, prediction, threshold=0.7, criteria=0.4):
     # heatmap(1000, 24, 72) 
+    # criteria: any positive value between min and max of prediction
+    # criteria <groupA< max, min <groupB< -criteria, -criteria< groupC < criteria
     # box true -> number of pixel which exceeds 0.6 color if prediction is correct
-    colored_pixel = np.count_nonzero(heatmap >= threshold)
 
-    true = {f"ture{i}, false{i}": [] for i in range(class_num)}
-    false = {f"ture{i}, false{i}": [] for i in range(class_num)}
+    label_lst = ['low', 'middle', 'high']
+    count_dct = {f"{i}": [] for i in label_lst}
 
     for i in range(len(heatmap)):
         colored_pixel = np.count_nonzero(heatmap[i] >= threshold)
-        prediction = np.argmax(pred_class[i])
-        label = np.argmax(label_class[i])
-        if prediction == label:
-            true[f"ture{int(label)}, false{int(label)}"].append(colored_pixel)
-        else:
-            false[f"ture{int(label)}, false{int(label)}"].append(colored_pixel)
+        if prediction[i] < -criteria:
+            count_dct['low'].append(colored_pixel)
+        elif criteria < prediction[i]:
+            count_dct['high'].append(colored_pixel)
+        elif -criteria < prediction[i] < criteria:
+            count_dct['middle'].append(colored_pixel)
 
-    label = np.arange(class_num)
-    xs = {key:val for key, val in zip(true.keys(), label)}
-    shift = 0.1
+    xs = {key:val for key, val in zip(count_dct.keys(), label_lst)}
+    cmap = ['y', 'g', 'b']
 
     fig, ax = plt.subplots()
-    for key in true.keys():
-        ax.boxplot(true[key], positions=[xs[key] - shift], boxprops=dict(color='b'),
+    for i, key in enumerate(count_dct.keys()):
+        ax.boxplot(count_dct[key], 
+                   positions=[xs[key]], 
+                   boxprops=dict(color=cmap[i]),
                    showfliers=False)
-        ax.boxplot(false[key], positions=[xs[key] + shift], boxprops=dict(color='r'),
-                   showfliers=False)
-    ax.set_xticks(range(class_num))
-    ax.set_xticklabels(true.keys())
+    ax.set_xticks(range(len(label_lst)))
+    ax.set_xticklabels(count_dct.keys())
     plt.show()
 
