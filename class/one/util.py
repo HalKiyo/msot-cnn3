@@ -14,7 +14,7 @@ def mask(x):
     f = ma.filled(z, 0)
     return f
 
-def shuffle(indata, outdata, vsample, seed):
+def shuffle(indata, outdata, vsample, seed=1):
     rng = np.random.default_rng(seed)
 
     outdata = outdata.reshape(42, 165)
