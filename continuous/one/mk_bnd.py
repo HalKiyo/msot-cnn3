@@ -9,7 +9,6 @@ def main():
     tors = 'predictors_coarse_std_Apr_msot'
     tant = 'pr_1x1_std_MJJASO_one'
     workdir = "/docker/mnt/d/research/D2/cnn3"
-    val_path = workdir + f"/train_val/continuous/{tors}-{tant}.pickle"
     # For thailand in continuous mode, you need download it from xeno server
     one_path = workdir + f"/predictant/continuous/{tant}.npy"
     bnd_spath = workdir + f"/boundaries/{tant}_{discrete_mode}_{class_num}.npy"
