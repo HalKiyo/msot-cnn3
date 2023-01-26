@@ -48,3 +48,6 @@ def draw_val(val_pred, val_label, class_num=5):
            color='darkslategray', width=width, linewidth=linewidth, align=align)
     plt.show()
 
+    u, counts = np.unique(val_label, return_counts=True)
+    return u, counts
+
