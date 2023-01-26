@@ -2,13 +2,10 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import warnings
 warnings.filterwarnings('ignore')
-import pickle
 import numpy as np
-import tensorflow as tf
 
-from model3 import build_model
-from preprocess import load, shuffle, mask
 from gradcam import grad_cam, show_heatmap, image_preprocess, box_gradcam
+from class_conversion import open_pickle, prediction, to_class
 
 def main():
     #---0. file init
