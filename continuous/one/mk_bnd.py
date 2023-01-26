@@ -4,7 +4,7 @@ from view import draw_distribution
 def main():
     # init
     save_flag = False
-    class_num = 5
+    class_num = 10
     discrete_mode = 'EWD'
     tors = 'predictors_coarse_std_Apr_msot'
     tant = 'pr_1x1_std_MJJASO_one'
@@ -77,7 +77,7 @@ def one_EWD(pr_flat, class_num=5):
         bnd_pred.append(origin)
         bnd_pred.append(-origin)
 
-    if class_num == 4 or 5:
+    if class_num == 4 or class_num == 5:
         bnd_show.append(origin+dx)
         bnd_show.append(-origin-dx)
         bnd_pred.append(origin+dx)
