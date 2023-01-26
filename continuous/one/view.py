@@ -4,7 +4,7 @@ import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 
-def draw_distribution(data, bnd_lst):
+def draw_distribution(data, bnd):
     """
     data shape must be one dimension,
     if one has (42, 165) shape, convert it to 42*165
@@ -13,7 +13,7 @@ def draw_distribution(data, bnd_lst):
     fig = plt.figure()
     ax = plt.subplot()
     ax.hist(data, bins=1000, alpha=.5, color='darkcyan')
-    for i in bnd_lst:
-        ax.axvline(i, umin=0, ymax=len(data), alpha=.8, color='salmon')
+    for i in bnd:
+        ax.axvline(i, ymin=0, ymax=len(data), alpha=.8, color='salmon')
     plt.show()
 
