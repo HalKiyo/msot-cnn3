@@ -8,7 +8,6 @@ from gradcam import grad_cam, show_heatmap, image_preprocess, box_gradcam
 from class_conversion import open_pickle, prediction, to_class
 from view import draw_val
 
-
 class evaluate():
     def __init__(self):
         # file 
@@ -64,6 +63,15 @@ class evaluate():
         print(f"class_label: {class_label} \ncounts: {counts}")
 
 # 3. What to show: individual gradcam, boxplot of gradcam, heatmap average of gradcam
+    def individual_gradcam(self, pred, y, true_index=0, false_index=0)
+        if prob_flag is True:
+            gradcam_index = true_lst[true_index]
+        else:
+            gradcam_index = false_lst[false_index]
+        preprocessed_image = image_preprocess(x_val, gradcam_index=gradcam_index)
+        heatmap = grad_cam(model, preprocessed_image, y_val[gradcam_index], layer_name,
+                           lat=24, lon=72, class_num=class_num)
+        show_heatmap(heatmap)
 
 
 def main():
