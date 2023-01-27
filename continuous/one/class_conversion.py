@@ -56,11 +56,6 @@ def mk_true_false_list(pred_class, y_class):
 
 def print_acc(true_lst, false_lst, class_num=5):
     class_label = [i for i in range(class_num)]
-    """
-    for i in class_label:
-        if true_lst() != i:
-            true_count.insert(i, 0)
-    """
     true_count = [true_lst.count(i) for i in class_label]
     false_count = [false_lst.count(i) for i in class_label]
 
@@ -68,11 +63,11 @@ def print_acc(true_lst, false_lst, class_num=5):
     for i in range(class_num):
         samplesize = true_count[i] + false_count[i]
         if samplesize == 0:
-            print(f"class{i} has no-sample")
+            acc_class.append(np.nan)
         else:
             acc = true_count[i] / samplesize
-            acc_class.append(acc)
-    acc_mean = np.mean(acc_class)
+            acc_class.append(round(acc, 3))
+    acc_mean = np.nanmean(acc_class)
 
     print(f"true_count: {true_count}")
     print(f"false_count: {false_count}")
