@@ -120,7 +120,7 @@ def main():
             heatmap_arr = np.load(heatmap_path)
         else:
             heatmap_arr = np.empty((vsample, lat, lon)) # shape=(1000, 24, 72)
-            for index, (pr, y) in enumerate(zip(pred_val, y_val_one_hot)):
+            for index in range(len(pred_val)):
                 preprocessed_image = image_preprocess(x_val, gradcam_index=index)
                 heatmap = grad_cam(model, preprocessed_image, y_val[index], layer_name,
                                    lat=24, lon=72, class_num=class_num)
