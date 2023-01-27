@@ -8,6 +8,7 @@ from gradcam import grad_cam, show_heatmap, image_preprocess, box_gradcam_contin
 from class_conversion import open_pickle, init_model, prediction, to_class, mk_true_false_list, print_acc
 from view import draw_val
 
+
 class evaluate():
     def __init__(self):
         # file 
@@ -49,8 +50,7 @@ class evaluate():
         # gradcam-mean
         self. gradmean_view_flag = False
         self.gradmean_flag = "PredictionTure" # PredictionTrue, PredictionFalse, SameLabelPrediction, SameLabelFalse
-        self.gradmean_label = 7
-# view_flag bool must be added in main function
+        self.gradmean_label = 7 # what's this?
 
     def load_pred(self):
         x_val, y_val = open_pickle(self.val_path)
@@ -88,23 +88,7 @@ class evaluate():
         heatmap = grad_cam(model, preprocessed_image, y[selected_index], self.layer_name, lat=self.lat, lon=self.lon)
         show_heatmap(heatmap)
 
-    def gradbox_converted(self, x_val, pred_class, y_class):
-        # pred and y must be class form
-        model = init_model(self.weights_path, lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
-        if os.path.exists(self.heatmap_converted_path) is True:
-            heatmap_arr = np.load(self.heatmap_converted_path)
-        else:
-            heatmap_arr = np.empty((self.vsample, self.lat, self.lon)) # shape=(1000, 24, 72)
-            for index in range(len(y_class)):
-                preprocessed_image = image_preprocess(x_val, gradcam_index=index)
-                heatmap = grad_cam(model, preprocessed_image, y_class[index], self.layer_name, lat=self.lat, lon=self.lon)
-                heatmap_arr[index] = heatmap 
-                print(index)
-            os.makedirs(self.heatmap_dir, exist_ok=True)
-            np.save(self.heatmap_converted_path, heatmap_arr)
-        box_gradcam_class(heatmap_arr, pred_class, y_class, threshold=self.threshold, class_num=self.class_num)
-
-    def gradbox_original(self, x_val, pred, y):
+    def mk_heatmap_original(self, x_val, y):
         # pred and y must be continuous number
         model = init_model(self.weights_path, lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
         if os.path.exists(self.heatmap_original_path) is True:
@@ -118,42 +102,64 @@ class evaluate():
                 print(index)
             os.makedirs(self.heatmap_dir, exist_ok=True)
             np.save(self.heatmap_original_path, heatmap_arr)
+        return heatmap_arr
+
+    def mk_heatmap_converted(self, x_val, y_class):
+        model = init_model(self.weights_path, lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
+        if os.path.exists(self.heatmap_converted_path) is True:
+            heatmap_arr = np.load(self.heatmap_converted_path)
+        else:
+            heatmap_arr = np.empty((self.vsample, self.lat, self.lon)) # shape=(1000, 24, 72)
+            for index in range(len(y_class)):
+                preprocessed_image = image_preprocess(x_val, gradcam_index=index)
+                heatmap = grad_cam(model, preprocessed_image, y_class[index], self.layer_name, lat=self.lat, lon=self.lon)
+                heatmap_arr[index] = heatmap 
+                print(index)
+            os.makedirs(self.heatmap_dir, exist_ok=True)
+            np.save(self.heatmap_converted_path, heatmap_arr)
+        return heatmap_arr
+
+    def gradbox_original(self, heatmap_arr, pred, y):
+        # pred and y must be continuous number
         box_gradcam_continuous(heatmap_arr, pred, threshold=self.threshold, criteria=self.criteria)
 
+    def gradbox_converted(self, heatmap_arr, pred_class, y_class):
+        # pred and y must be class form
+        box_gradcam_class(heatmap_arr, pred_class, y_class, threshold=self.threshold, class_num=self.class_num)
 
-    def gradmean_converted(self, heatmap_arr, pr_class, y_class):
+    def gradmean_converted(self, heatmap_arr, pred_class, y_class):
         if self.gradmean_flag == "PredictionTrue":
             # predicted label is the same, prediction is true
             prediction_true = []
-            for ind in len(y_class):
-                if np.argmax(pr) == np.argmax(y) and int(np.argmax(y)) == gradmean_label:
+            for ind, pr, y in enumerate(zip(pred_class, y_class)):
+                if  pr == y and y == self.gradmean_label:
                     prediction_true.append(ind)
             indeces = prediction_true
-            print(f"gradmean result; sample: {len(indeces)}, label: {gradmean_label}, flag: {self.gradmean_flag}")
+            print(f"gradmean result; sample: {len(indeces)}, label: {self.gradmean_label}, flag: {self.gradmean_flag}")
         elif self.gradmean_flag == "PredctionFalse":
             # predicted label is the random, prediction is false
             prediction_false = []
-            for ind, (pr, y) in enumerate(zip(pred_val, y_val_one_hot)):
-                if np.argmax(pr) != np.argmax(y) and int(np.argmax(y)) == gradmean_label:
+            for ind, pr, y in enumerate(zip(pred_class, y_class)):
+                if  pr != y and y == self.gradmean_label:
                     prediction_false.append(ind)
             indeces = prediction_false
-            print(f"gradmean result; sample: {len(indeces)}, label: {gradmean_label}, flag: {self.gradmean_flag}")
+            print(f"gradmean result; sample: {len(indeces)}, label: {self.gradmean_label}, flag: {self.gradmean_flag}")
         elif self.gradmean_flag == "SameLabelPrediction":
             # predicted label is the same
             same_label_prediction = [] 
-            for ind, pr in enumerate(pred_val):
-                if int(np.argmax(pr)) == gradmean_label:
+            for ind, pr in enumerate(pred_class):
+                if pr == self.gradmean_label:
                     same_label_prediction.append(ind)
             indeces = same_label_prediction
-            print(f"gradmean result; sample: {len(indeces)}, label: {gradmean_label}, flag: {self.gradmean_flag}")
+            print(f"gradmean result; sample: {len(indeces)}, label: {self.gradmean_label}, flag: {self.gradmean_flag}")
         elif self.gradmean_flag == "SameLabelFalse":
             # predicte label is the same and predition is false
             same_label_false = [] 
-            for ind, (pr, y) in enumerate(zip(pred_val, y_val_one_hot)):
-                if np.argmax(pr) != np.argmax(y) and int(np.argmax(pr)) == gradmean_label:
+            for ind, (pr, y) in enumerate(zip(pred_class, y_class)):
+                if  pr != y and pr == self.gradmean_label:
                     same_label_false.append(ind)
             indeces = same_label_false
-            print(f"gradmean result; sample: {len(indeces)}, label: {gradmean_label}, flag: {self.gradmean_flag}")
+            print(f"gradmean result; sample: {len(indeces)}, label: {self.gradmean_label}, flag: {self.gradmean_flag}")
         else:
             print("error: gradmean_flag is wrong")
             exit()
@@ -164,4 +170,6 @@ class evaluate():
 
 if __name__ == '__main__':
     # view_flag bool must be added in main function
+    EVAL = evaluate()
+    EVAL.load_pred()
 
