@@ -4,8 +4,8 @@ import warnings
 warnings.filterwarnings('ignore')
 import numpy as np
 
-from gradcam import grad_cam, show_heatmap, image_preprocess, box_gradcam
-from class_conversion import open_pickle, init_model, prediction, to_class
+from gradcam import grad_cam, show_heatmap, image_preprocess, box_gradcam_continuous, box_gradcam_class
+from class_conversion import open_pickle, init_model, prediction, to_class, mk_true_false_list, print_acc
 from view import draw_val
 
 class evaluate():
@@ -17,14 +17,19 @@ class evaluate():
         self.batch_size = 256
         self.seed = 1
         self.var_num = 4
+        self.vsample = 1000
         # path
+        # val_path and weights_path doesn't need {discrete_mode} and {class_num}
+        # since they are continuous prediction
         self.tors = 'predictors_coarse_std_Apr_msot'
         self.tant = 'pr_1x1_std_MJJASO_one'
         self.workdir = "/docker/mnt/d/research/D2/cnn3"
         self.val_path = self.workdir + f"/train_val/continuous/{self.tors}-{self.tant}.pickle"
-        self.bnd_path = self.workdir + f"/boundaries/{self.tant}_{self.discrete_mode}_{self.class_num}.npy"
         self.weights_dir = self.workdir + f"/weights/continuous/{self.tors}-{self.tant}"
         self.weights_path = self.weights_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.h5"
+        self.bnd_path = self.workdir + f"/boundaries/{self.tant}_{self.discrete_mode}_{self.class_num}.npy"
+        self.heatmap_dir = self.workdir + f"/heatmap/continuous/{self.tors}-{self.tant}_{self.discrete_mode}_{self.class_num}"
+        self.heatmap_path = self.heatmap_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
         # model
         self.lat, self.lon = 24, 72
         self.lr = 0.0001
@@ -54,47 +59,51 @@ class evaluate():
         y_class = to_class(y_val.reshape(-1), bnd, print_flag=True)
         return pred_class, y_class
 
-    def validation(self, pred, y):
-        for validation_label in range(self.class_num):
-            print(f"validation_label={validation_label}")
-            wrong = []
+    def check_false_by_label(self, pred, y):
+        #true_lst, false_lst = mk_true_false_list(pred, y)
+        false_dct = {f"{i}": [] for i in range(self.class_num)}
+        for target_label in range(self.class_num):
+            print(f"target_label={target_label}")
             for i, j in zip(pred, y):
-                if i != j and j == validation_label:
-                    wrong.append(i)
-            print(wrong)
+                if i != j and j == target_label:
+                    false_dct[f"{j}"].append(i)
+            print(false_dct[f"{j}"])
+        return false_dct
 
     def ture_false_bar(self, pred, y):
-        class_label, counts = draw_val(pred, y, class_num=self.class_num)
-        print(f"class_label: {class_label} \ncounts: {counts}")
+        true_lst, false_lst = mk_true_false_list(pred, y)
+        print_acc(true_lst, false_lst, class_num=self.class_num)
+        draw_val(true_lst, false_lst, class_num=self.class_num)
 
-# 3. What to show: individual gradcam, boxplot of gradcam, heatmap average of gradcam
-# true_lst and false_lst must be make in other function
-    def individual_gradcam(self, pred, y, true_index=0, false_index=0)
-        if prob_flag is True:
-            gradcam_index = true_lst[true_index]
+    def individual_gradcam(self, x_val, pred, y, true_index=0, false_index=0):
+        true_lst, false_lst = mk_true_false_list(pred, y)
+        if self.true_false_bool is True:
+            selected_index = true_lst[true_index]
         else:
-            gradcam_index = false_lst[false_index]
-        preprocessed_image = image_preprocess(x_val, gradcam_index=gradcam_index)
-        heatmap = grad_cam(model, preprocessed_image, y_val[gradcam_index], layer_name,
-                           lat=24, lon=72, class_num=class_num)
+            selected_index = false_lst[false_index]
+        preprocessed_image = image_preprocess(x_val, gradcam_index=selected_index)
+        model = init_model(self.weights_path, lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
+        heatmap = grad_cam(model, preprocessed_image, y[selected_index], self.layer_name, lat=self.lat, lon=self.lon)
         show_heatmap(heatmap)
+
+    def box_gradcam(self, x_val, pred, y):
+        model = init_model(self.weights_path, lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
+        if os.path.exists(self.heatmap_path) is True:
+            heatmap_arr = np.load(self.heatmap_path)
+        else:
+            heatmap_arr = np.empty((self.vsample, self.lat, self.lon)) # shape=(1000, 24, 72)
+            for index in range(len(y)):
+                preprocessed_image = image_preprocess(x_val, gradcam_index=index)
+                heatmap = grad_cam(model, preprocessed_image, y[index], self.layer_name, lat=self.lat, lon=self.lon)
+                heatmap_arr[index] = heatmap 
+                print(index)
+            os.makedirs(self.heatmap_dir, exist_ok=True)
+            np.save(self.heatmap_path, heatmap_arr)
+        box_gradcam_class(heatmap_arr, pred, y, threshold=self.threshold, class_num=self.class_num)
+
 
 
 def main():
-    #---3. true/false barplot
-    if validation_view_flag is True:
-
-    #---4. individual gradcam
-    if grad_view_flag is True:
-        if prob_flag is True:
-            gradcam_index = true_lst[true_index]
-        else:
-            gradcam_index = false_lst[false_index]
-        preprocessed_image = image_preprocess(x_val, gradcam_index=gradcam_index)
-        heatmap = grad_cam(model, preprocessed_image, y_val[gradcam_index], layer_name,
-                           lat=24, lon=72, class_num=class_num)
-        show_heatmap(heatmap)
-
     #---4.1 boxplot of gradcam 
     if grad_box_flag is True:
         heatmap_dir = f"/docker/mnt/d/research/D2/cnn3/heatmap/class/{tors}-{tant}"

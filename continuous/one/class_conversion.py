@@ -77,8 +77,8 @@ def print_acc(true_lst, false_lst, class_num=5):
 
 if __name__ == '__main__':
     # init
-    class_num = 30
-    discrete_mode = 'EWD'
+    class_num = 10
+    discrete_mode = 'EFD'
     epochs = 100
     batch_size = 256
     seed = 1

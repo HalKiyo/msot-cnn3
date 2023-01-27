@@ -17,22 +17,13 @@ def draw_distribution(data, bnd):
         ax.axvline(i, ymin=0, ymax=len(data), alpha=.8, color='salmon')
     plt.show()
 
-def draw_val(val_pred, val_label, class_num=5):
+def draw_val(val_true, val_false, class_num=5):
     """
     np.argmax is not required
     since continuous prediction doesn't have one_hot_encoded label
     unlike class prediction model
     """
     val_list = [i for i in range(class_num)]
-
-    # count
-    val_true = []
-    val_false = []
-    for i, j in zip(val_pred, val_label):
-        if i == j:
-            val_true.append(j)
-        else:
-            val_false.append(j)
 
     true_count = [val_true.count(i) for i in val_list]
     false_count = [val_false.count(i) for i in val_list]
@@ -47,7 +38,4 @@ def draw_val(val_pred, val_label, class_num=5):
     ax.bar(val_list, false_count,
            color='darkslategray', width=width, linewidth=linewidth, align=align)
     plt.show()
-
-    u, counts = np.unique(val_label, return_counts=True)
-    return u, counts
 

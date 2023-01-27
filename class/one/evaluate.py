@@ -115,7 +115,7 @@ def main():
     #---4.1 boxplot of gradcam 
     if grad_box_flag is True:
         heatmap_dir = f"/docker/mnt/d/research/D2/cnn3/heatmap/class/{tors}-{tant}"
-        heatmap_path = heatmap_dir + f"/class{class_num}_epoch{epochs}_batch{batch_size}.npy"
+        heatmap_path = heatmap_dir + f"/epoch{epochs}_batch{batch_size}_sedd{seed}.npy"
         if os.path.exists(heatmap_path) is True:
             heatmap_arr = np.load(heatmap_path)
         else:
