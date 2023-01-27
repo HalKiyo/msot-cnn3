@@ -5,7 +5,7 @@ warnings.filterwarnings('ignore')
 import numpy as np
 
 from gradcam import grad_cam, show_heatmap, image_preprocess, box_gradcam
-from class_conversion import open_pickle, prediction, to_class
+from class_conversion import open_pickle, init_model, prediction, to_class
 from view import draw_val
 
 class evaluate():
@@ -33,18 +33,23 @@ class evaluate():
         # gradcam
         self.grad_view_flag = False
         self.layer_name = 'conv2d_2'
+        self.true_false_bool = True
+        self.false_index = 0
+        self.true_index = 0
         # gradcam-box
-        self.grad_box_flag = True
+        self.grad_box_view_flag = True
         self.threshold = 0.6
         # gradcam-mean
-        self. gradmean_view_flag = True
+        self. gradmean_view_flag = False
         self.gradmean_flag = "PredictionTure" # PredictionTrue, PredictionFalse, SameLabelPrediction, SameLabelFalse
         self.gradmean_label = 7
+# view_flag bool must be added in main function
 
     def load_pred(self):
         x_val, y_val = open_pickle(self.val_path)
         bnd = np.load(self.bnd_path)
-        pred = prediction(x_val, self.weights_path, lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
+        model = init_model(self.weights_path, lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
+        pred = prediction(model, x_val)
         pred_class = to_class(pred.reshape(-1), bnd)
         y_class = to_class(y_val.reshape(-1), bnd, print_flag=True)
         return pred_class, y_class
@@ -63,6 +68,7 @@ class evaluate():
         print(f"class_label: {class_label} \ncounts: {counts}")
 
 # 3. What to show: individual gradcam, boxplot of gradcam, heatmap average of gradcam
+# true_lst and false_lst must be make in other function
     def individual_gradcam(self, pred, y, true_index=0, false_index=0)
         if prob_flag is True:
             gradcam_index = true_lst[true_index]

@@ -39,12 +39,51 @@ def to_class(pr_flat, bnd, print_flag=False):
         print(f"count: {counts}")
     return pr_class # pr_class is flattend(1D)
 
+def mk_true_false_list(pred_class, y_class):
+    """
+    np.argmax is not required
+    since continuous prediction doesn't have one_hot_encoded label
+    unlike class prediction model
+    """
+    true_lst = []
+    false_lst = []
+    for i, j in zip(pred_class, y_class):
+        if i == j:
+            true_lst.append(j)
+        else:
+            false_lst.append(j)
+    return true_lst, false_lst
+
+def print_acc(true_lst, false_lst, class_num=5):
+    class_label = [i for i in range(class_num)]
+    """
+    for i in class_label:
+        if true_lst() != i:
+            true_count.insert(i, 0)
+    """
+    true_count = [true_lst.count(i) for i in class_label]
+    false_count = [false_lst.count(i) for i in class_label]
+
+    acc_class = []
+    for i in range(class_num):
+        samplesize = true_count[i] + false_count[i]
+        if samplesize == 0:
+            print(f"class{i} has no-sample")
+        else:
+            acc = true_count[i] / samplesize
+            acc_class.append(acc)
+    acc_mean = np.mean(acc_class)
+
+    print(f"true_count: {true_count}")
+    print(f"false_count: {false_count}")
+    print(f"acc_lst: {acc_class}")
+    print(f"acc_mean: {acc_mean}")
+
 
 if __name__ == '__main__':
     # init
-    save_flag = False
-    class_num = 5
-    discrete_mode = 'EFD'
+    class_num = 30
+    discrete_mode = 'EWD'
     epochs = 100
     batch_size = 256
     seed = 1
@@ -59,8 +98,10 @@ if __name__ == '__main__':
     # calculate
     x_val, y_val = open_pickle(val_path)
     bnd = np.load(bnd_path)
-    pred, model = prediction(x_val, weights_path)
-    model.summary()
+    model = init_model(weights_path)
+    pred = prediction(model, x_val)
     pred_class = to_class(pred.reshape(-1), bnd)
     y_class = to_class(y_val.reshape(-1), bnd, print_flag=True)
+    true_lst, false_lst = mk_true_false_list(pred_class, y_class)
+    print_acc(true_lst, false_lst, class_num=class_num)
 
