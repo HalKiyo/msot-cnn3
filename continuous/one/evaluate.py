@@ -13,7 +13,7 @@ class evaluate():
     def __init__(self):
         # file 
         self.class_num = 10
-        self.discrete_mode = 'EWD'
+        self.discrete_mode = 'EFD'
         self.epochs = 100
         self.batch_size = 256
         self.seed = 1
@@ -57,19 +57,19 @@ class evaluate():
         bnd = np.load(self.bnd_path)
         model = init_model(self.weights_path, lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
         pred = prediction(model, x_val)
-        pred_class = to_class(pred.reshape(-1), bnd)
-        y_class = to_class(y_val.reshape(-1), bnd, print_flag=True)
+        pred_class = to_class(pred.reshape(-1), bnd, print_flag=False)
+        y_class = to_class(y_val.reshape(-1), bnd, print_flag=False)
         return pred_class, y_class
 
     def check_false_by_label(self, pred, y):
-        #true_lst, false_lst = mk_true_false_list(pred, y)
+        true_lst, false_lst = mk_true_false_list(pred, y)
         false_dct = {f"{i}": [] for i in range(self.class_num)}
         for target_label in range(self.class_num):
             print(f"target_label={target_label}")
             for i, j in zip(pred, y):
-                if i != j and j == target_label:
-                    false_dct[f"{j}"].append(i)
-            print(false_dct[f"{j}"])
+                if int(i) != int(j) and int(j) == target_label:
+                    false_dct[f"{target_label}"].append(int(i))
+            print(false_dct[f"{target_label}"])
         return false_dct
 
     def ture_false_bar(self, pred, y):
@@ -171,5 +171,7 @@ class evaluate():
 if __name__ == '__main__':
     # view_flag bool must be added in main function
     EVAL = evaluate()
-    EVAL.load_pred()
+    pred_class, y_class = EVAL.load_pred()
+    EVAL.check_false_by_label(pred_class, y_class)
+    EVAL.ture_false_bar(pred_class, y_class)
 

@@ -36,6 +36,7 @@ def draw_val(val_true, val_false, class_num=5):
     ax.bar(val_list, true_count,
            color='darkslategray', width=width, linewidth=linewidth, align=align)
     ax.bar(val_list, false_count,
-           color='darkslategray', width=width, linewidth=linewidth, align=align)
+           bottom=true_count,
+           color='orange', width=width, linewidth=linewidth, align=align, alpha=.8)
     plt.show()
 
