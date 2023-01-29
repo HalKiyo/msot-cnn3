@@ -89,13 +89,14 @@ def box_gradcam_continuous(heatmap, prediction, threshold=0.7, criteria=0.4):
         elif -criteria < prediction[i] < criteria:
             count_dct['middle'].append(colored_pixel)
 
-    xs = {key:val for key, val in zip(count_dct.keys(), label_lst)}
+    label = np.arange(len(label_lst))
+    xs = {key:val for key, val in zip(count_dct.keys(), label)}
     cmap = ['y', 'g', 'b']
 
     fig, ax = plt.subplots()
     for i, key in enumerate(count_dct.keys()):
         ax.boxplot(count_dct[key], 
-                   positions=[xs[key]], 
+                   positions=[xs[key]],
                    boxprops=dict(color=cmap[i]),
                    showfliers=False)
     ax.set_xticks(range(len(label_lst)))
@@ -111,12 +112,12 @@ def box_gradcam_class(heatmap, pred_class, label_class, threshold=0.6, class_num
 
     for i in range(len(heatmap)):
         colored_pixel = np.count_nonzero(heatmap[i] >= threshold)
-        prediction = np.argmax(pred_class[i])
-        label = np.argmax(label_class[i])
+        prediction = int(pred_class[i])
+        label = int(label_class[i])
         if prediction == label:
-            true[f"ture{int(label)}, false{int(label)}"].append(colored_pixel)
+            true[f"ture{label}, false{label}"].append(colored_pixel)
         else:
-            false[f"ture{int(label)}, false{int(label)}"].append(colored_pixel)
+            false[f"ture{label}, false{label}"].append(colored_pixel)
 
     label = np.arange(class_num)
     xs = {key:val for key, val in zip(true.keys(), label)}

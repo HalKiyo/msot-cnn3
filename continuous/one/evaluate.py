@@ -37,6 +37,7 @@ class evaluate():
         self.lat, self.lon = 24, 72
         self.lr = 0.0001
         self.model = init_model(self.weights_path, lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
+
         # validation
         self.validation_view_flag = False
         # gradcam
@@ -50,9 +51,9 @@ class evaluate():
         self.threshold = 0.6 # for extent of importance map
         self.criteria = 0.4 # for continuous prediction
         # gradcam-mean
-        self. gradmean_view_flag = False
-        self.gradmean_option = "PredictionTure" # PredictionTrue, PredictionFalse, SameLabelPrediction, SameLabelFalse
-        self.gradmean_label = 7 # what's this?
+        self. gradmean_view_flag = True
+        self.gradmean_option = "PredictionTrue" # PredictionTrue, PredictionFalse, SameLabelPrediction, SameLabelFalse
+        self.gradmean_label = 9 # what's this? -> label of either pred_class or y_class
 
     def load_pred(self):
         x_val, y_val = open_pickle(self.val_path)
@@ -128,15 +129,15 @@ class evaluate():
         if self.gradmean_option== "PredictionTrue":
             # predicted label is the same, prediction is true
             prediction_true = []
-            for ind, pr, y in enumerate(zip(pred_class, y_class)):
+            for ind, (pr, y) in enumerate(zip(pred_class, y_class)):
                 if  pr == y and y == self.gradmean_label:
                     prediction_true.append(ind)
             indeces = prediction_true
             print(f"gradmean result; sample: {len(indeces)}, label: {self.gradmean_label}, flag: {self.gradmean_option}")
-        elif self.gradmean_option == "PredctionFalse":
+        elif self.gradmean_option == "PredictionFalse":
             # predicted label is the random, prediction is false
             prediction_false = []
-            for ind, pr, y in enumerate(zip(pred_class, y_class)):
+            for ind, (pr, y) in enumerate(zip(pred_class, y_class)):
                 if  pr != y and y == self.gradmean_label:
                     prediction_false.append(ind)
             indeces = prediction_false
@@ -169,14 +170,14 @@ if __name__ == '__main__':
     # view_flag bool must be added in main function
     EVAL = evaluate()
     x_val, y_val, pred, pred_class, y_class = EVAL.load_pred()
+    heatmap_arr_orginal = EVAL.mk_heatmap_original(x_val, y_val)
+    heatmap_arr_converted = EVAL.mk_heatmap_converted(x_val, y_class)
     if EVAL.validation_view_flag is True:
         false_dct = EVAL.check_false_by_label(pred_class, y_class)
         EVAL.ture_false_bar(pred_class, y_class)
     if EVAL.gradcam_view_flag is True:
         EVAL.gradcam_converted(x_val, pred_class, y_class)
     if EVAL.grad_box_view_flag is True:
-        heatmap_arr_orginal = EVAL.mk_heatmap_original(x_val, y_val)
-        heatmap_arr_converted = EVAL.mk_heatmap_converted(x_val, y_class)
         EVAL.gradbox_original(heatmap_arr_orginal, pred, y_val)
         EVAL.gradbox_converted(heatmap_arr_converted, pred_class, y_class)
     if EVAL.gradmean_view_flag is True:
