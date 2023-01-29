@@ -39,7 +39,7 @@ class evaluate():
         self.model = init_model(self.weights_path, lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
 
         # validation
-        self.validation_view_flag = False
+        self.true_false_bar_view_flag = False
         # gradcam
         self.gradcam_view_flag = False
         self.layer_name = 'conv2d_2'
@@ -170,10 +170,10 @@ if __name__ == '__main__':
     # view_flag bool must be added in main function
     EVAL = evaluate()
     x_val, y_val, pred, pred_class, y_class = EVAL.load_pred()
+    false_dct = EVAL.check_false_by_label(pred_class, y_class)
     heatmap_arr_orginal = EVAL.mk_heatmap_original(x_val, y_val)
     heatmap_arr_converted = EVAL.mk_heatmap_converted(x_val, y_class)
-    if EVAL.validation_view_flag is True:
-        false_dct = EVAL.check_false_by_label(pred_class, y_class)
+    if EVAL.true_false_bar_view_flag is True:
         EVAL.ture_false_bar(pred_class, y_class)
     if EVAL.gradcam_view_flag is True:
         EVAL.gradcam_converted(x_val, pred_class, y_class)
