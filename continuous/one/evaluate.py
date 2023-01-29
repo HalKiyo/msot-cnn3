@@ -33,8 +33,10 @@ class evaluate():
         self.heatmap_original_path = self.heatmap_dir + f"/ORIGINAL_{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
         self.heatmap_converted_path = self.heatmap_dir + f"/CONVERTED_{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
         # model
+        # init_model is allowed to be called once otherwise layer_name will be messed up
         self.lat, self.lon = 24, 72
         self.lr = 0.0001
+        self.model = init_model(self.weights_path, lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
         # validation
         self.validation_view_flag = False
         # gradcam
@@ -55,14 +57,12 @@ class evaluate():
     def load_pred(self):
         x_val, y_val = open_pickle(self.val_path)
         bnd = np.load(self.bnd_path)
-        model = init_model(self.weights_path, lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
-        pred = prediction(model, x_val)
+        pred = prediction(self.model, x_val)
         pred_class = to_class(pred.reshape(-1), bnd, print_flag=False)
         y_class = to_class(y_val.reshape(-1), bnd, print_flag=False)
-        return pred_class, y_class
+        return x_val, y_val, pred, pred_class, y_class
 
     def check_false_by_label(self, pred, y):
-        true_lst, false_lst = mk_true_false_list(pred, y)
         false_dct = {f"{i}": [] for i in range(self.class_num)}
         for target_label in range(self.class_num):
             print(f"target_label={target_label}")
@@ -77,27 +77,25 @@ class evaluate():
         print_acc(true_lst, false_lst, class_num=self.class_num)
         draw_val(true_lst, false_lst, class_num=self.class_num)
 
-    def individual_gradcam(self, x_val, pred, y, true_index=0, false_index=0):
+    def gradcam_converted(self, x_val, pred, y, true_index=0, false_index=0):
         true_lst, false_lst = mk_true_false_list(pred, y)
         if self.true_false_bool is True:
-            selected_index = true_lst[true_index]
+            selected_index = int(true_lst[true_index])
         else:
-            selected_index = false_lst[false_index]
+            selected_index = int(false_lst[false_index])
         preprocessed_image = image_preprocess(x_val, gradcam_index=selected_index)
-        model = init_model(self.weights_path, lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
-        heatmap = grad_cam(model, preprocessed_image, y[selected_index], self.layer_name, lat=self.lat, lon=self.lon)
+        heatmap = grad_cam(self.model, preprocessed_image, y[selected_index], self.layer_name, lat=self.lat, lon=self.lon)
         show_heatmap(heatmap)
 
     def mk_heatmap_original(self, x_val, y):
         # pred and y must be continuous number
-        model = init_model(self.weights_path, lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
         if os.path.exists(self.heatmap_original_path) is True:
             heatmap_arr = np.load(self.heatmap_original_path)
         else:
             heatmap_arr = np.empty((self.vsample, self.lat, self.lon)) # shape=(1000, 24, 72)
             for index in range(len(y)):
                 preprocessed_image = image_preprocess(x_val, gradcam_index=index)
-                heatmap = grad_cam(model, preprocessed_image, y[index], self.layer_name, lat=self.lat, lon=self.lon)
+                heatmap = grad_cam(self.model, preprocessed_image, y[index], self.layer_name, lat=self.lat, lon=self.lon)
                 heatmap_arr[index] = heatmap 
                 print(index)
             os.makedirs(self.heatmap_dir, exist_ok=True)
@@ -105,14 +103,13 @@ class evaluate():
         return heatmap_arr
 
     def mk_heatmap_converted(self, x_val, y_class):
-        model = init_model(self.weights_path, lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
         if os.path.exists(self.heatmap_converted_path) is True:
             heatmap_arr = np.load(self.heatmap_converted_path)
         else:
             heatmap_arr = np.empty((self.vsample, self.lat, self.lon)) # shape=(1000, 24, 72)
             for index in range(len(y_class)):
                 preprocessed_image = image_preprocess(x_val, gradcam_index=index)
-                heatmap = grad_cam(model, preprocessed_image, y_class[index], self.layer_name, lat=self.lat, lon=self.lon)
+                heatmap = grad_cam(self.model, preprocessed_image, y_class[index], self.layer_name, lat=self.lat, lon=self.lon)
                 heatmap_arr[index] = heatmap 
                 print(index)
             os.makedirs(self.heatmap_dir, exist_ok=True)
@@ -171,7 +168,12 @@ class evaluate():
 if __name__ == '__main__':
     # view_flag bool must be added in main function
     EVAL = evaluate()
-    pred_class, y_class = EVAL.load_pred()
+    x_val, y_val, pred, pred_class, y_class = EVAL.load_pred()
     EVAL.check_false_by_label(pred_class, y_class)
     EVAL.ture_false_bar(pred_class, y_class)
+    EVAL.gradcam_converted(x_val, pred_class, y_class)
+    heatmap_arr_orginal = EVAL.mk_heatmap_original(x_val, y_val)
+    heatmap_arr_converted = EVAL.mk_heatmap_converted(x_val, y_class)
+    EVAL.gradbox_original(heatmap_arr_orginal, pred, y_val)
+    EVAL.gradbox_converted(heatmap_arr_converted, pred_class, y_class)
 
