@@ -40,7 +40,7 @@ class evaluate():
         # validation
         self.validation_view_flag = False
         # gradcam
-        self.grad_view_flag = False
+        self.gradcam_view_flag = False
         self.layer_name = 'conv2d_2'
         self.true_false_bool = False
         self.false_index = 0
@@ -51,7 +51,7 @@ class evaluate():
         self.criteria = 0.4 # for continuous prediction
         # gradcam-mean
         self. gradmean_view_flag = False
-        self.gradmean_flag = "PredictionTure" # PredictionTrue, PredictionFalse, SameLabelPrediction, SameLabelFalse
+        self.gradmean_option = "PredictionTure" # PredictionTrue, PredictionFalse, SameLabelPrediction, SameLabelFalse
         self.gradmean_label = 7 # what's this?
 
     def load_pred(self):
@@ -77,14 +77,14 @@ class evaluate():
         print_acc(true_lst, false_lst, class_num=self.class_num)
         draw_val(true_lst, false_lst, class_num=self.class_num)
 
-    def gradcam_converted(self, x_val, pred, y, true_index=0, false_index=0):
-        true_lst, false_lst = mk_true_false_list(pred, y)
+    def gradcam_converted(self, x_val, pred_class, y_class, true_index=0, false_index=0):
+        true_lst, false_lst = mk_true_false_list(pred_class, y_class)
         if self.true_false_bool is True:
             selected_index = int(true_lst[true_index])
         else:
             selected_index = int(false_lst[false_index])
         preprocessed_image = image_preprocess(x_val, gradcam_index=selected_index)
-        heatmap = grad_cam(self.model, preprocessed_image, y[selected_index], self.layer_name, lat=self.lat, lon=self.lon)
+        heatmap = grad_cam(self.model, preprocessed_image, y_class[selected_index], self.layer_name, lat=self.lat, lon=self.lon)
         show_heatmap(heatmap)
 
     def mk_heatmap_original(self, x_val, y):
@@ -125,40 +125,40 @@ class evaluate():
         box_gradcam_class(heatmap_arr, pred_class, y_class, threshold=self.threshold, class_num=self.class_num)
 
     def gradmean_converted(self, heatmap_arr, pred_class, y_class):
-        if self.gradmean_flag == "PredictionTrue":
+        if self.gradmean_option== "PredictionTrue":
             # predicted label is the same, prediction is true
             prediction_true = []
             for ind, pr, y in enumerate(zip(pred_class, y_class)):
                 if  pr == y and y == self.gradmean_label:
                     prediction_true.append(ind)
             indeces = prediction_true
-            print(f"gradmean result; sample: {len(indeces)}, label: {self.gradmean_label}, flag: {self.gradmean_flag}")
-        elif self.gradmean_flag == "PredctionFalse":
+            print(f"gradmean result; sample: {len(indeces)}, label: {self.gradmean_label}, flag: {self.gradmean_option}")
+        elif self.gradmean_option == "PredctionFalse":
             # predicted label is the random, prediction is false
             prediction_false = []
             for ind, pr, y in enumerate(zip(pred_class, y_class)):
                 if  pr != y and y == self.gradmean_label:
                     prediction_false.append(ind)
             indeces = prediction_false
-            print(f"gradmean result; sample: {len(indeces)}, label: {self.gradmean_label}, flag: {self.gradmean_flag}")
-        elif self.gradmean_flag == "SameLabelPrediction":
+            print(f"gradmean result; sample: {len(indeces)}, label: {self.gradmean_label}, flag: {self.gradmean_option}")
+        elif self.gradmean_option == "SameLabelPrediction":
             # predicted label is the same
             same_label_prediction = [] 
             for ind, pr in enumerate(pred_class):
                 if pr == self.gradmean_label:
                     same_label_prediction.append(ind)
             indeces = same_label_prediction
-            print(f"gradmean result; sample: {len(indeces)}, label: {self.gradmean_label}, flag: {self.gradmean_flag}")
-        elif self.gradmean_flag == "SameLabelFalse":
+            print(f"gradmean result; sample: {len(indeces)}, label: {self.gradmean_label}, flag: {self.gradmean_option}")
+        elif self.gradmean_option == "SameLabelFalse":
             # predicte label is the same and predition is false
             same_label_false = [] 
             for ind, (pr, y) in enumerate(zip(pred_class, y_class)):
                 if  pr != y and pr == self.gradmean_label:
                     same_label_false.append(ind)
             indeces = same_label_false
-            print(f"gradmean result; sample: {len(indeces)}, label: {self.gradmean_label}, flag: {self.gradmean_flag}")
+            print(f"gradmean result; sample: {len(indeces)}, label: {self.gradmean_label}, flag: {self.gradmean_option}")
         else:
-            print("error: gradmean_flag is wrong")
+            print("error: gradmean_option is wrong")
             exit()
 
         heatmap_mean = heatmap_arr[indeces].mean(axis=0)
@@ -169,11 +169,16 @@ if __name__ == '__main__':
     # view_flag bool must be added in main function
     EVAL = evaluate()
     x_val, y_val, pred, pred_class, y_class = EVAL.load_pred()
-    EVAL.check_false_by_label(pred_class, y_class)
-    EVAL.ture_false_bar(pred_class, y_class)
-    EVAL.gradcam_converted(x_val, pred_class, y_class)
-    heatmap_arr_orginal = EVAL.mk_heatmap_original(x_val, y_val)
-    heatmap_arr_converted = EVAL.mk_heatmap_converted(x_val, y_class)
-    EVAL.gradbox_original(heatmap_arr_orginal, pred, y_val)
-    EVAL.gradbox_converted(heatmap_arr_converted, pred_class, y_class)
+    if EVAL.validation_view_flag is True:
+        false_dct = EVAL.check_false_by_label(pred_class, y_class)
+        EVAL.ture_false_bar(pred_class, y_class)
+    if EVAL.gradcam_view_flag is True:
+        EVAL.gradcam_converted(x_val, pred_class, y_class)
+    if EVAL.grad_box_view_flag is True:
+        heatmap_arr_orginal = EVAL.mk_heatmap_original(x_val, y_val)
+        heatmap_arr_converted = EVAL.mk_heatmap_converted(x_val, y_class)
+        EVAL.gradbox_original(heatmap_arr_orginal, pred, y_val)
+        EVAL.gradbox_converted(heatmap_arr_converted, pred_class, y_class)
+    if EVAL.gradmean_view_flag is True:
+        EVAL.gradmean_converted(heatmap_arr_converted, pred_class, y_class)
 
