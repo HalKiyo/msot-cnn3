@@ -13,27 +13,28 @@ from gradcam import grad_cam, show_heatmap, image_preprocess, box_gradcam
 
 def main():
     #---0. file init
-    class_num = 10 
+    class_num = 5
     epochs = 200 
-    descrete_mode = 'EWD' 
+    descrete_mode = 'EFD' 
     batch_size = 256 
     vsample = 1000 
     seed = 1 
     var_num = 4 
     #---0.1 prob init
-    prob_view_flag = False
+    prob_view_flag = True
     prob_flag = True #true prediction or false prediction
-    prob_label = 9 
-    false_index = 0 
+    prob_label = 0 
+    false_index = 3
     true_index = 0 
     #---0.11 box init
     box_flag = False
     #---0.2 gradcam init
     grad_view_flag = False
-    grad_box_flag = True
+    #---0.210 gradbox init
+    grad_box_view_flag = False
     threshold = 0.6
     #---0.21 gradmean init
-    gradmean_view_flag = True
+    gradmean_view_flag = False
     gradmean_flag = "PredictionTrue" # 4types of flags 
     gradmean_label = 7
     layer_name = 'conv2d_2' 
@@ -113,7 +114,7 @@ def main():
         show_heatmap(heatmap)
 
     #---4.1 boxplot of gradcam 
-    if grad_box_flag is True:
+    if grad_box_view_flag is True:
         heatmap_dir = f"/docker/mnt/d/research/D2/cnn3/heatmap/class/{tors}-{tant}"
         heatmap_path = heatmap_dir + f"/epoch{epochs}_batch{batch_size}_sedd{seed}.npy"
         if os.path.exists(heatmap_path) is True:
