@@ -13,7 +13,7 @@ from gradcam import grad_cam, show_heatmap, image_preprocess, box_gradcam
 
 def main():
     #---0. file init
-    class_num = 5
+    class_num = 30
     epochs = 200 
     descrete_mode = 'EFD' 
     batch_size = 256 
@@ -21,20 +21,20 @@ def main():
     seed = 1 
     var_num = 4 
     #---0.1 prob init
-    prob_view_flag = True
-    prob_flag = True #true prediction or false prediction
+    prob_view_flag = False
+    prob_flag = False #true prediction or false prediction
     prob_label = 0 
-    false_index = 3
+    false_index = 0
     true_index = 0 
     #---0.11 box init
     box_flag = False
     #---0.2 gradcam init
-    grad_view_flag = False
-    #---0.210 gradbox init
-    grad_box_view_flag = False
+    grad_view_flag = False # prob_flag must be True before asingning True here
+    #---0.210 gradbox init 
+    grad_box_view_flag = True 
     threshold = 0.6
     #---0.21 gradmean init
-    gradmean_view_flag = False
+    gradmean_view_flag = False# grad_box_view_flag must be True before asigning True here
     gradmean_flag = "PredictionTrue" # 4types of flags 
     gradmean_label = 7
     layer_name = 'conv2d_2' 
