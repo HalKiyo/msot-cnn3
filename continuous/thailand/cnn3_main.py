@@ -22,7 +22,8 @@ def main():
     else:
         print(f"train_flag is {train_flag}: not saved")
 
-    px.validation()
+    #px.validation()
+    px.show(val_index=3)
 
 class Pixel():
     def __init__(self):
