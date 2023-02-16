@@ -4,85 +4,103 @@ import warnings
 warnings.filterwarnings('ignore')
 import pickle
 import numpy as np
-import matplotlib.pyplot as plt
 import tensorflow as tf
-from preprocess import load, shuffle, mask
+
 from model3 import build_model
-from gradcam import image_preprocess, grad_cam, show_heatmap, average_heatmap
+from util import load, shuffle, mask
+from view import acc_map, show_map
 
 def main():
-    #---0. initial setting
-    train_flag = True
-    epochs = 100
-    batch_size = 256
-    vsample = 1000
-    seed = 1
-    lr = 0.0001
-    var_num = 4
-    gradcam_index = 700
-    layer_name = 'conv2d_2'
+    train_flag = False
 
-    #---1. dataset
-    tors = 'predictors_coarse_std_Apr_msot'
-    tant = 'pr_1x1_std_MJJASO_one'
-    savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous/{tors}-{tant}.pickle"
-    if os.path.exists(savefile) is True and train_flag is False:
-        with open(savefile, 'rb') as f:
-            data = pickle.load(f)
-        x_val, y_val = data['x_val'], data['y_val']
-    elif os.path.exists(savefile) is False and train_flag is False:
-        print(f"{savefile} is not found, change train_flag to True first")
-        exit()
-    else:
-        predictors, predictant = load(tors, tant)
-        x_train, y_train, x_val, y_val, train_dct, val_dct = shuffle(predictors, predictant, vsample)
-        x_train, x_val = mask(x_train), mask(x_val)
-        x_train, x_val = x_train.transpose(0,2,3,1), x_val.transpose(0,2,3,1)
-
-    #---2, training
-    lat, lon = 24, 72
-    optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
-    loss = tf.keras.losses.MeanSquaredError()
-    metrics = tf.keras.metrics.MeanSquaredError()
-    model = build_model((lat, lon, var_num))
-    model.compile(optimizer=optimizer, loss=loss , metrics=[metrics])
-    weights_dir = f"/docker/mnt/d/research/D2/cnn3/weights/continuous/{tors}-{tant}"
-    os.makedirs(weights_dir, exist_ok=True) # create weight directory
-    weights_path = weights_dir + f"/epoch{epochs}_batch{batch_size}_seed{seed}.h5"
-    if os.path.exists(weights_path) is True and train_flag is False:
-        model.load_weights(weights_path)
-    elif os.path.exists(weights_path) is False and train_flag is False:
-        print(f"{weights_path} is not found, change train_flag to True first")
-        exit()
-    else:
-        his = model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs)
-        #model.summary()
-
-    #---3, validation
-    pred = model.predict(x_val)[:,0]
-    corr = np.corrcoef(pred, y_val)[0,1]
-    plt.scatter(pred, y_val, color='pink')
-    plt.plot(np.linspace(-1, 1, 100), np.linspace(-1, 1, 100), color='green')
-    plt.title(f"{corr}")
-    #plt.show()
-
-    #---4. gradcam
-    preprocessed_image = image_preprocess(x_val, gradcam_index)
-    heatmap = grad_cam(model, preprocessed_image, y_val[gradcam_index], layer_name, lat=lat, lon=lon)
-    show_heatmap(heatmap)
-    #average_heatmap(x_val, model, y_val, layer_name, lat=lat, lon=lon, num=300)
-
-    #---5. save environment
+    px = Pixel()
     if train_flag is True:
-        model.save_weights(weights_path)
+        predictors, predictant = load(px.tors, px.tant)
+        px.training(*shuffle(predictors, predictant, px.vsample, px.seed))
+        print(f"{px.weights_dir}: SAVED")
+        print(f"{px.savefile}: SAVED")
+    else:
+        print(f"train_flag is {train_flag}: not saved")
+
+    px.validation()
+
+class Pixel():
+    def __init__(self):
+        self.epochs = 100
+        self.batch_size = 256
+        self.tors = 'predictors_coarse_std_Apr_msot'
+        self.tant = 'pr_1x1_std_MJJASO_thailand'
+        self.seed = 1
+        self.vsample = 1000
+        self.lat, self.lon= 24, 72
+        self.var_num = 4
+        self.lat_grid, self.lon_grid = 20, 20
+        self.grid_num = self.lat_grid * self.lon_grid
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
+        self.loss = tf.keras.losses.MeanSquaredError()
+        self.metrics = tf.keras.metrics.MeanSquaredError()
+        self.savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous/{self.tors}-{self.tant}.pickle"
+        self.weights_dir = f"/docker/mnt/d/research/D2/cnn3/weights/continuous/{self.tors}-{self.tant}"
+
+    def training(self, x_train, y_train, x_val, y_val, train_dct, val_dct):
+        x_train, x_val = mask(x_train), mask(x_val)
+        x_train, x_val = x_train.transpose(0, 2, 3, 1), x_val.transpose(0, 2, 3, 1)
+        y_train, y_val = y_train.reshape(len(y_train), self.grid_num), y_val.reshape(len(y_val), self.grid_num)
+        os.makedirs(self.weights_dir, exist_ok=True)
+        for i in range(self.grid_num):
+            y_train_px = y_train[:, i]
+            model = build_model((self.lat, self.lon, self.var_num))
+            model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+            his = model.fit(x_train, y_train_px, batch_size=self.batch_size, epochs=self.epochs)
+            weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
+            model.save_weights(weights_path)
         dct = {'x_train': x_train, 'y_train': y_train,
                'x_val': x_val, 'y_val': y_val,
                'train_dct': train_dct, 'val_dct': val_dct}
-        with open(savefile, 'wb') as f:
+        with open(self.savefile, 'wb') as f:
             pickle.dump(dct, f)
-        print(f"{savefile} and weights are saved")
-    else:
-        print(f"train_flag is {train_flag} not saved")
+
+    def validation(self):
+        with open(self.savefile, 'rb') as f:
+            data = pickle.load(f)
+        x_val, y_val = data['x_val'], data['y_val']
+        rmse = []
+        corr = []
+        rr = []
+        for i in range(self.grid_num):
+            y_val_px = y_val[:, i]
+            model = build_model((self.lat, self.lon, self.var_num))
+            model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+            weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
+            model.load_weights(weights_path)
+            result = model.evaluate(x_val, y_val_px)
+            rmse.append(round(result[1], 2))
+            corrcoef = np.corrcoef(pred, y_val[:, i])
+            corr.append
+            print(f"MeanSquaredError of pixel{i}: {result[1]}")
+        acc = np.array(acc)
+        acc = acc.reshape(self.lat_grid, self.lon_grid)
+        acc_map(acc)
+
+    def show(self, val_index=0):
+        with open(self.savefile, 'rb') as f:
+            data = pickle.load(f)
+        x_val, y_val = data['x_val'], data['y_val']
+        y_val_px = y_val[val_index].reshape(self.lat_grid, self.lon_grid)
+        show_map(y_val_px)
+
+        pred_lst = []
+        for i in range(self.grid_num):
+            model = build_model((self.lat, self.lon, self.var_num))
+            model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+            weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
+            model.load_weights(weights_path)
+            pred = model.predict(x_val)
+            result = pred[val_index]
+            pred_lst.append(result)
+        pred_arr = np.array(pred_lst)
+        pred_arr = pred_arr.reshape(self.lat_grid, self.lon_grid)
+        show_map(pred_arr)
 
 if __name__ == '__main__':
     main()

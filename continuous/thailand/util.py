@@ -14,10 +14,10 @@ def mask(x):
     f = ma.filled(z, 0)
     return f
 
-def shuffle(indata, outdata, vsample, seed=1, model_num=42, year_num=165):
+def shuffle(indata, outdata, vsample, seed=1, model_num=42, year_num=165, grid=20):
     rng = np.random.default_rng(seed)
 
-    outdata = outdata.reshape(model_num, year_num)
+    outdata = outdata.reshape(model_num, year_num, grid, grid)
     random_number = indata.shape[1]*indata.shape[2]
     random_index = rng.choice(random_number, random_number, replace=False)
 
