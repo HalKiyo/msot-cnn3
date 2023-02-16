@@ -33,7 +33,7 @@ def show_class(image, class_num=5, lat_grid=4, lon_grid=4):
     ax = plt.subplot(projection=projection)
     ax.coastlines()
     mat = ax.matshow(image,
-                     origin='uuper', 
+                     origin='uppur', 
                      extent=img_extent, 
                      transform=projection, 
                      norm=norm, 
