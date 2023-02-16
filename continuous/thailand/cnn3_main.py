@@ -64,6 +64,7 @@ class Pixel():
         with open(self.savefile, 'rb') as f:
             data = pickle.load(f)
         x_val, y_val = data['x_val'], data['y_val']
+
         rmse = []
         corr = []
         rr = []
@@ -73,14 +74,22 @@ class Pixel():
             model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
             weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
             model.load_weights(weights_path)
+
             result = model.evaluate(x_val, y_val_px)
             rmse.append(round(result[1], 2))
-            corrcoef = np.corrcoef(pred, y_val[:, i])
-            corr.append
-            print(f"MeanSquaredError of pixel{i}: {result[1]}")
-        acc = np.array(acc)
-        acc = acc.reshape(self.lat_grid, self.lon_grid)
-        acc_map(acc)
+
+            pred = model.predict(x_val)
+            corr_i = np.corrcoef(pred[:,0], y_val_px)
+            corr.append(np.round(corr_i[0,1], 2))
+
+            rr_i = corr_i**2
+            rr.append(np.round(rr_i, 2))
+
+            print(f"Correlation Coefficient of pixel{i}: {np.round(corr_i[0,1], 2)}")
+
+        corr = np.array(corr)
+        corr = corr.reshape(self.lat_grid, self.lon_grid)
+        acc_map(corr)
 
     def show(self, val_index=0):
         with open(self.savefile, 'rb') as f:
