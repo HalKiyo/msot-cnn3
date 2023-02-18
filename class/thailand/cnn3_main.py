@@ -12,12 +12,12 @@ from util import load, shuffle, mask
 from gradcam import grad_cam, show_heatmap, image_preprocess
 
 def main():
-    train_flag = False # modifiable
+    train_flag = True # modifiable
 
     px = Pixel()
     if train_flag is True:
         predictors, predictant = load(px.tors, px.tant)
-        px.training(*shuffle(predictors, predictant, px.vsample, px.seed))
+        px.training(*shuffle(predictors, predictant, px.vsample, px.seed, px.lat_grid, px.lon_grid))
         print(f"{px.weights_dir}: SAVED")
         print(f"{px.savefile}: SAVED")
     else:
@@ -30,16 +30,16 @@ def main():
 class Pixel():
     def __init__(self):
         self.class_num = 5
-        self.descrete_mode = 'EWD'
+        self.descrete_mode = 'EFD'
         self.epochs = 150
         self.batch_size = 256
         self.tors = 'predictors_coarse_std_Apr_msot'
-        self.tant = f"pr_5x5_coarse_std_MJJASO_thailand_{self.descrete_mode}_{self.class_num}"
+        self.tant = f"pr_1x1_std_MJJASO_thailand_{self.descrete_mode}_{self.class_num}"
         self.seed = 1
         self.vsample = 1000
         self.lat, self.lon = 24, 72
         self.var_num = 4
-        self.lat_grid, self.lon_grid = 4, 4
+        self.lat_grid, self.lon_grid = 20, 20
         self.grid_num = self.lat_grid*self.lon_grid 
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
         self.loss = tf.keras.losses.CategoricalCrossentropy()

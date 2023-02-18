@@ -15,6 +15,7 @@ def mask(x):
     return f
 
 def shuffle(indata, outdata, vsample, seed=1, model_num=42, year_num=165, grid=20):
+    # seedは乱数の初期化に該当する。seedを実行した後に発生する乱数の順番は一定になる特性がある
     rng = np.random.default_rng(seed)
 
     outdata = outdata.reshape(model_num, year_num, grid, grid)

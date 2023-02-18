@@ -10,14 +10,14 @@ def load(inkey, outkey):
 
 def mask(x):
     m = ma.masked_where(x>9999, x)
-    z = ma.masked_where(m==0, m) # = =
+    z = ma.masked_where(m==0, m)
     f = ma.filled(z, 0)
     return f
 
-def shuffle(indata, outdata, vsample, seed):
+def shuffle(indata, outdata, vsample, seed=1, lat_grid=4, lon_grid=4):
     rng = np.random.default_rng(seed)
 
-    outdata = outdata.reshape(42, 165, 4, 4)
+    outdata = outdata.reshape(42, 165, lat_grid, lon_grid)
     random_number = indata.shape[1]*indata.shape[2]
     random_index = rng.choice(random_number, random_number, replace=False)
 
