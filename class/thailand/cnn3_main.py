@@ -12,7 +12,7 @@ from util import load, shuffle, mask
 from gradcam import grad_cam, show_heatmap, image_preprocess
 
 def main():
-    train_flag = False # modifiable
+    train_flag = True # modifiable
 
     px = Pixel()
     if train_flag is True:
@@ -20,19 +20,19 @@ def main():
         px.training(*shuffle(predictors, predictant, px.vsample, px.seed, px.lat_grid, px.lon_grid))
         print(f"{px.weights_dir}: SAVED")
         print(f"{px.savefile}: SAVED")
+        px.validation()
     else:
         print(f"train_flag is {train_flag}: not saved")
 
-    px.validation()
     px.show(val_index=px.val_index)
-    px.label_dist_multigrid()
+    #px.label_dist_multigrid()
 
 class Pixel():
     def __init__(self):
-        self.val_index = 0
-        self.class_num = 5
+        self.val_index = 4
+        self.class_num = 30
         self.descrete_mode = 'EFD'
-        self.epochs = 150
+        self.epochs = 250
         self.batch_size = 256
         self.resolution = '1x1' # 1x1 or 5x5_coarse
         self.tors = 'predictors_coarse_std_Apr_msot'
@@ -49,7 +49,7 @@ class Pixel():
         self.savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/class/{self.tors}-{self.tant}.pickle"
         self.weights_dir = f"/docker/mnt/d/research/D2/cnn3/weights/class/{self.tors}-{self.tant}"
         self.pred_dir = f"/docker/mnt/d/research/D2/cnn3/result/class/thailand/{self.resolution}"
-        self.pred_path = self.pred_dir + f"/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_val{self.val_index}.npy"
+        self.pred_path = self.pred_dir + f"/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}.npy"
 
     def training(self, x_train, y_train, x_val, y_val, train_dct, val_dct):
         x_train, x_val = mask(x_train), mask(x_val)
@@ -83,13 +83,15 @@ class Pixel():
             model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
             weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
             model.load_weights(weights_path)
-            pred = model.predict(x_val)
+            pred = model.predict(x_val) # (400, 1000, 5)
             pred_lst.append(pred)
             result = model.evaluate(x_val, y_val_one_hot)
             acc.append(round(result[1], 2))
             print(f"CategoricalAccuracy of pixcel{i}: {result[1]}")
+
         pred_arr = np.array(pred_lst)
-        np.save(pred_arr, self.pred_path)
+        np.save(self.pred_path, pred_arr)
+
         acc = np.array(acc)
         acc = acc.reshape(self.lat_grid, self.lon_grid)
         view_accuracy(acc)
@@ -117,10 +119,13 @@ class Pixel():
         y_val_px = y_val[val_index].reshape(self.lat_grid, self.lon_grid)
         show_class(y_val_px, class_num=self.class_num)
 
+        pred_lst = []
         if os.path.exists(self.pred_path) is True:
             pred_arr = np.load(self.pred_path)
+            for i in range(self.grid_num):
+                label = np.argmax(pred_arr[i, val_index])
+                pred_lst.append(label)
         else:
-            pred_lst = []
             for i in range(self.grid_num):
                 model = build_model((self.lat, self.lon, self.var_num), self.class_num)
                 model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
@@ -130,9 +135,9 @@ class Pixel():
                 label = np.argmax(pred[val_index])
                 pred_lst.append(label)
                 print(f"pixcel{i}: {label}")
-            pred_arr = np.array(pred_lst)
-        pred_arr = pred_arr.reshape(self.lat_grid, self.lon_grid)
-        show_class(pred_arr, class_num=self.class_num)
+        pred_label = np.array(pred_lst)
+        pred_label = pred_label.reshape(self.lat_grid, self.lon_grid)
+        show_class(pred_label, class_num=self.class_num)
 
     def label_dist(self, px_index):
         with open(self.savefile, 'rb') as f:
@@ -172,7 +177,8 @@ class Pixel():
                 pred = model.predict(x_val)
                 pred_lst.append(pred)
                 y_val_lst.append(y_val_one_hot)
-        pred_arr = np.array(pred_lst).reshape(self.grid_num*self.vsample, self.class_num)
+            pred_arr = np.array(pred_lst)
+        pred_arr = pred_arr.reshape(self.grid_num*self.vsample, self.class_num)
         y_val_arr = np.array(y_val_lst).reshape(self.grid_num*self.vsample, self.class_num)
         class_label, counts = draw_val(pred_arr, y_val_arr, class_num=self.class_num)
         print(f"class_label: {class_label}\n" \
