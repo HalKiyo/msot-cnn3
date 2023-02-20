@@ -13,6 +13,14 @@ def build_model(input_shape, output_dim):
     model.add(layers.Dense(output_dim, activation='softmax'))
     return model
 
+def init_model(class_num=5, lat=24, lon=72, var_num=4, lr=0.0001):
+    optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
+    loss = tf.keras.losses.CategoricalCrossentropy()
+    metrics = tf.keras.metrics.CategoricalAccuracy()
+    model = build_model((lat, lon, var_num), class_num)
+    model.compile(optimizer=optimizer, loss=loss, metrics=[metrics])
+    return model
+
 if __name__ == '__main__':
     import os
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'

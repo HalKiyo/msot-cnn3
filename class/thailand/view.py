@@ -102,3 +102,38 @@ def view_accuracy(acc, lat_grid=4, lon_grid=4):
     cbar = fig.colorbar(mat, ax=ax)
     plt.show()
 
+def diff_bar(val_pred, val_label_onehot):
+    fig = plt.figure()
+    ax = plt.subplot()
+
+    width, linewidth, align = 0.5, 0.5, 'center'
+
+    true_count = []
+    false_count = []
+    for i, j in zip(val_pred, val_label_onehot):
+        if np.argmax(i) == np.argmax(j):
+            val_true.append(val_list[np.argmax(j)])
+        else:
+            val_false.append(val_list[np.argmax(j)])
+
+    # true
+    val_tcount = [val_true.count(j) for j in val_list]
+    ax.bar(val_list, val_tcount,
+           color='darkslategray', width=width, linewidth=linewidth, align=align)
+
+    # false
+    val_fcount = [val_false.count(j) for j in val_list]
+    ax.bar(val_list, val_fcount,
+           color='orange', bottom=val_tcount, width=width, linewidth=linewidth, align=align, alpha=.8)
+
+def pred_accuracy(true_count, false_count):
+    fig = plt.figure()
+    ax = plt.subplot()
+    print(true_count, false_count)
+    ax.barh(1, true_count, height=0.5, color='darkslategray', align='center', label='True')
+    ax.barh(1, false_count, left=true_count, height=0.5, color='orange', align='center', label='False')
+    ax.set_ylim(0,2)
+    ax.set_yticks([1.0], ['val'])
+    plt.legend()
+    plt.show()
+
