@@ -1,3 +1,4 @@
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers, models 
 
@@ -22,6 +23,12 @@ def init_model(weights_path, lat=24, lon=72, var_num=4, lr=0.0001):
     model.load_weights(weights_path)
     return model
 
-def prediction(model, x_val):
-    pred = model.predict(x_val)[:,0]
-    return pred
+def prediction(weights_path, pred_path, x_val, grid_num):
+    pred_lst = []
+    for i in range(grid_num):
+        model = init_model(weights_path)
+        pred = model.predict(x_val)
+        pred_lst.append(pred)
+    pred_arr = np.squeeze(np.array(pred_lst))
+    np.save(pred_path, pred_arr)
+    return pred_arr
