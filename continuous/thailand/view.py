@@ -40,4 +40,5 @@ def show_map(image, vmin=-1, vmax=1):
     plt.show()
 
 def draw_val():
+    pass
 

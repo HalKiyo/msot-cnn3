@@ -19,18 +19,20 @@ def main():
         px.training(*shuffle(predictors, predictant, px.vsample, px.seed))
         print(f"{px.weights_dir}: SAVED")
         print(f"{px.savefile}: SAVED")
+        px.validation()
     else:
         print(f"train_flag is {train_flag}: not saved")
 
-    #px.validation()
-    px.show(val_index=21)
+    px.show(val_index=px.val_index)
 
 class Pixel():
     def __init__(self):
+        self.val_index = 0
         self.epochs = 100
         self.batch_size = 256
+        self.resolution = '1x1'
         self.tors = 'predictors_coarse_std_Apr_msot'
-        self.tant = 'pr_1x1_std_MJJASO_thailand'
+        self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
         self.seed = 1
         self.vsample = 1000
         self.lat, self.lon= 24, 72
@@ -42,6 +44,8 @@ class Pixel():
         self.metrics = tf.keras.metrics.MeanSquaredError()
         self.savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous/{self.tors}-{self.tant}.pickle"
         self.weights_dir = f"/docker/mnt/d/research/D2/cnn3/weights/continuous/{self.tors}-{self.tant}"
+        self.pred_dir = f"/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/{self.resolution}"
+        self.pred_path = self.pred_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
 
     def training(self, x_train, y_train, x_val, y_val, train_dct, val_dct):
         x_train, x_val = mask(x_train), mask(x_val)
@@ -66,6 +70,7 @@ class Pixel():
             data = pickle.load(f)
         x_val, y_val = data['x_val'], data['y_val']
 
+        pred_lst = []
         rmse = []
         corr = []
         rr = []
@@ -75,6 +80,9 @@ class Pixel():
             model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
             weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
             model.load_weights(weights_path)
+
+            pred = model.predict(x_val) # (400, 1000)
+            pred_lst.append(pred)
 
             result = model.evaluate(x_val, y_val_px)
             rmse.append(round(result[1], 2))
@@ -88,6 +96,9 @@ class Pixel():
 
             print(f"Correlation Coefficient of pixel{i}: {np.round(corr_i[0,1], 2)}")
 
+        pred_arr = np.array(pred_lst)
+        np.save(self.pred_path, pred_arr)
+
         corr = np.array(corr)
         corr = corr.reshape(self.lat_grid, self.lon_grid)
         acc_map(corr)
@@ -100,15 +111,19 @@ class Pixel():
         show_map(y_val_px)
 
         pred_lst = []
-        for i in range(self.grid_num):
-            model = build_model((self.lat, self.lon, self.var_num))
-            model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
-            weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
-            model.load_weights(weights_path)
-            pred = model.predict(x_val)
-            result = pred[val_index]
-            pred_lst.append(result)
-        pred_arr = np.array(pred_lst)
+        if os.path.exists(self.pred_path) is True:
+            pred_val = np.squeeze(np.load(self.pred_path))
+            pred_arr = pred_val[:, val_index]
+        else:
+            for i in range(self.grid_num):
+                model = build_model((self.lat, self.lon, self.var_num))
+                model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+                weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
+                model.load_weights(weights_path)
+                pred = model.predict(x_val)
+                result = pred[val_index]
+                pred_lst.append(result)
+            pred_arr = np.array(pred_lst)
         pred_arr = pred_arr.reshape(self.lat_grid, self.lon_grid)
         show_map(pred_arr)
 
