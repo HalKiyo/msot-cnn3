@@ -39,6 +39,12 @@ def show_map(image, vmin=-1, vmax=1):
     cbar = fig.colorbar(mat, ax=ax)
     plt.show()
 
-def draw_val():
-    pass
+def diff_bar(data, vmin=0, vmax=2):
+    # grid毎にabs(実際のlabelデータ-予測結果)を400個棒グラフにして出力する
+    fig = plt.figure()
+    ax = plt.subplot()
+    pixcel = np.arange(len(data))
+    ax.bar(pixcel, data, color='magenta')
+    ax.set_ylim(vmin, vmax)
+    plt.show()
 

@@ -30,9 +30,9 @@ def main():
 class Pixel():
     def __init__(self):
         self.val_index = 16
-        self.class_num = 5
+        self.class_num = 10
         self.descrete_mode = 'EFD'
-        self.epochs = 150
+        self.epochs = 100
         self.batch_size = 256
         self.resolution = '1x1' # 1x1 or 5x5_coarse
         self.tors = 'predictors_coarse_std_Apr_msot'
