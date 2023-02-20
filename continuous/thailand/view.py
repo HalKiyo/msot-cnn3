@@ -39,3 +39,5 @@ def show_map(image, vmin=-1, vmax=1):
     cbar = fig.colorbar(mat, ax=ax)
     plt.show()
 
+def draw_val():
+

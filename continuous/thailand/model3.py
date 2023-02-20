@@ -12,3 +12,16 @@ def build_model(input_shape):
     model.add(layers.Dense(50, activation=tf.nn.relu))
     model.add(layers.Dense(1, activation='linear'))
     return model
+
+def init_model(weights_path, lat=24, lon=72, var_num=4, lr=0.0001):
+    optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
+    loss = tf.keras.losses.MeanSquaredError()
+    metrics = tf.keras.metrics.MeanSquaredError()
+    model = build_model((lat, lon, var_num))
+    model.compile(optimizer=optimizer, loss=loss, metris=[metrics])
+    model.load_weights(weights_path)
+    return model
+
+def prediction(model, x_val):
+    pred = model.predict(x_val)[:,0]
+    return pred

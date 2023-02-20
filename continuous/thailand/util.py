@@ -1,3 +1,4 @@
+import pickle
 import numpy as np
 import numpy.ma as ma
 
@@ -13,6 +14,12 @@ def mask(x):
     z = ma.masked_where(m==0, m)
     f = ma.filled(z, 0)
     return f
+
+def open_pickle(path):
+    with open(path, 'rb') as f:
+        data = pickle.load(f)
+    x_val, y_val = data['x_val'], data['y_val']
+    return x_val, y_val
 
 def shuffle(indata, outdata, vsample, seed=1, model_num=42, year_num=165, grid=20):
     # seedは乱数の初期化に該当する。seedを実行した後に発生する乱数の順番は一定になる特性がある
