@@ -6,13 +6,15 @@ import numpy as np
 
 from util import open_pickle
 from model3 import init_model
-from view import diff_bar
+from view import diff_bar, draw_val
 
 def main():
     EVAL = evaluate()
     x_val, y_val, pred = EVAL.load_pred()
     if EVAL.diff_bar_view_flag is True:
         EVAL.diff_evaluation(pred, y_val)
+    if EVAL.true_false_view_flag is True:
+        EVAL.true_false_bar(pred, y_val)
 
 class evaluate():
     def __init__(self):
@@ -40,7 +42,8 @@ class evaluate():
         self.model = init_model(lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
 
         # validation
-        self.diff_bar_view_flag = True
+        self.diff_bar_view_flag = False
+        self.true_false_view_flag = True
 
     def load_pred(self):
         x_val, y_val = open_pickle(self.val_path)
@@ -60,12 +63,23 @@ class evaluate():
 
     def diff_evaluation(self, pred, y):
         value = pred[:, self.val_index] # pred(400, 1000)
-        label = y[self.val_index, :] # label(1000, 400)
+        label = y[self.val_index, :] # y(1000, 400)
         diff = np.abs(value - label)
         diff_flat = diff.reshape(-1)
         diff_mean = np.mean(diff_flat)
         print(diff_mean)
         diff_bar(diff_flat)
+
+    def true_false_bar(self, pred, y, criteria=0.1):
+        true_count, false_count = 0, 0
+        for i in range(len(y)):
+            diff = np.abs(pred[:, i] - y[i, :])
+            diff_mean = np.mean(diff)
+            if diff_mean <= criteria:
+                true_count += 1
+            else:
+                false_count += 1
+        draw_val(true_count, false_count)
 
 if __name__ == '__main__':
     main()

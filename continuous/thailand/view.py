@@ -48,3 +48,14 @@ def diff_bar(data, vmin=0, vmax=2):
     ax.set_ylim(vmin, vmax)
     plt.show()
 
+def draw_val(true_count, false_count):
+    fig = plt.figure()
+    ax = plt.subplot()
+    print(true_count, false_count)
+    ax.barh(1, true_count, height=0.5, color='darkslategray', align='center', label='True')
+    ax.barh(1, false_count, left=true_count, height=0.5, color='orange', align='center', label='False')
+    ax.set_ylim(0,2)
+    ax.set_yticks([1.0], ['val'])
+    plt.legend()
+    plt.show()
+
