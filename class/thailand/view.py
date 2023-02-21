@@ -37,7 +37,7 @@ def draw_val(val_pred, val_label_onehot, class_num=5):
     plt.show()
     return u, counts
 
-def show_class(image, class_num=5, lat_grid=4, lon_grid=4):
+def show_class(image, class_num=5, lat_grid=4, lon_grid=4, txt_flag=False):
     cmap = plt.cm.get_cmap('BrBG', class_num)
     bounds = [i -0.5 for i in range(class_num+1)]
     norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
@@ -64,15 +64,16 @@ def show_class(image, class_num=5, lat_grid=4, lon_grid=4):
                         ticks=ticks,
                         spacing='proportional',
                         orientation='vertical')
-    if class_num == 5:
-        cbar.ax.set_yticklabels(['low', 'mid-low', 'normal', 'mid-high', 'high'])
-    else:
-        lat_lst = np.linspace(txt_extent[3], txt_extent[2], lat_grid)
-        lon_lst = np.linspace(txt_extent[0], txt_extent[1], lon_grid)
-        for i, lat in enumerate(lat_lst):
-            for j, lon in enumerate(lon_lst):
-                ax.text(lon, lat, image[i,j],
-                        ha="center", va="center", color='black', fontsize='15')
+    if txt_flag is True:
+        if class_num == 5:
+            cbar.ax.set_yticklabels(['low', 'mid-low', 'normal', 'mid-high', 'high'])
+        else:
+            lat_lst = np.linspace(txt_extent[3], txt_extent[2], lat_grid)
+            lon_lst = np.linspace(txt_extent[0], txt_extent[1], lon_grid)
+            for i, lat in enumerate(lat_lst):
+                for j, lon in enumerate(lon_lst):
+                    ax.text(lon, lat, image[i,j],
+                            ha="center", va="center", color='black', fontsize='15')
 
     plt.show()
 
@@ -101,30 +102,6 @@ def view_accuracy(acc, lat_grid=4, lon_grid=4):
                     ha="center", va="center", color='white', fontsize='15')
     cbar = fig.colorbar(mat, ax=ax)
     plt.show()
-
-def diff_bar(val_pred, val_label_onehot):
-    fig = plt.figure()
-    ax = plt.subplot()
-
-    width, linewidth, align = 0.5, 0.5, 'center'
-
-    true_count = []
-    false_count = []
-    for i, j in zip(val_pred, val_label_onehot):
-        if np.argmax(i) == np.argmax(j):
-            val_true.append(val_list[np.argmax(j)])
-        else:
-            val_false.append(val_list[np.argmax(j)])
-
-    # true
-    val_tcount = [val_true.count(j) for j in val_list]
-    ax.bar(val_list, val_tcount,
-           color='darkslategray', width=width, linewidth=linewidth, align=align)
-
-    # false
-    val_fcount = [val_false.count(j) for j in val_list]
-    ax.bar(val_list, val_fcount,
-           color='orange', bottom=val_tcount, width=width, linewidth=linewidth, align=align, alpha=.8)
 
 def pred_accuracy(true_count, false_count):
     fig = plt.figure()
