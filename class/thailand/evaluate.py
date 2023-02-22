@@ -6,22 +6,23 @@ import numpy as np
 
 from util import open_pickle
 from model3 import init_model
-from view import pred_accuracy
+from view import pred_accuracy, box_crossentropy
 
 def main():
     EVAL = evaluate()
-    x_val, y_val, pred = EVAL.load_pred()
+    x_val, y_val, pred = EVAL.load_pred() # (400, 1000, 5), (1000, 400)
     if EVAL.diff_bar_view_flag is True:
         EVAL.diff_evaluation(pred, y_val)
     if EVAL.true_false_view_flag is True:
         EVAL.true_false_bar(pred, y_val)
+    EVAL.crossentropy(pred, y_val)
 
 class evaluate():
     def __init__(self):
         self.val_index = 0
-        self.class_num = 30
+        self.class_num = 5
         self.discrete_mode = 'EFD'
-        self.epochs =250
+        self.epochs = 150
         self.batch_size =256
         self.seed = 1
         self.var_num = 4
@@ -44,7 +45,7 @@ class evaluate():
         self.model = init_model(lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
 
         # validation
-        self.diff_bar_view_flag = True
+        self.diff_bar_view_flag = False
         self.true_false_view_flag = False
 
     def load_pred(self):
@@ -90,6 +91,28 @@ class evaluate():
             else:
                 true_count += 1
         pred_accuracy(true_count, false_count)
+
+    def crossentropy(self, val_pred, val_label, criteria=200):
+        true = {f"true, false": []}
+        false = {f"true, false": []}
+
+        for i in range(len(val_label)): # val_num
+            px_true = 0
+            cross = []
+            for j in range(len(val_pred)): # px_num
+                max_cross = np.max(val_pred[j, i])
+                cross.append(max_cross)
+                pred_label = np.argmax(val_pred[j, i])
+                if int(pred_label) == val_label[i, j]:
+                    px_true += 1
+
+            cross_mean = np.mean(cross)
+            if px_true <= criteria:
+                false[f"true, false"].append(cross_mean)
+            else:
+                true[f"true, false"].append(cross_mean)
+
+        box_crossentropy(true, false)
 
 if __name__ == '__main__':
     main()

@@ -114,3 +114,17 @@ def pred_accuracy(true_count, false_count):
     plt.legend()
     plt.show()
 
+def box_crossentropy(true, false, class_num=5):
+    label = np.arange(1)
+    xs = {key:val for key, val in zip(true.keys(), label)}
+    shift = 0.1
+
+    fig, ax = plt.subplots()
+    for key in true.keys():
+        ax.boxplot(true[key], positions=[xs[key] - shift], boxprops=dict(color='b'),
+                   showfliers=False)
+        ax.boxplot(false[key], positions=[xs[key] + shift], boxprops=dict(color='r'),
+                   showfliers=False)
+    ax.set_xticks(range(1))
+    ax.set_xticklabels(true.keys())
+    plt.show()
