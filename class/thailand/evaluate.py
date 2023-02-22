@@ -6,7 +6,7 @@ import numpy as np
 
 from util import open_pickle
 from model3 import init_model
-from view import diff_bar, pred_accuracy
+from view import pred_accuracy
 
 def main():
     EVAL = evaluate()
@@ -19,9 +19,9 @@ def main():
 class evaluate():
     def __init__(self):
         self.val_index = 0
-        self.class_num = 5
+        self.class_num = 30
         self.discrete_mode = 'EFD'
-        self.epochs =150
+        self.epochs =250
         self.batch_size =256
         self.seed = 1
         self.var_num = 4
@@ -44,8 +44,8 @@ class evaluate():
         self.model = init_model(lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
 
         # validation
-        self.diff_bar_view_flag = False
-        self.true_false_view_flag = True
+        self.diff_bar_view_flag = True
+        self.true_false_view_flag = False
 
     def load_pred(self):
         x_val, y_val = open_pickle(self.val_path)
