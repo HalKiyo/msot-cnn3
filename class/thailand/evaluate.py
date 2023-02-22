@@ -10,16 +10,18 @@ from view import pred_accuracy, box_crossentropy
 
 def main():
     EVAL = evaluate()
-    x_val, y_val, pred = EVAL.load_pred() # (400, 1000, 5), (1000, 400)
+    x_val, y_val, pred = EVAL.load_pred() # pred:(400, 1000, 5), xy_val:(1000, 400)
+    print(np.mean( [ max(pred[i, EVAL.val_index]) for i in range(400) ] ))
     if EVAL.diff_bar_view_flag is True:
         EVAL.diff_evaluation(pred, y_val)
     if EVAL.true_false_view_flag is True:
         EVAL.true_false_bar(pred, y_val)
-    EVAL.crossentropy(pred, y_val)
+    if EVAL.box_cross_view_flag is True:
+        EVAL.crossentropy(pred, y_val)
 
 class evaluate():
     def __init__(self):
-        self.val_index = 0
+        self.val_index = 5
         self.class_num = 5
         self.discrete_mode = 'EFD'
         self.epochs = 150
@@ -47,6 +49,7 @@ class evaluate():
         # validation
         self.diff_bar_view_flag = False
         self.true_false_view_flag = False
+        self.box_cross_view_flag = False
 
     def load_pred(self):
         x_val, y_val = open_pickle(self.val_path)
