@@ -2,15 +2,15 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import warnings
 warnings.filterwarnings('ignore')
+import pickle
 import numpy as np
 
-from util import open_pickle
 from model3 import init_model
 from view import pred_accuracy
 
 def main():
     TEST = test()
-    x_val, y_val, pred = TEST.load_pred()
+    x_val, y_val, val_model, val_year, pred = TEST.load_pred()
 
 class test():
     def __init__(self):
@@ -44,17 +44,17 @@ class test():
         self.true_false_view_flag = False
 
     def load_pred(self):
-        x_val, y_val = open_pickle(self.val_path)
+        with open(self.val_path, 'rb') as f:
+            data = pickle.load(f)
+        x_val, y_val, val_dct = data['x_val'], data['y_val'], data['train_dct']
+        val_model, val_year = val_dct['model'], val_dct['year']
+
         if os.path.exists(self.pred_path):
             pred_arr = np.squeeze(np.load(self.pred_path))
         else:
-            pred_lst = []
-            for i in range(self.grid_num):
-                weights_path = self.weights_dir + f"/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
-                model = self.model
-                model.load_weights(weights_path)
-                pred = model.predict(x_val)
-                pred_lst.append(pred)
-            pred_arr = np.squeeze(np.array(pred_lst))
-            np.save(self.pred_path, pred_arr)
-        return x_val, y_val, pred_arr # pred(400, 1000)
+            print('run evaluate.py first')
+
+        return x_val, y_val, val_model, val_year, pred_arr # pred(400, 1000)
+
+if __name__ == '__main__':
+    main()
