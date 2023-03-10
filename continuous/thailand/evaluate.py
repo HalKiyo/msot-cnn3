@@ -81,5 +81,54 @@ class evaluate():
                 false_count += 1
         draw_val(true_count, false_count)
 
+    def roc(self, sim, obs, percentile=20):
+        """
+        this roc function just returns single event
+        if multiple events are needed to be evaluated,
+        call auc function below
+        """
+        # make criteria
+        sim_per = np.percentile(sim, percentile)
+        obs_per = np.percentile(obs, percentile)
+
+        # calculate number of obs percentile
+        over_per = sum(obs > obs_per)
+        under_per = sum(obs <= obs_per)
+
+        # save count of hit and false pixcel
+        hit_count = 0
+        false_count = 0
+        for i in range(len(obs)):
+            for j in range(len(obs)):
+                if sim[i, j] > sim_per and obs[i,j] > obs_per:
+                    hit_count += 1
+                elif sim[i, j] > sim_per and obs[i, j] <= obs_per:
+                    false_count += 1
+
+        # calculate HitRate and FalseAlertRate
+        hr = hit_count/over_per
+        far = false_count/under_per
+
+        return hr, far
+
+    def auc(self, sim, obs):
+        result = [[0,0]]
+        # percentile variation list
+        per_list = [20, 40, 60, 80]
+
+        # calculate different percentile result
+        for i in per_list:
+            # calculate multiple varidation events
+            hr_all, far_all = [], []
+            for j in range(len(obs)):
+                hr_n, far_n = self.roc(sim[j], obs[j], percentile=i)
+                hr_all.append(hr_n)
+                far_all.append(far_n)
+            hr, far = np.mean(hr_all), np.mean(far_all)
+            result.append([hr, far])
+
+        result.append([1,1])
+        return result
+
 if __name__ == '__main__':
     main()

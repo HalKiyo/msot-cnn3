@@ -5,6 +5,7 @@ warnings.filterwarnings('ignore')
 import pickle
 import numpy as np
 import tensorflow as tf
+import matplotlib.pyplot as plt
 
 from model3 import build_model
 from util import load, shuffle, mask
@@ -24,6 +25,7 @@ def main():
         print(f"train_flag is {train_flag}: not saved")
 
     px.show(val_index=px.val_index)
+    plt.show()
 
 class Pixel():
     def __init__(self):
@@ -56,7 +58,7 @@ class Pixel():
             y_train_px = y_train[:, i]
             model = build_model((self.lat, self.lon, self.var_num))
             model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
-            his = model.fit(x_train, y_train_px, batch_size=self.batch_size, epochs=self.epochs)
+            model.fit(x_train, y_train_px, batch_size=self.batch_size, epochs=self.epochs)
             weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
             model.save_weights(weights_path)
         dct = {'x_train': x_train, 'y_train': y_train,
