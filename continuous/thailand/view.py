@@ -1,9 +1,8 @@
-import time
 import numpy as np
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
-
+from sklearn.metrics import auc
 
 def acc_map(acc, lat_grid=20, lon_grid=20):
     projection = ccrs.PlateCarree(central_longitude=180)
@@ -58,13 +57,31 @@ def draw_val(true_count, false_count):
     plt.legend()
     plt.show()
 
-def draw_roc_curve(roc, auc):
+def draw_roc_curve(roc):
+    # calculate auc
+    fpr = roc[:, 1]
+    tpr = roc[:, 0]
+    AUC = auc(fpr, tpr)
+
     fig, ax = plt.subplots(figsize=(6, 6))
-    plt.plot(roc[0],
-             roc[1],
-             label=f"cnn_continuous ROC curve (AUC = {auc})",
+
+    # draw cnn_continuous line
+    plt.plot(fpr,
+             tpr,
+             label=f"cnn_continuous ROC curve (AUC = {AUC})",
              color="deeppink",
              linestyle=":",
              linewidth=4)
-    plt.plot([0,1])
+    # plot cnn_continuous percentile results
+    plt.scatter(fpr, tpr, s=100, color='red')
+
+    # plot auc=0.5 line
+    plt.plot([0,1],
+             [0,1],
+             "k--",
+             label="ROC curve for chance level (AUC = 0.5)")
+    plt.axis("square")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.legend()
     plt.show(block=False)

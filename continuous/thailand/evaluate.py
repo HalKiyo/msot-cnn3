@@ -6,7 +6,8 @@ import numpy as np
 
 from util import open_pickle
 from model3 import init_model
-from view import diff_bar, draw_val
+from view import diff_bar, draw_val, draw_roc_curve
+import matplotlib.pyplot as plt
 
 def main():
     EVAL = evaluate()
@@ -18,6 +19,10 @@ def main():
     if EVAL.auc_view_flag is True:
         roc = EVAL.auc(pred.T, y_val)
         print(roc)
+        print(roc[:,0])
+        print(roc[:,1])
+        draw_roc_curve(roc)
+        plt.show()
 
 class evaluate():
     def __init__(self):
@@ -136,6 +141,7 @@ class evaluate():
             result.append([hr, far])
 
         result.append([1,1])
+        result = np.array(result)
         return result
 
 if __name__ == '__main__':
