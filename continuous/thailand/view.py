@@ -57,3 +57,14 @@ def draw_val(true_count, false_count):
     ax.set_yticks([1.0], ['val'])
     plt.legend()
     plt.show()
+
+def draw_roc_curve(roc, auc):
+    fig, ax = plt.subplots(figsize=(6, 6))
+    plt.plot(roc[0],
+             roc[1],
+             label=f"cnn_continuous ROC curve (AUC = {auc})",
+             color="deeppink",
+             linestyle=":",
+             linewidth=4)
+    plt.plot([0,1])
+    plt.show(block=False)

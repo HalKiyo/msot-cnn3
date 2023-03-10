@@ -15,6 +15,9 @@ def main():
         EVAL.diff_evaluation(pred, y_val)
     if EVAL.true_false_view_flag is True:
         EVAL.true_false_bar(pred, y_val)
+    if EVAL.auc_view_flag is True:
+        roc = EVAL.auc(pred.T, y_val)
+        print(roc)
 
 class evaluate():
     def __init__(self):
@@ -43,7 +46,8 @@ class evaluate():
 
         # validation
         self.diff_bar_view_flag = False
-        self.true_false_view_flag = True
+        self.true_false_view_flag = False
+        self.auc_view_flag = True
 
     def load_pred(self):
         x_val, y_val = open_pickle(self.val_path)
@@ -87,6 +91,10 @@ class evaluate():
         if multiple events are needed to be evaluated,
         call auc function below
         """
+        # percentile should be absolute number 
+        sim = np.abs(sim)
+        obs = np.abs(obs)
+
         # make criteria
         sim_per = np.percentile(sim, percentile)
         obs_per = np.percentile(obs, percentile)
@@ -98,11 +106,10 @@ class evaluate():
         # save count of hit and false pixcel
         hit_count = 0
         false_count = 0
-        for i in range(len(obs)):
-            for j in range(len(obs)):
-                if sim[i, j] > sim_per and obs[i,j] > obs_per:
+        for p in range(len(obs)):
+                if sim[p] > sim_per and obs[p] > obs_per:
                     hit_count += 1
-                elif sim[i, j] > sim_per and obs[i, j] <= obs_per:
+                elif sim[p] > sim_per and obs[p] <= obs_per:
                     false_count += 1
 
         # calculate HitRate and FalseAlertRate
@@ -114,7 +121,8 @@ class evaluate():
     def auc(self, sim, obs):
         result = [[0,0]]
         # percentile variation list
-        per_list = [20, 40, 60, 80]
+        per_list = np.arange(10, 100, 10)
+        per_list = per_list[::-1]
 
         # calculate different percentile result
         for i in per_list:
