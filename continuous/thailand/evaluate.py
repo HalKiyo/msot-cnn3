@@ -18,11 +18,8 @@ def main():
         EVAL.true_false_bar(pred, y_val)
     if EVAL.auc_view_flag is True:
         roc = EVAL.auc(pred.T, y_val)
-        print(roc)
-        print(roc[:,0])
-        print(roc[:,1])
         draw_roc_curve(roc)
-        plt.show()
+    plt.show()
 
 class evaluate():
     def __init__(self):
