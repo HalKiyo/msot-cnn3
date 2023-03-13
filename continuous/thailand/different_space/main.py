@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 
 from model import build_model
-from util import load, shuffle, mask
+from util import load, shuffle, mask, ocean_field, land_field
 from view import acc_map, show_map
 
 def main():
@@ -35,8 +35,8 @@ class Pixel():
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
         self.seed = 1
         self.vsample = 1000
-        self.lat, self.lon= 24, 72
-        self.var_num = 1
+        self.lat, self.lon= 12, 48
+        self.var_num = 4
         self.lat_grid, self.lon_grid = 20, 20
         self.grid_num = self.lat_grid * self.lon_grid
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
