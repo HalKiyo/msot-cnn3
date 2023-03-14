@@ -5,8 +5,9 @@ warnings.filterwarnings('ignore')
 import numpy as np
 
 from util import open_pickle
-from model import init_model
-from view import diff_bar, draw_val
+from model3 import init_model
+from view import diff_bar, draw_val, draw_roc_curve
+import matplotlib.pyplot as plt
 
 def main():
     EVAL = evaluate()
@@ -15,6 +16,10 @@ def main():
         EVAL.diff_evaluation(pred, y_val)
     if EVAL.true_false_view_flag is True:
         EVAL.true_false_bar(pred, y_val)
+    if EVAL.auc_view_flag is True:
+        roc = EVAL.auc(pred.T, y_val)
+        draw_roc_curve(roc)
+    plt.show()
 
 class evaluate():
     def __init__(self):
@@ -29,12 +34,12 @@ class evaluate():
         self.tors = 'predictors_coarse_std_Apr_msot'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
         self.workdir = '/docker/mnt/d/research/D2/cnn3'
-        self.val_path = self.workdir + f"/train_val/continuous/diff_space/{self.tors}-{self.tant}.pickle"
-        self.weights_dir = self.workdir + f"/weights/continuous/diff_space{self.tors}-{self.tant}"
-        self.pred_dir = self.workdir + f"/result/continuous/thailand/{self.resolution}/diff_space"
+        self.val_path = self.workdir + f"/train_val/continuous/{self.tors}-{self.tant}.pickle"
+        self.weights_dir = self.workdir + f"/weights/continuous/{self.tors}-{self.tant}"
+        self.pred_dir = self.workdir + f"/result/continuous/thailand/{self.resolution}"
         self.pred_path = self.pred_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
         # model
-        self.lat, self.lon = 12, 48
+        self.lat, self.lon = 24, 72
         self.lr = 0.001
         self.lat_grid, self.lon_grid = 20, 20
         self.grid_num = self.lat_grid*self.lon_grid
@@ -42,8 +47,9 @@ class evaluate():
         self.model = init_model(lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
 
         # validation
-        self.diff_bar_view_flag = True
+        self.diff_bar_view_flag = False
         self.true_false_view_flag = False
+        self.auc_view_flag = True
 
     def load_pred(self):
         x_val, y_val = open_pickle(self.val_path)
@@ -80,6 +86,60 @@ class evaluate():
             else:
                 false_count += 1
         draw_val(true_count, false_count)
+
+    def roc(self, sim, obs, percentile=20):
+        """
+        this roc function just returns single event
+        if multiple events are needed to be evaluated,
+        call auc function below
+        """
+        # percentile should be absolute number 
+        sim = np.abs(sim)
+        obs = np.abs(obs)
+
+        # make criteria
+        sim_per = np.percentile(sim, percentile)
+        obs_per = np.percentile(obs, percentile)
+
+        # calculate number of obs percentile
+        over_per = sum(obs > obs_per)
+        under_per = sum(obs <= obs_per)
+
+        # save count of hit and false pixcel
+        hit_count = 0
+        false_count = 0
+        for p in range(len(obs)):
+                if sim[p] > sim_per and obs[p] > obs_per:
+                    hit_count += 1
+                elif sim[p] > sim_per and obs[p] <= obs_per:
+                    false_count += 1
+
+        # calculate HitRate and FalseAlertRate
+        hr = hit_count/over_per
+        far = false_count/under_per
+
+        return hr, far
+
+    def auc(self, sim, obs):
+        result = [[0,0]]
+        # percentile variation list
+        per_list = np.arange(10, 100, 10)
+        per_list = per_list[::-1]
+
+        # calculate different percentile result
+        for i in per_list:
+            # calculate multiple varidation events
+            hr_all, far_all = [], []
+            for j in range(len(obs)):
+                hr_n, far_n = self.roc(sim[j], obs[j], percentile=i)
+                hr_all.append(hr_n)
+                far_all.append(far_n)
+            hr, far = np.mean(hr_all), np.mean(far_all)
+            result.append([hr, far])
+
+        result.append([1,1])
+        result = np.array(result)
+        return result
 
 if __name__ == '__main__':
     main()
