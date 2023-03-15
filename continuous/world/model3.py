@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import layers, models 
+from tensorflow.keras import layers, models
 
 def build_model(input_shape):
     model = models.Sequential()
