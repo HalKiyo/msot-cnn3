@@ -39,7 +39,7 @@ class Pixel():
         self.vsample = 1000
         self.lat, self.lon= 24, 72
         self.var_num = 4
-        self.lat_grid, self.lon_grid = 24*5, 72*5
+        self.lat_grid, self.lon_grid = 24*5, 72*5 #  43200 -> 3600/24h then 12 days
         self.grid_num = self.lat_grid * self.lon_grid
         #self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
         self.loss = tf.keras.losses.MeanSquaredError()
@@ -54,7 +54,7 @@ class Pixel():
         x_train, x_val = x_train.transpose(0, 2, 3, 1), x_val.transpose(0, 2, 3, 1)
         y_train, y_val = y_train.reshape(len(y_train), self.grid_num), y_val.reshape(len(y_val), self.grid_num)
         os.makedirs(self.weights_dir, exist_ok=True)
-        for i in range(220, self.grid_num):
+        for i in range(1411, self.grid_num):
             y_train_px = y_train[:, i]
             model = build_model((self.lat, self.lon, self.var_num))
             model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),

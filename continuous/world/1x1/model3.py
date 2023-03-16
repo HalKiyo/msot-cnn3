@@ -15,9 +15,8 @@ def build_model(input_shape):
     return model
 
 def init_model(lat=24, lon=72, var_num=4, lr=0.0001):
-    optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
     loss = tf.keras.losses.MeanSquaredError()
     metrics = tf.keras.metrics.MeanSquaredError()
     model = build_model((lat, lon, var_num))
-    model.compile(optimizer=optimizer, loss=loss, metrics=[metrics])
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=loss, metrics=[metrics])
     return model
