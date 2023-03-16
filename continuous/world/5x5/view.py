@@ -6,7 +6,7 @@ from sklearn.metrics import auc
 
 def acc_map(acc, lat_grid=20, lon_grid=20):
     projection = ccrs.PlateCarree(central_longitude=180)
-    img_extent = (-90, -70, 5, 25)  # location = (N5-25, E90-110)
+    img_extent = (-180, 180, -60, 60)  # location = (N5-25, E90-110)
 
     fig = plt.figure()
     ax = plt.subplot(projection=projection)
@@ -15,15 +15,15 @@ def acc_map(acc, lat_grid=20, lon_grid=20):
                      origin='upper',
                      extent=img_extent,
                      transform=projection,
-                     vmin=0, vmax=1,
-                     cmap='Oranges')
+                     vmin=0.75, vmax=1.00,
+                     cmap='tab20b')
     fig.colorbar(mat, ax=ax)
-    plt.show()
+    plt.show(block=False)
 
 def show_map(image, vmin=-1, vmax=1):
     cmap = plt.cm.get_cmap('BrBG')
     projection = ccrs.PlateCarree(central_longitude=180)
-    img_extent = (-90, -70, 5, 25)  # locatin = (N5-25, E90-110)
+    img_extent = (-180, 180, -60, 60)  # location = (N5-25, E90-110)
 
     fig = plt.figure()
     ax = plt.subplot(projection=projection)

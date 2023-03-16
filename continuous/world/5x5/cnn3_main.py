@@ -12,7 +12,7 @@ from util import load, shuffle, mask
 from view import acc_map, show_map
 
 def main():
-    train_flag = True
+    train_flag = False
 
     px = Pixel()
     if train_flag is True:
@@ -25,11 +25,12 @@ def main():
         print(f"train_flag is {train_flag}: not saved")
 
     px.show(val_index=px.val_index)
+    px.validation()
     plt.show()
 
 class Pixel():
     def __init__(self):
-        self.val_index = 4
+        self.val_index = 5
         self.epochs = 100
         self.batch_size = 256
         self.resolution = '5x5'
@@ -74,36 +75,47 @@ class Pixel():
             data = pickle.load(f)
         x_val, y_val = data['x_val'], data['y_val']
 
-        pred_lst = []
-        rmse = []
-        corr = []
-        rr = []
-        for i in range(self.grid_num):
-            y_val_px = y_val[:, i]
-            model = build_model((self.lat, self.lon, self.var_num))
-            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
-                          loss=self.loss,
-                          metrics=[self.metrics])
-            weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
-            model.load_weights(weights_path)
+        if os.path.exists(self.pred_path) is False:
+            pred_lst = []
+            rmse = []
+            corr = []
+            rr = []
+            for i in range(self.grid_num):
+                y_val_px = y_val[:, i]
+                model = build_model((self.lat, self.lon, self.var_num))
+                model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                              loss=self.loss,
+                              metrics=[self.metrics])
+                weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
+                model.load_weights(weights_path)
 
-            pred = model.predict(x_val) # (400, 1000)
-            pred_lst.append(pred)
+                pred = model.predict(x_val) # (1728, 1000)
+                pred_lst.append(pred)
 
-            result = model.evaluate(x_val, y_val_px)
-            rmse.append(round(result[1], 2))
+                result = model.evaluate(x_val, y_val_px)
+                rmse.append(round(result[1], 2))
 
-            pred = model.predict(x_val)
-            corr_i = np.corrcoef(pred[:,0], y_val_px)
-            corr.append(np.round(corr_i[0,1], 2))
+                pred = model.predict(x_val)
+                corr_i = np.corrcoef(pred[:,0], y_val_px)
+                corr.append(np.round(corr_i[0,1], 2))
 
-            rr_i = corr_i**2
-            rr.append(np.round(rr_i, 2))
+                rr_i = corr_i**2
+                rr.append(np.round(rr_i, 2))
 
-            print(f"Correlation Coefficient of pixel{i}: {np.round(corr_i[0,1], 2)}")
+                print(f"Correlation Coefficient of pixel{i}: {np.round(corr_i[0,1], 2)}")
 
-        pred_arr = np.array(pred_lst)
-        np.save(self.pred_path, pred_arr)
+            pred_arr = np.array(pred_lst)
+            os.makedirs(self.pred_dir,exist_ok=True)
+            np.save(self.pred_path, pred_arr)
+            print(f"{self.pred_path}: SAVED")
+
+        else:
+            corr = []
+            pred_arr = np.squeeze(np.load(self.pred_path))
+            for i in range(self.grid_num):
+                y_val_px = y_val[:, i]
+                corr_i = np.corrcoef(pred_arr[i,:], y_val_px)
+                corr.append(np.round(corr_i[0,1], 2))
 
         corr = np.array(corr)
         corr = corr.reshape(self.lat_grid, self.lon_grid)
