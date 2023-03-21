@@ -18,7 +18,7 @@ def acc_map(acc, lat_grid=20, lon_grid=20):
                      vmin=0, vmax=1,
                      cmap='Oranges')
     fig.colorbar(mat, ax=ax)
-    plt.show()
+    plt.show(block=False)
 
 def show_map(image, vmin=-1, vmax=1):
     cmap = plt.cm.get_cmap('BrBG')
