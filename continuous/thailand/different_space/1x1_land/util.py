@@ -15,30 +15,18 @@ def open_pickle(path):
     x_val, y_val = data['x_val'], data['y_val']
     return x_val, y_val
 
-def fill(x):
-    f = ma.filled(x, fill_value=99999)
-    return f
-
 def mask(x):
     m = ma.masked_where(x>9999, x)
     z = ma.masked_where(m==0, m)
     f = ma.filled(z, 0)
     return f
 
-def conc(x):
-    c = x.copy()
-    c = fill(c)
-    x1, x2 = c[:, :, :, -36:], c[:, :, :, :36]
-    c = np.concatenate([x1, x2], 3)
-    return c
-
 def ocean_field(sst):
     ocean = sst[:, :, 6:18, 9:57]
-    return ocean 
+    return ocean
 
 def land_field(snc):
-    recentered = conc(snc)
-    land = recentered[:, :, :12, 12:-12]
+    land = snc[:, :, 16:28, 65:113]
     return land
 
 def shuffle(indata, outdata, vsample, seed=1, model_num=42, year_num=165, grid=20):

@@ -12,15 +12,23 @@ from util import load, shuffle, mask, ocean_field, land_field
 from view import acc_map, show_map
 
 def main():
-    train_flag = False
+    train_flag = True
 
     px = Pixel()
     if train_flag is True:
-        predictors, predictant = load(px.tors, px.tant)
+        tors_sst = 'predictors_coarse_std_Apr_o'
+        sst_raw, _ = load(tors_sst, px.tant)
+        sst = ocean_field(sst_raw[0])
+        print(sst.shape)
+
+        tors_land = 'predictors_std_Apr_mst'
+        predictors, predictant = load(tors_land, px.tant)
         mrso = land_field(predictors[0])
         snc = land_field(predictors[1])
-        sst = ocean_field(predictors[2])
-        tsl = land_field(predictors[3])
+        tsl = land_field(predictors[2])
+        print(mrso.shape, snc.shape, tsl.shape)
+        exit()
+
         predictors = np.array([mrso, snc, sst, tsl])
         px.training(*shuffle(predictors, predictant, px.vsample, px.seed))
         print(f"{px.weights_dir}: SAVED")
@@ -39,7 +47,6 @@ class Pixel():
         self.epochs = 100
         self.batch_size = 256
         self.resolution = '1x1'
-        self.tors = 'predictors_coarse_std_Apr_msot'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
         self.seed = 1
         self.vsample = 1000
@@ -50,8 +57,8 @@ class Pixel():
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
         self.loss = tf.keras.losses.MeanSquaredError()
         self.metrics = tf.keras.metrics.MeanSquaredError()
-        self.savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous/diff_space/1x1_land/{self.tors}-{self.tant}.pickle"
-        self.weights_dir = f"/docker/mnt/d/research/D2/cnn3/weights/continuous/diff_space/1x1_land/{self.tors}-{self.tant}"
+        self.savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous/diff_space/1x1_land/{self.tant}.pickle"
+        self.weights_dir = f"/docker/mnt/d/research/D2/cnn3/weights/continuous/diff_space/1x1_land/{self.tant}"
         self.pred_dir = f"/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/{self.resolution}/diff_space/1x1_land"
         self.pred_path = self.pred_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
 
