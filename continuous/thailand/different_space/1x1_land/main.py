@@ -50,9 +50,9 @@ class Pixel():
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
         self.loss = tf.keras.losses.MeanSquaredError()
         self.metrics = tf.keras.metrics.MeanSquaredError()
-        self.savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous/diff_space/{self.tors}-{self.tant}.pickle"
-        self.weights_dir = f"/docker/mnt/d/research/D2/cnn3/weights/continuous/diff_space/{self.tors}-{self.tant}"
-        self.pred_dir = f"/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/{self.resolution}/diff_space"
+        self.savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous/diff_space/1x1_land/{self.tors}-{self.tant}.pickle"
+        self.weights_dir = f"/docker/mnt/d/research/D2/cnn3/weights/continuous/diff_space/1x1_land/{self.tors}-{self.tant}"
+        self.pred_dir = f"/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/{self.resolution}/diff_space/1x1_land"
         self.pred_path = self.pred_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
 
     def training(self, x_train, y_train, x_val, y_val, train_dct, val_dct):

@@ -29,9 +29,9 @@ class evaluate():
         self.tors = 'predictors_coarse_std_Apr_msot'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
         self.workdir = '/docker/mnt/d/research/D2/cnn3'
-        self.val_path = self.workdir + f"/train_val/continuous/diff_space/{self.tors}-{self.tant}.pickle"
-        self.weights_dir = self.workdir + f"/weights/continuous/diff_space{self.tors}-{self.tant}"
-        self.pred_dir = self.workdir + f"/result/continuous/thailand/{self.resolution}/diff_space"
+        self.val_path = self.workdir + f"/train_val/continuous/diff_space/1x1_land/{self.tors}-{self.tant}.pickle"
+        self.weights_dir = self.workdir + f"/weights/continuous/diff_space/1x1_land/{self.tors}-{self.tant}"
+        self.pred_dir = self.workdir + f"/result/continuous/thailand/{self.resolution}/diff_space/1x1_land"
         self.pred_path = self.pred_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
         # model
         self.lat, self.lon = 12, 48

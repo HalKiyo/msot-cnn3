@@ -1,0 +1,67 @@
+import pickle
+import numpy as np
+import numpy.ma as ma
+
+def load(inkey, outkey):
+    infile = f"/docker/mnt/d/research/D2/cnn3/predictors/{inkey}.npy"
+    outfile = f"/docker/mnt/d/research/D2/cnn3/predictant/continuous/{outkey}.npy"
+    predictors = np.load(infile)
+    predictant = np.load(outfile)
+    return predictors, predictant
+
+def open_pickle(path):
+    with open(path, 'rb') as f:
+        data = pickle.load(f)
+    x_val, y_val = data['x_val'], data['y_val']
+    return x_val, y_val
+
+def fill(x):
+    f = ma.filled(x, fill_value=99999)
+    return f
+
+def mask(x):
+    m = ma.masked_where(x>9999, x)
+    z = ma.masked_where(m==0, m)
+    f = ma.filled(z, 0)
+    return f
+
+def conc(x):
+    c = x.copy()
+    c = fill(c)
+    x1, x2 = c[:, :, :, -36:], c[:, :, :, :36]
+    c = np.concatenate([x1, x2], 3)
+    return c
+
+def ocean_field(sst):
+    ocean = sst[:, :, 6:18, 9:57]
+    return ocean 
+
+def land_field(snc):
+    recentered = conc(snc)
+    land = recentered[:, :, :12, 12:-12]
+    return land
+
+def shuffle(indata, outdata, vsample, seed=1, model_num=42, year_num=165, grid=20):
+    # seedは乱数の初期化に該当する。seedを実行した後に発生する乱数の順番は一定になる特性がある
+    rng = np.random.default_rng(seed)
+
+    outdata = outdata.reshape(model_num, year_num, grid, grid)
+    random_number = indata.shape[1]*indata.shape[2]
+    random_index = rng.choice(random_number, random_number, replace=False)
+
+    train_index = random_index[:-vsample]
+    train_dct = {'model': train_index//indata.shape[2],
+                 'year': train_index%indata.shape[2]}
+    x_train = np.array([ indata[:, m, y] for m, y in zip(
+                         train_dct['model'], train_dct['year']) ])
+    y_train = np.array([ outdata[m, y] for m, y in zip(
+                         train_dct['model'], train_dct['year']) ])
+
+    val_index = random_index[-vsample:]
+    val_dct = {'model': val_index//indata.shape[2],
+                 'year': val_index%indata.shape[2]}
+    x_val = np.array([ indata[:, m, y] for m, y in zip(
+                         val_dct['model'], train_dct['year']) ])
+    y_val = np.array([ outdata[m, y] for m, y in zip(
+                         val_dct['model'], train_dct['year']) ])
+    return x_train, y_train, x_val, y_val, train_dct, val_dct
