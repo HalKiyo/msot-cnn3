@@ -54,7 +54,7 @@ class Pixel():
         x_train, x_val = x_train.transpose(0, 2, 3, 1), x_val.transpose(0, 2, 3, 1)
         y_train, y_val = y_train.reshape(len(y_train), self.grid_num), y_val.reshape(len(y_val), self.grid_num)
         os.makedirs(self.weights_dir, exist_ok=True)
-        for i in range(7062, self.grid_num):
+        for i in range(10402, self.grid_num):
             y_train_px = y_train[:, i]
             model = build_model((self.lat, self.lon, self.var_num))
             model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),

@@ -12,7 +12,7 @@ from util import load, shuffle, mask
 from view import acc_map, show_map
 
 def main():
-    train_flag = False
+    train_flag = True
 
     px = Pixel()
     if train_flag is True:
@@ -34,12 +34,12 @@ class Pixel():
         self.epochs = 100
         self.batch_size = 256
         self.resolution = '5x5'
-        self.tors = 'predictors_coarse_std_Apr_msot'
+        self.tors = 'predictors_coarse_std_Apr_o'
         self.tant = f"pr_{self.resolution}_coarse_std_MJJASO_world"
         self.seed = 1
         self.vsample = 1000
         self.lat, self.lon= 24, 72
-        self.var_num = 4
+        self.var_num = 1
         self.lat_grid, self.lon_grid = 24, 72 #  1728 -> 150/h then 12 hours
         self.grid_num = self.lat_grid * self.lon_grid
         #self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
