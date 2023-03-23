@@ -12,7 +12,8 @@ from util import load, shuffle, mask
 from view import acc_map, show_map
 
 def main():
-    train_flag = True
+    train_flag = False
+    overwrite_flag = False
 
     px = Pixel()
     if train_flag is True:
@@ -20,11 +21,10 @@ def main():
         px.training(*shuffle(predictors, predictant, px.vsample, px.seed))
         print(f"{px.weights_dir}: SAVED")
         print(f"{px.train_val_path}: SAVED")
-        px.validation()
     else:
         print(f"train_flag is {train_flag}: not saved")
 
-    px.validation()
+    px.validation(overwrite=overwrite_flag)
     px.show(val_index=px.val_index)
     plt.show()
 
@@ -69,12 +69,12 @@ class Pixel():
         with open(self.train_val_path, 'wb') as f:
             pickle.dump(dct, f)
 
-    def validation(self):
+    def validation(self, overwrite=False):
         with open(self.train_val_path, 'rb') as f:
             data = pickle.load(f)
         x_val, y_val = data['x_val'], data['y_val']
 
-        if os.path.exists(self.result_path) is False:
+        if os.path.exists(self.result_path) is False or overwrite is True:
             pred_lst = []
             rmse = []
             corr = []

@@ -22,12 +22,16 @@ class evaluate():
         self.epochs =100
         self.batch_size =256
         self.seed =1
-        self.var_num = 1
         self.vsample = 1000
         self.resolution = '1x1'
-        # path
+        ###############################################################
+        # if you wanna change variables, don't forget to adjust var_num
+        ###############################################################
+        self.var_num = 1
         self.tors = 'predictors_coarse_std_Apr_s'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
+        ###############################################################
+        # path
         self.workdir = '/docker/mnt/d/research/D2/cnn3'
         self.train_val_path = self.workdir + f"/train_val/continuous/{self.tors}-{self.tant}.pickle"
         self.weights_dir = self.workdir + f"/weights/continuous/{self.tors}-{self.tant}"
@@ -41,7 +45,7 @@ class evaluate():
         # init_model is allowd to be called once otherwise layer_name will be messed up
         self.model = init_model(lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
 
-        # validation
+        # view
         self.diff_bar_view_flag = False
         self.true_false_view_flag = False
 
