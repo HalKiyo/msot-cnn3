@@ -12,22 +12,19 @@ from util import load, shuffle, mask, ocean_field, land_field
 from view import acc_map, show_map
 
 def main():
-    train_flag = True
+    train_flag = False
 
     px = Pixel()
     if train_flag is True:
         tors_sst = 'predictors_coarse_std_Apr_o'
         sst_raw, _ = load(tors_sst, px.tant)
         sst = ocean_field(sst_raw[0])
-        print(sst.shape)
 
         tors_land = 'predictors_std_Apr_mst'
         predictors, predictant = load(tors_land, px.tant)
         mrso = land_field(predictors[0])
         snc = land_field(predictors[1])
         tsl = land_field(predictors[2])
-        print(mrso.shape, snc.shape, tsl.shape)
-        exit()
 
         predictors = np.array([mrso, snc, sst, tsl])
         px.training(*shuffle(predictors, predictant, px.vsample, px.seed))
@@ -54,7 +51,6 @@ class Pixel():
         self.var_num = 4
         self.lat_grid, self.lon_grid = 20, 20
         self.grid_num = self.lat_grid * self.lon_grid
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
         self.loss = tf.keras.losses.MeanSquaredError()
         self.metrics = tf.keras.metrics.MeanSquaredError()
         self.savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous/diff_space/1x1_land/{self.tant}.pickle"
@@ -70,7 +66,9 @@ class Pixel():
         for i in range(self.grid_num):
             y_train_px = y_train[:, i]
             model = build_model((self.lat, self.lon, self.var_num))
-            model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                          loss=self.loss,
+                          metrics=[self.metrics])
             model.fit(x_train, y_train_px, batch_size=self.batch_size, epochs=self.epochs)
             weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
             model.save_weights(weights_path)
@@ -94,7 +92,9 @@ class Pixel():
             for i in range(self.grid_num):
                 y_val_px = y_val[:, i]
                 model = build_model((self.lat, self.lon, self.var_num))
-                model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+                model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                              loss=self.loss,
+                              metrics=[self.metrics])
                 weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
                 model.load_weights(weights_path)
 
@@ -143,7 +143,9 @@ class Pixel():
         else:
             for i in range(self.grid_num):
                 model = build_model((self.lat, self.lon, self.var_num))
-                model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+                model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                              loss=self.loss,
+                              metrics=[self.metrics])
                 weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
                 model.load_weights(weights_path)
                 pred = model.predict(x_val)

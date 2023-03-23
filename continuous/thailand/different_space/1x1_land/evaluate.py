@@ -26,11 +26,10 @@ class evaluate():
         self.vsample = 1000
         self.resolution = '1x1'
         # path
-        self.tors = 'predictors_coarse_std_Apr_msot'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
         self.workdir = '/docker/mnt/d/research/D2/cnn3'
-        self.val_path = self.workdir + f"/train_val/continuous/diff_space/1x1_land/{self.tors}-{self.tant}.pickle"
-        self.weights_dir = self.workdir + f"/weights/continuous/diff_space/1x1_land/{self.tors}-{self.tant}"
+        self.val_path = self.workdir + f"/train_val/continuous/diff_space/1x1_land/{self.tant}.pickle"
+        self.weights_dir = self.workdir + f"/weights/continuous/diff_space/1x1_land/{self.tant}"
         self.pred_dir = self.workdir + f"/result/continuous/thailand/{self.resolution}/diff_space/1x1_land"
         self.pred_path = self.pred_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
         # model
@@ -42,8 +41,8 @@ class evaluate():
         self.model = init_model(lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
 
         # validation
-        self.diff_bar_view_flag = True
-        self.true_false_view_flag = False
+        self.diff_bar_view_flag = False
+        self.true_false_view_flag = True
 
     def load_pred(self):
         x_val, y_val = open_pickle(self.val_path)
