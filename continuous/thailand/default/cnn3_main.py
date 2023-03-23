@@ -12,7 +12,7 @@ from util import load, shuffle, mask
 from view import acc_map, show_map
 
 def main():
-    train_flag = False
+    train_flag = True
 
     px = Pixel()
     if train_flag is True:
@@ -34,15 +34,14 @@ class Pixel():
         self.epochs = 100
         self.batch_size = 256
         self.resolution = '1x1'
+        self.var_num = 4
         self.tors = 'predictors_coarse_std_Apr_msot'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
         self.seed = 1
         self.vsample = 1000
         self.lat, self.lon= 24, 72
-        self.var_num = 4
         self.lat_grid, self.lon_grid = 20, 20
         self.grid_num = self.lat_grid * self.lon_grid
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
         self.loss = tf.keras.losses.MeanSquaredError()
         self.metrics = tf.keras.metrics.MeanSquaredError()
         self.train_val_path = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous/{self.tors}-{self.tant}.pickle"
@@ -58,7 +57,9 @@ class Pixel():
         for i in range(self.grid_num):
             y_train_px = y_train[:, i]
             model = build_model((self.lat, self.lon, self.var_num))
-            model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), 
+                          loss=self.loss,
+                          metrics=[self.metrics])
             model.fit(x_train, y_train_px, batch_size=self.batch_size, epochs=self.epochs)
             weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
             model.save_weights(weights_path)
@@ -81,7 +82,9 @@ class Pixel():
             for i in range(self.grid_num):
                 y_val_px = y_val[:, i]
                 model = build_model((self.lat, self.lon, self.var_num))
-                model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+                model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                              loss=self.loss,
+                              metrics=[self.metrics])
                 weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
                 model.load_weights(weights_path)
 
@@ -130,7 +133,9 @@ class Pixel():
         else:
             for i in range(self.grid_num):
                 model = build_model((self.lat, self.lon, self.var_num))
-                model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+                model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                              loss=self.loss,
+                              metrics=[self.metrics])
                 weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
                 model.load_weights(weights_path)
                 pred = model.predict(x_val)

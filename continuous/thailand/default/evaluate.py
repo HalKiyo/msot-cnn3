@@ -34,7 +34,7 @@ class evaluate():
         self.vsample = 1000
         self.resolution = '1x1'
         # path
-        self.tors = 'predictors_coarse_std_Apr_msot'
+        self.tors = 'predictors_coarse_std_Apr_m'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
         self.workdir = '/docker/mnt/d/research/D2/cnn3'
         self.train_val_path = self.workdir + f"/train_val/continuous/{self.tors}-{self.tant}.pickle"
@@ -51,9 +51,9 @@ class evaluate():
 
         # view_flag
         self.diff_bar_view_flag = False
-        self.true_false_view_flag = False
+        self.true_false_view_flag = True
         self.auc_view_flag = False
-        self.corr_view_flag = True
+        self.corr_view_flag = False
 
     def load_pred(self):
         x_val, y_val = open_pickle(self.train_val_path)
