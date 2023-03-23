@@ -15,8 +15,8 @@ def acc_map(acc, lat_grid=20, lon_grid=20):
                      origin='upper',
                      extent=img_extent,
                      transform=projection,
-                     vmin=0, vmax=1,
-                     cmap='Oranges')
+                     vmin=0.75, vmax=1.00,
+                     cmap='tab20c')
     fig.colorbar(mat, ax=ax)
     plt.show(block=False)
 
