@@ -34,10 +34,10 @@ class evaluate():
         self.tors = 'predictors_coarse_std_Apr_msot'
         self.tant = f"pr_{self.resolution}_coarse_std_MJJASO_world"
         self.workdir = '/docker/mnt/d/research/D2/cnn3'
-        self.val_path = self.workdir + f"/train_val/continuous/{self.tors}-{self.tant}.pickle"
+        self.train_val_path = self.workdir + f"/train_val/continuous/{self.tors}-{self.tant}.pickle"
         self.weights_dir = self.workdir + f"/weights/continuous/{self.tors}-{self.tant}"
-        self.pred_dir = self.workdir + f"/result/continuous/world/{self.resolution}"
-        self.pred_path = self.pred_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
+        self.result_dir = self.workdir + f"/result/continuous/world/{self.resolution}/{self.tors}-{self.tant}"
+        self.result_path = self.result_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
         # model
         self.lat, self.lon = 24, 72
         self.lr = 0.0001
@@ -52,9 +52,9 @@ class evaluate():
         self.auc_view_flag = False
 
     def load_pred(self):
-        x_val, y_val = open_pickle(self.val_path)
-        if os.path.exists(self.pred_path):
-            pred_arr = np.squeeze(np.load(self.pred_path))
+        x_val, y_val = open_pickle(self.train_val_path)
+        if os.path.exists(self.result_path):
+            pred_arr = np.squeeze(np.load(self.result_path))
         else:
             pred_lst = []
             for i in range(self.grid_num):
@@ -64,7 +64,7 @@ class evaluate():
                 pred = model.predict(x_val)
                 pred_lst.append(pred)
             pred_arr = np.squeeze(np.array(pred_lst))
-            np.save(self.pred_path, pred_arr)
+            np.save(self.result_path, pred_arr)
         return x_val, y_val, pred_arr # pred(400, 1000)
 
     def diff_evaluation(self, pred, y):
