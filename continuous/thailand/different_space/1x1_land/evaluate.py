@@ -25,29 +25,30 @@ class evaluate():
         self.var_num = 4
         self.vsample = 1000
         self.resolution = '1x1'
-        # path
-        self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
-        self.workdir = '/docker/mnt/d/research/D2/cnn3'
-        self.val_path = self.workdir + f"/train_val/continuous/diff_space/1x1_land/{self.tant}.pickle"
-        self.weights_dir = self.workdir + f"/weights/continuous/diff_space/1x1_land/{self.tant}"
-        self.pred_dir = self.workdir + f"/result/continuous/thailand/{self.resolution}/diff_space/1x1_land"
-        self.pred_path = self.pred_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
         # model
         self.lat, self.lon = 12, 48
-        self.lr = 0.001
+        self.lr = 0.0001
         self.lat_grid, self.lon_grid = 20, 20
         self.grid_num = self.lat_grid*self.lon_grid
         # init_model is allowd to be called once otherwise layer_name will be messed up
         self.model = init_model(lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
+        # path
+        self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
+        self.workdir = '/docker/mnt/d/research/D2/cnn3'
+        self.identifier = f"{self.tant}_{self.lat}x{self.lon}"
+        self.train_val_path = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous/diff_space/1x1_land/{self.identifier}.pickle"
+        self.weights_dir = f"/docker/mnt/d/research/D2/cnn3/weights/continuous/diff_space/1x1_land/{self.identifier}"
+        self.result_dir = f"/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/{self.resolution}/diff_space/1x1_land/{self.identifier}"
+        self.result_path = self.result_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
 
         # validation
         self.diff_bar_view_flag = False
         self.true_false_view_flag = True
 
     def load_pred(self):
-        x_val, y_val = open_pickle(self.val_path)
-        if os.path.exists(self.pred_path):
-            pred_arr = np.squeeze(np.load(self.pred_path))
+        x_val, y_val = open_pickle(self.train_val_path)
+        if os.path.exists(self.result_path):
+            pred_arr = np.squeeze(np.load(self.result_path))
         else:
             pred_lst = []
             for i in range(self.grid_num):
@@ -57,7 +58,7 @@ class evaluate():
                 pred = model.predict(x_val)
                 pred_lst.append(pred)
             pred_arr = np.squeeze(np.array(pred_lst))
-            np.save(self.pred_path, pred_arr)
+            np.save(self.result_path, pred_arr)
         return x_val, y_val, pred_arr # pred(400, 1000)
 
     def diff_evaluation(self, pred, y):

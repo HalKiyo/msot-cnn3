@@ -29,8 +29,7 @@ def main():
         predictors = np.array([mrso, snc, sst, tsl])
         px.training(*shuffle(predictors, predictant, px.vsample, px.seed))
         print(f"{px.weights_dir}: SAVED")
-        print(f"{px.savefile}: SAVED")
-        px.validation()
+        print(f"{px.train_val_path}: SAVED")
     else:
         print(f"train_flag is {train_flag}: not saved")
 
@@ -53,10 +52,11 @@ class Pixel():
         self.grid_num = self.lat_grid * self.lon_grid
         self.loss = tf.keras.losses.MeanSquaredError()
         self.metrics = tf.keras.metrics.MeanSquaredError()
-        self.savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous/diff_space/1x1_land/{self.tant}.pickle"
-        self.weights_dir = f"/docker/mnt/d/research/D2/cnn3/weights/continuous/diff_space/1x1_land/{self.tant}"
-        self.pred_dir = f"/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/{self.resolution}/diff_space/1x1_land"
-        self.pred_path = self.pred_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
+        self.identifier = f"{self.tant}_{self.lat}x{self.lon}"
+        self.train_val_path = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous/diff_space/1x1_land/{self.identifier}.pickle"
+        self.weights_dir = f"/docker/mnt/d/research/D2/cnn3/weights/continuous/diff_space/1x1_land/{self.identifier}"
+        self.result_dir = f"/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/{self.resolution}/diff_space/1x1_land/{self.identifier}"
+        self.result_path = self.result_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
 
     def training(self, x_train, y_train, x_val, y_val, train_dct, val_dct):
         x_train, x_val = mask(x_train), mask(x_val)
@@ -75,16 +75,16 @@ class Pixel():
         dct = {'x_train': x_train, 'y_train': y_train,
                'x_val': x_val, 'y_val': y_val,
                'train_dct': train_dct, 'val_dct': val_dct}
-        os.makedirs(os.path.dirname(self.savefile), exist_ok=True)
-        with open(self.savefile, 'wb') as f:
+        os.makedirs(os.path.dirname(self.train_val_path), exist_ok=True)
+        with open(self.train_val_path, 'wb') as f:
             pickle.dump(dct, f)
 
     def validation(self):
-        with open(self.savefile, 'rb') as f:
+        with open(self.train_val_path, 'rb') as f:
             data = pickle.load(f)
         x_val, y_val = data['x_val'], data['y_val']
 
-        if os.path.exists(self.pred_path) is False:
+        if os.path.exists(self.result_path) is False:
             pred_lst = []
             rmse = []
             corr = []
@@ -114,12 +114,12 @@ class Pixel():
                 print(f"Correlation Coefficient of pixel{i}: {np.round(corr_i[0,1], 2)}")
 
             pred_arr = np.array(pred_lst)
-            os.makedirs(self.pred_dir, exist_ok=True)
-            np.save(self.pred_path, pred_arr)
+            os.makedirs(self.result_dir, exist_ok=True)
+            np.save(self.result_path, pred_arr)
 
         else:
             corr = []
-            pred_arr = np.squeeze(np.load(self.pred_path))
+            pred_arr = np.squeeze(np.load(self.result_path))
             for i in range(self.grid_num):
                 y_val_px = y_val[:, i]
                 corr_i = np.corrcoef(pred_arr[i,:], y_val_px)
@@ -130,15 +130,15 @@ class Pixel():
         acc_map(corr)
 
     def show(self, val_index=0):
-        with open(self.savefile, 'rb') as f:
+        with open(self.train_val_path, 'rb') as f:
             data = pickle.load(f)
         x_val, y_val = data['x_val'], data['y_val']
         y_val_px = y_val[val_index].reshape(self.lat_grid, self.lon_grid)
         show_map(y_val_px)
 
         pred_lst = []
-        if os.path.exists(self.pred_path) is True:
-            pred_val = np.squeeze(np.load(self.pred_path))
+        if os.path.exists(self.result_path) is True:
+            pred_val = np.squeeze(np.load(self.result_path))
             pred_arr = pred_val[:, val_index]
         else:
             for i in range(self.grid_num):
