@@ -11,7 +11,8 @@ from util import load, shuffle, mask
 from view import acc_map, show_map
 
 def main():
-    train_flag = False
+    train_flag = True
+    overwrite_flag = True
 
     px = Pixel()
     if train_flag is True:
@@ -19,11 +20,10 @@ def main():
         px.training(*shuffle(predictors, predictant, px.vsample, px.seed))
         print(f"{px.weights_dir}: SAVED")
         print(f"{px.train_val_path}: SAVED")
-        px.validation()
     else:
         print(f"train_flag is {train_flag}: not saved")
 
-    px.validation()
+    px.validation(overwrite=overwrite_flag)
     px.show(val_index=px.val_index)
 
 class Pixel():
@@ -36,7 +36,7 @@ class Pixel():
         # if you wanna change variables, don't forget to adjust var_num
         ###############################################################
         self.var_num = 1
-        self.tors = 'predictors_coarse_std_Apr_s'
+        self.tors = 'predictors_coarse_std_Apr_o'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
         ###############################################################
         self.seed = 1
@@ -44,7 +44,6 @@ class Pixel():
         self.lat, self.lon= 24, 72
         self.lat_grid, self.lon_grid = 20, 20
         self.grid_num = self.lat_grid * self.lon_grid
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
         self.loss = tf.keras.losses.MeanSquaredError()
         self.metrics = tf.keras.metrics.MeanSquaredError()
         self.train_val_path = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous/{self.tors}-{self.tant}.pickle"
@@ -60,7 +59,9 @@ class Pixel():
         for i in range(self.grid_num):
             y_train_px = y_train[:, i]
             model = build_model((self.lat, self.lon, self.var_num))
-            model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                          loss=self.loss,
+                          metrics=[self.metrics])
             his = model.fit(x_train, y_train_px, batch_size=self.batch_size, epochs=self.epochs)
             weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
             model.save_weights(weights_path)
@@ -70,12 +71,12 @@ class Pixel():
         with open(self.train_val_path, 'wb') as f:
             pickle.dump(dct, f)
 
-    def validation(self):
+    def validation(self, overwrite=False):
         with open(self.train_val_path, 'rb') as f:
             data = pickle.load(f)
         x_val, y_val = data['x_val'], data['y_val']
 
-        if os.path.exists(self.result_path) is False:
+        if os.path.exists(self.result_path) is False or overwrite is True:
             pred_lst = []
             rmse = []
             corr = []
@@ -83,7 +84,9 @@ class Pixel():
             for i in range(self.grid_num):
                 y_val_px = y_val[:, i]
                 model = build_model((self.lat, self.lon, self.var_num))
-                model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+                model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                              loss=self.loss,
+                              metrics=[self.metrics])
                 weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
                 model.load_weights(weights_path)
 
@@ -130,7 +133,9 @@ class Pixel():
         else:
             for i in range(self.grid_num):
                 model = build_model((self.lat, self.lon, self.var_num))
-                model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+                model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                              loss=self.loss,
+                              metrics=[self.metrics])
                 weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
                 model.load_weights(weights_path)
                 pred = model.predict(x_val)

@@ -30,17 +30,19 @@ class evaluate():
         self.epochs =100
         self.batch_size =256
         self.seed =1
-        self.var_num = 4
         self.vsample = 1000
         self.resolution = '1x1'
+
         # path
-        self.tors = 'predictors_coarse_std_Apr_m'
+        self.var_num = 4
+        self.tors = 'predictors_coarse_std_Apr_msot'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
         self.workdir = '/docker/mnt/d/research/D2/cnn3'
         self.train_val_path = self.workdir + f"/train_val/continuous/{self.tors}-{self.tant}.pickle"
         self.weights_dir = self.workdir + f"/weights/continuous/{self.tors}-{self.tant}"
         self.result_dir = self.workdir + f"/result/continuous/thailand/{self.resolution}/{self.tors}-{self.tant}"
         self.result_path = self.result_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
+
         # model
         self.lat, self.lon = 24, 72
         self.lr = 0.001
@@ -50,16 +52,15 @@ class evaluate():
         self.model = init_model(lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
 
         # view_flag
-        self.diff_bar_view_flag = False
+        self.overwrite_flag = False
+        self.diff_bar_view_flag = True
         self.true_false_view_flag = True
-        self.auc_view_flag = False
-        self.corr_view_flag = False
+        self.auc_view_flag = True
+        self.corr_view_flag = True
 
-    def load_pred(self):
+    def load_pred(self, overwrite=False):
         x_val, y_val = open_pickle(self.train_val_path)
-        if os.path.exists(self.result_path):
-            pred_arr = np.squeeze(np.load(self.result_path))
-        else:
+        if os.path.exists(self.result_path) is False or self.overwrite_flag is True:
             pred_lst = []
             for i in range(self.grid_num):
                 weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
@@ -69,6 +70,8 @@ class evaluate():
                 pred_lst.append(pred)
             pred_arr = np.squeeze(np.array(pred_lst))
             np.save(self.result_path, pred_arr)
+        else:
+            pred_arr = np.squeeze(np.load(self.result_path))
         return x_val, y_val, pred_arr # y_val(1000, 400), pred(400, 1000)
 
     def diff_evaluation(self, pred, y):

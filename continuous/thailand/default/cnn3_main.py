@@ -12,8 +12,8 @@ from util import load, shuffle, mask
 from view import acc_map, show_map
 
 def main():
-    train_flag = True
-    overwrite_flag = True
+    train_flag = False
+    overwrite_flag = False
 
     px = Pixel()
     if train_flag is True:

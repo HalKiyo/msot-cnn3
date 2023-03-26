@@ -44,7 +44,7 @@ def diff_bar(data, vmin=0, vmax=2):
     pixcel = np.arange(len(data))
     ax.bar(pixcel, data, color='magenta')
     ax.set_ylim(vmin, vmax)
-    plt.show()
+    plt.show(block=False)
 
 def draw_val(true_count, false_count):
     fig = plt.figure()
@@ -55,7 +55,7 @@ def draw_val(true_count, false_count):
     ax.set_ylim(0, 2)
     ax.set_yticks([1.0], ['val'])
     plt.legend()
-    plt.show()
+    plt.show(block=False)
 
 def draw_roc_curve(roc):
     # calculate auc
