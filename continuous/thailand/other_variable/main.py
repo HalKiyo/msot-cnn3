@@ -104,7 +104,7 @@ class Pixel():
                 rr.append(np.round(rr_i, 2))
 
                 print(f"Correlation Coefficient of pixel{i}: {np.round(corr_i[0,1], 2)}")
-                os.makedirs(self.result_dir, )
+                os.makedirs(self.result_dir, exist_ok=True)
                 pred_arr = np.array(pred_lst)
                 np.save(self.result_path, pred_arr)
         else:
