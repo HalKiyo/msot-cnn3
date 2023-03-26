@@ -12,11 +12,17 @@ import matplotlib.pyplot as plt
 
 def main():
     EVAL = evaluate()
+    """
+    pred: (400, 1000)
+    y_val: (1000, 400)
+    """
     x_val, y_val, pred = EVAL.load_pred()
     if EVAL.diff_bar_view_flag is True:
         EVAL.diff_evaluation(pred, y_val)
+    if EVAL.rmse_view_flag is True:
+        EVAL.rmse_evaluation(pred, y_val)
     if EVAL.true_false_view_flag is True:
-        EVAL.true_false_bar(pred, y_val)
+        EVAL.true_false_bar(pred, y_val, criteria=0.05)
     if EVAL.auc_view_flag is True:
         roc = EVAL.auc(pred.T, y_val)
         draw_roc_curve(roc)
@@ -35,8 +41,11 @@ class evaluate():
 
         # path
         self.var_num = 4
+        ##############################################################
+        # CHANGE here for input file
         self.tors = 'predictors_coarse_std_Apr_msot'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
+        ##############################################################
         self.workdir = '/docker/mnt/d/research/D2/cnn3'
         self.train_val_path = self.workdir + f"/train_val/continuous/{self.tors}-{self.tant}.pickle"
         self.weights_dir = self.workdir + f"/weights/continuous/{self.tors}-{self.tant}"
@@ -53,10 +62,11 @@ class evaluate():
 
         # view_flag
         self.overwrite_flag = False
-        self.diff_bar_view_flag = True
+        self.diff_bar_view_flag = False
+        self.rmse_view_flag = True
         self.true_false_view_flag = True
         self.auc_view_flag = True
-        self.corr_view_flag = True
+        self.corr_view_flag = True # 95% reliable span is also calculated
 
     def load_pred(self, overwrite=False):
         x_val, y_val = open_pickle(self.train_val_path)
@@ -82,6 +92,18 @@ class evaluate():
         diff_mean = np.mean(diff_flat)
         print(diff_mean)
         diff_bar(diff_flat)
+
+    def rmse_evaluation(self, pred, y):
+        rmse_map = []
+        for px in range(len(pred)):
+            value = pred[px, :] # pred(400, 1000)
+            label = y[:, px] # y(1000, 400)
+            rmse = np.sqrt(np.mean((value - label)**2))
+            rmse_map.append(rmse)
+        rmse_map = np.array(rmse_map)
+        rmse_map = rmse_map.reshape(self.lat_grid, self.lon_grid)
+        print(f"rmse_map has shape{rmse_map.shape}")
+        acc_map(rmse_map, vmin=0.10, vmax=0.35)
 
     def true_false_bar(self, pred, y, criteria=0.1):
         true_count, false_count = 0, 0
@@ -155,7 +177,6 @@ class evaluate():
             y_val_px = y_val[:, i]
             corr_i = np.corrcoef(pred_arr[i,:], y_val_px)
             corr.append(np.round(corr_i[0,1],2))
-            print(f"grid: {i}")
 
         # calculate 95% intervals
         n = len(corr)

@@ -35,8 +35,8 @@ class evaluate():
         ###############################################################
         # if you wanna change variables, don't forget to adjust var_num
         ###############################################################
-        self.var_num = 1
-        self.tors = 'predictors_coarse_std_Apr_o'
+        self.var_num = 2
+        self.tors = 'predictors_coarse_std_Apr_mo'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
         ###############################################################
         # path

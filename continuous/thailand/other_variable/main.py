@@ -5,14 +5,15 @@ warnings.filterwarnings('ignore')
 import pickle
 import numpy as np
 import tensorflow as tf
+import matplotlib.pyplot as plt
 
 from model import build_model
 from util import load, shuffle, mask
 from view import acc_map, show_map
 
 def main():
-    train_flag = True
-    overwrite_flag = True
+    train_flag = False
+    overwrite_flag = False
 
     px = Pixel()
     if train_flag is True:
@@ -25,18 +26,19 @@ def main():
 
     px.validation(overwrite=overwrite_flag)
     px.show(val_index=px.val_index)
+    plt.show()
 
 class Pixel():
     def __init__(self):
-        self.val_index = 0
+        self.val_index = 20
         self.epochs = 100
         self.batch_size = 256
         self.resolution = '1x1'
         ###############################################################
         # if you wanna change variables, don't forget to adjust var_num
         ###############################################################
-        self.var_num = 1
-        self.tors = 'predictors_coarse_std_Apr_o'
+        self.var_num = 2
+        self.tors = 'predictors_coarse_std_Apr_mo'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
         ###############################################################
         self.seed = 1
