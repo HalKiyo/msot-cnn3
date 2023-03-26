@@ -63,17 +63,17 @@ def draw_roc_curve(roc):
     tpr = roc[:, 0]
     AUC = auc(fpr, tpr)
 
-    fig, ax = plt.subplots(figsizze=(6, 6))
+    fig, ax = plt.subplots(figsize=(6, 6))
 
     # draw cnn_continuous line
     plt.plot(fpr,
              tpr,
              label=f"cnn_continuous ROC curve (AUC = {AUC})",
              color="deeppink",
-             linestypel=":",
+             linestyle=":",
              linewidth=4)
     # plot cnn_contionuous percentile results
-    plt.plot(fpr, tpr, s=100, color='red')
+    plt.scatter(fpr, tpr, s=100, color='red')
 
     # plot auc=0.5 line
     plt.plot([0,1],

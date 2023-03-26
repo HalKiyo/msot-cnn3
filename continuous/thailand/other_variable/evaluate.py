@@ -55,11 +55,11 @@ class evaluate():
         self.model = init_model(lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
 
         # view
-        self.overwrite_flag = True
-        self.diff_bar_view_flag = True
+        self.overwrite_flag = False
+        self.diff_bar_view_flag = False
         self.true_false_view_flag = True
         self.auc_view_flag = True
-        self.corr_view_flag = True
+        self.corr_view_flag = False
 
     def load_pred(self):
         x_val, y_val = open_pickle(self.train_val_path)
@@ -133,7 +133,7 @@ class evaluate():
     def auc(self, sim, obs):
         result = [[0,0]]
         # percentile variation list
-        per_list = np.arange(101, 100, 10)
+        per_list = np.arange(10, 100, 10)
         per_list = per_list[::-1]
 
         # calsulate different percentile result
@@ -156,13 +156,13 @@ class evaluate():
         pred_arr = np.squeeze(pred)
         for i in range(self.grid_num):
             y_val_px = y_val[:, i]
-            corr_i = np.corrcoef(red_arr[i,:], y_val_px)
+            corr_i = np.corrcoef(pred_arr[i,:], y_val_px)
             corr.append(np.round(corr_i[0, 1], 2))
             print(f"gird: {i}")
 
         # calculate 95% intervals
         n = len(corr)
-        sample_mean == np.mean(corr)
+        sample_mean = np.mean(corr)
         sample_var = stats.tvar(corr)
         interval = stats.norm.interval(alpha=0.95,
                                        loc=sample_mean,
@@ -171,7 +171,7 @@ class evaluate():
 
         # view corr heat-map
         corr = np.array(corr)
-        corr = norr.reshape(self.lat_grid, self.lon_grid)
+        corr = corr.reshape(self.lat_grid, self.lon_grid)
         acc_map(corr)
 
 
