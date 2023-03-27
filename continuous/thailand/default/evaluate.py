@@ -42,11 +42,12 @@ class evaluate():
 
         # path
         self.var_num = 4
-        ##############################################################
-        # CHANGE here for input file
+        ###################################################################
+        # Don't change default path, move other_variables directory instead
+        ###################################################################
         self.tors = 'predictors_coarse_std_Apr_msot'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
-        ##############################################################
+        ##################################################################
         self.workdir = '/docker/mnt/d/research/D2/cnn3'
         self.train_val_path = self.workdir + f"/train_val/continuous/{self.tors}-{self.tant}.pickle"
         self.weights_dir = self.workdir + f"/weights/continuous/{self.tors}-{self.tant}"

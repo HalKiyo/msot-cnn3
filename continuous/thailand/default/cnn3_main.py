@@ -35,8 +35,12 @@ class Pixel():
         self.batch_size = 256
         self.resolution = '1x1'
         self.var_num = 4
+        ###################################################################
+        # Don't change default path, move other_variables directory instead
+        ###################################################################
         self.tors = 'predictors_coarse_std_Apr_msot'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
+        ##################################################################
         self.seed = 1
         self.vsample = 1000
         self.lat, self.lon= 24, 72
