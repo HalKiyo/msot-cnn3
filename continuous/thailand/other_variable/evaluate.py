@@ -7,14 +7,14 @@ from scipy import stats
 
 from util import open_pickle
 from model import init_model
-from view import diff_bar, draw_val, draw_roc_curve, acc_map
+from view import ae_bar, draw_val, draw_roc_curve, acc_map
 import matplotlib.pyplot as plt
 
 def main():
     EVAL = evaluate()
     x_val, y_val, pred = EVAL.load_pred()
-    if EVAL.diff_bar_view_flag is True:
-        EVAL.diff_evaluation(pred, y_val)
+    if EVAL.mae_view_flag is True:
+        EVAL.mae_evaluation(pred, y_val)
     if EVAL.true_false_view_flag is True:
         EVAL.true_false_bar(pred, y_val)
     if EVAL.auc_view_flag is True:
@@ -56,7 +56,7 @@ class evaluate():
 
         # view
         self.overwrite_flag = False
-        self.diff_bar_view_flag = False
+        self.mae_view_flag = False
         self.true_false_view_flag = True
         self.auc_view_flag = True
         self.corr_view_flag = False
@@ -77,14 +77,26 @@ class evaluate():
             pred_arr = np.squeeze(np.load(self.result_path))
         return x_val, y_val, pred_arr # pred(400, 1000)
 
-    def diff_evaluation(self, pred, y):
+    def mae_evaluation(self, pred, y):
         value = pred[:, self.val_index] # pred(400, 1000)
         label = y[self.val_index, :] # y(1000, 400)
-        diff = np.abs(value - label)
-        diff_flat = diff.reshape(-1)
-        diff_mean = np.mean(diff_flat)
-        print(diff_mean)
-        diff_bar(diff_flat)
+        ae = np.abs(value - label)
+        ae_flat = ae.reshape(-1)
+        mae = np.mean(ae_flat)
+        print(mae)
+        ae_bar(ae_flat)
+
+    def rmse_evaluation(self, pred, y):
+        rmse_map = []
+        for px in range(len(pred)):
+            value = pred[px, :] # pred(400, 1000)
+            label = y[:, px] # y(1000, 400)
+            rmse = np.sqrt(np.mean((value - label)**2))
+            rmse_map.append(rmse)
+        rmse_map = np.array(rmse_map)
+        rmse_map = rmse_map.reshape(self.lat_grid, self.lon_grid)
+        print(f"rmse_map has shape{rmse_map.shape}")
+        acc_map(rmse_map, vmin=0.10, vmax=0.35)
 
     def true_false_bar(self, pred, y, criteria=0.1):
         true_count, false_count = 0, 0

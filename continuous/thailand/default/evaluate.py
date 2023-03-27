@@ -7,7 +7,7 @@ from scipy import stats
 
 from util import open_pickle
 from model3 import init_model
-from view import diff_bar, draw_val, draw_roc_curve, acc_map
+from view import ae_bar, draw_val, draw_roc_curve, acc_map
 import matplotlib.pyplot as plt
 
 def main():
@@ -17,8 +17,8 @@ def main():
     y_val: (1000, 400)
     """
     x_val, y_val, pred = EVAL.load_pred()
-    if EVAL.diff_bar_view_flag is True:
-        EVAL.diff_evaluation(pred, y_val)
+    if EVAL.mae_view_flag is True:
+        EVAL.mae_evaluation(pred, y_val)
     if EVAL.rmse_view_flag is True:
         EVAL.rmse_evaluation(pred, y_val)
     if EVAL.true_false_view_flag is True:
@@ -62,11 +62,11 @@ class evaluate():
 
         # view_flag
         self.overwrite_flag = False
-        self.diff_bar_view_flag = False
+        self.mae_view_flag = False
         self.rmse_view_flag = True
         self.true_false_view_flag = True
         self.auc_view_flag = True
-        self.corr_view_flag = True # 95% reliable span is also calculated
+        self.corr_view_flag = True
 
     def load_pred(self, overwrite=False):
         x_val, y_val = open_pickle(self.train_val_path)
@@ -84,25 +84,33 @@ class evaluate():
             pred_arr = np.squeeze(np.load(self.result_path))
         return x_val, y_val, pred_arr # y_val(1000, 400), pred(400, 1000)
 
-    def diff_evaluation(self, pred, y):
+    def mae_evaluation(self, pred, y):
         value = pred[:, self.val_index] # pred(400, 1000)
         label = y[self.val_index, :] # y(1000, 400)
-        diff = np.abs(value - label)
-        diff_flat = diff.reshape(-1)
-        diff_mean = np.mean(diff_flat)
-        print(diff_mean)
-        diff_bar(diff_flat)
+        ae = np.abs(value - label)
+        ae_flat = ae.reshape(-1)
+        mae = np.mean(ae_flat)
+        print(f"mae of {self.val_index} is {mae}")
+        ae_bar(ae_flat)
 
     def rmse_evaluation(self, pred, y):
-        rmse_map = []
+        rmse_flat = []
         for px in range(len(pred)):
             value = pred[px, :] # pred(400, 1000)
             label = y[:, px] # y(1000, 400)
             rmse = np.sqrt(np.mean((value - label)**2))
-            rmse_map.append(rmse)
-        rmse_map = np.array(rmse_map)
-        rmse_map = rmse_map.reshape(self.lat_grid, self.lon_grid)
-        print(f"rmse_map has shape{rmse_map.shape}")
+            rmse_flat.append(rmse)
+        rmse_flat = np.array(rmse_flat)
+
+        n = len(rmse_flat)
+        sample_mean = np.mean(rmse_flat)
+        sample_var = stats.tvar(rmse_flat)
+        interval = stats.norm.interval(alpha=0.95,
+                                       loc=sample_mean,
+                                       scale=np.sqrt(sample_var/n))
+        print(f"rmse_95%reliable_mean spans {interval}")
+
+        rmse_map = rmse_flat.reshape(self.lat_grid, self.lon_grid)
         acc_map(rmse_map, vmin=0.10, vmax=0.35)
 
     def true_false_bar(self, pred, y, criteria=0.1):
@@ -185,7 +193,7 @@ class evaluate():
         interval = stats.norm.interval(alpha=0.95,
                                        loc=sample_mean,
                                        scale=np.sqrt(sample_var/n))
-        print(interval)
+        print(f"corr_95%reliable_mean spans {interval}")
 
         # view corr heat-map
         corr = np.array(corr)

@@ -37,7 +37,7 @@ def show_map(image, vmin=-1, vmax=1):
     cbar = fig.colorbar(mat, ax=ax)
     plt.show(block=False)
 
-def diff_bar(data, vmin=0, vmax=2):
+def ae_bar(data, vmin=0, vmax=2):
     # grid毎にabs(実際のlabelデータ-予測結果)を400個棒グラフにして出力する
     fig = plt.figure()
     ax = plt.subplot()
