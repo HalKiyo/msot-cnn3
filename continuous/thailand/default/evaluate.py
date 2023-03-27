@@ -119,7 +119,6 @@ class evaluate():
         gmm = GaussianMixture(n_components=2, random_state=42)
         gmm.fit(data.reshape(-1, 1)) # 次元数2を入力とするため変形
         estimated_group = gmm.predict(data.reshape(-1, 1))
-        print(estimated_group.shape)
         return gmm
 
     def true_false_bar(self, pred, y, criteria=0.1):
