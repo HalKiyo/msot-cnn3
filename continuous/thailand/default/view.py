@@ -3,6 +3,7 @@ import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 from sklearn.metrics import auc
+from scipy.stats import norm
 
 def acc_map(acc, lat_grid=20, lon_grid=20, vmin=0.75, vmax=1.00):
     projection = ccrs.PlateCarree(central_longitude=180)
@@ -44,6 +45,30 @@ def ae_bar(data, vmin=0, vmax=2):
     pixcel = np.arange(len(data))
     ax.bar(pixcel, data, color='magenta')
     ax.set_ylim(vmin, vmax)
+    plt.show(block=False)
+
+def bimodal_dist(data, gmm):
+    fig, ax = plt.subplots()
+
+    # histgram
+    ax.hist(data, color='g', alpha=0.5)
+
+    # gaussian mixture modelling
+    ax2 = ax.twinx()
+    x = np.linspace(0, 1, 1000)
+    true = norm.pdf(x,
+                   gmm.means_[0, -1],
+                   np.sqrt(gmm.covariances_[0]))
+    false = norm.pdf(x,
+                   gmm.means_[1, -1],
+                   np.sqrt(gmm.covariances_[1]))
+    ax2.plot(x,
+            np.squeeze(gmm.weights_[0]*true),
+            label='true')
+    ax2.plot(x,
+            np.squeeze(gmm.weights_[1]*false),
+            label='false')
+    ax2.legend()
     plt.show(block=False)
 
 def draw_val(true_count, false_count):

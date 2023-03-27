@@ -4,10 +4,11 @@ import warnings
 warnings.filterwarnings('ignore')
 import numpy as np
 from scipy import stats
+from sklearn.mixture import GaussianMixture
 
 from util import open_pickle
 from model3 import init_model
-from view import ae_bar, draw_val, draw_roc_curve, acc_map
+from view import ae_bar, draw_val, draw_roc_curve, acc_map, bimodal_dist
 import matplotlib.pyplot as plt
 
 def main():
@@ -22,7 +23,7 @@ def main():
     if EVAL.rmse_view_flag is True:
         EVAL.rmse_evaluation(pred, y_val)
     if EVAL.true_false_view_flag is True:
-        EVAL.true_false_bar(pred, y_val, criteria=0.05)
+        EVAL.true_false_bar(pred, y_val, criteria=0.01)
     if EVAL.auc_view_flag is True:
         roc = EVAL.auc(pred.T, y_val)
         draw_roc_curve(roc)
@@ -63,10 +64,10 @@ class evaluate():
         # view_flag
         self.overwrite_flag = False
         self.mae_view_flag = False
-        self.rmse_view_flag = True
+        self.rmse_view_flag = False
         self.true_false_view_flag = True
-        self.auc_view_flag = True
-        self.corr_view_flag = True
+        self.auc_view_flag = False
+        self.corr_view_flag = False
 
     def load_pred(self, overwrite=False):
         x_val, y_val = open_pickle(self.train_val_path)
@@ -113,15 +114,35 @@ class evaluate():
         rmse_map = rmse_flat.reshape(self.lat_grid, self.lon_grid)
         acc_map(rmse_map, vmin=0.10, vmax=0.35)
 
+    def GMM(self, data):
+        gmm = GaussianMixture(n_components=2, random_state=42)
+        gmm.fit(data.reshape(-1, 1)) # 次元数2を入力とするため変形
+        estimated_group = gmm.predict(data.reshape(-1, 1))
+        print(estimated_group.shape)
+        return gmm
+
     def true_false_bar(self, pred, y, criteria=0.1):
         true_count, false_count = 0, 0
-        for i in range(len(y)):
-            diff = np.abs(pred[:, i] - y[i, :])
-            diff_mean = np.mean(diff)
-            if diff_mean <= criteria:
+        rmse_flat = []
+        for sam in range(len(y)):
+            value = pred[:, sam] # pred(400, 1000)
+            label = y[sam, :] # y(1000, 400)
+            rmse = np.sqrt(np.mean((value - label)**2))
+            rmse_flat.append(rmse)
+
+        rmse_flat = np.array(rmse_flat)
+        gmm = self.GMM(rmse_flat)
+        criteria = np.mean([gmm.means_[0, -1],
+                            gmm.means_[1, -1]])
+
+        for sam in range(len(y)):
+            if rmse_flat[sam] <= criteria:
                 true_count += 1
             else:
                 false_count += 1
+
+        print(f"mean of gmm is {criteria}")
+        bimodal_dist(rmse_flat, gmm)
         draw_val(true_count, false_count)
 
     def roc(self, sim, obs, percentile=20):

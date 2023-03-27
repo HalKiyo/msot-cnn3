@@ -87,23 +87,32 @@ class evaluate():
         ae_bar(ae_flat)
 
     def rmse_evaluation(self, pred, y):
-        rmse_map = []
+        rmse_flat = []
         for px in range(len(pred)):
             value = pred[px, :] # pred(400, 1000)
             label = y[:, px] # y(1000, 400)
             rmse = np.sqrt(np.mean((value - label)**2))
-            rmse_map.append(rmse)
-        rmse_map = np.array(rmse_map)
-        rmse_map = rmse_map.reshape(self.lat_grid, self.lon_grid)
-        print(f"rmse_map has shape{rmse_map.shape}")
+            rmse_flat.append(rmse)
+        rmse_flat = np.array(rmse_flat)
+
+        n = len(rmse_flat)
+        sample_mean = np.mean(rmse_flat)
+        sample_var = stats.tvar(rmse_flat)
+        interval = stats.norm.interval(alpha=0.95,
+                                       loc=sample_mean,
+                                       scale=np.sqrt(sample_var/n))
+        print(f"rmse_95%reliable_mean spans {interval}")
+
+        rmse_map = rmse_flat.reshape(self.lat_grid, self.lon_grid)
         acc_map(rmse_map, vmin=0.10, vmax=0.35)
 
     def true_false_bar(self, pred, y, criteria=0.1):
         true_count, false_count = 0, 0
-        for i in range(len(y)):
-            diff = np.abs(pred[:, i] - y[i, :])
-            diff_mean = np.mean(diff)
-            if diff_mean <= criteria:
+        for sam in range(len(y)):
+            value = pred[:, sam] # pred(400, 1000)
+            label = y[sam, :] # y(1000, 400)
+            rmse = np.sqrt(np.mean((value - label)**2))
+            if rmse <= criteria:
                 true_count += 1
             else:
                 false_count += 1
@@ -179,7 +188,7 @@ class evaluate():
         interval = stats.norm.interval(alpha=0.95,
                                        loc=sample_mean,
                                        scale=np.sqrt(sample_var/n))
-        print(interval)
+        print(f"corr_95%reliable_mean spans {interval}")
 
         # view corr heat-map
         corr = np.array(corr)

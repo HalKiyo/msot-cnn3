@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 from sklearn.metrics import auc
 
-def acc_map(acc, lat_grid=20, lon_grid=20):
+def acc_map(acc, lat_grid=20, lon_grid=20, vmin=0.75, vmax=1.00):
     projection = ccrs.PlateCarree(central_longitude=180)
     img_extent = (-90, -70, 5, 25) # location = (N5-25, E90-110)
 
@@ -15,7 +15,7 @@ def acc_map(acc, lat_grid=20, lon_grid=20):
                      origin='upper',
                      extent=img_extent,
                      transform=projection,
-                     vmin=0.75, vmax=1.00,
+                     vmin=vmin, vmax=vmax,
                      cmap='tab20c')
     cbar = fig.colorbar(mat, ax=ax)
     plt.show(block=False)
