@@ -56,7 +56,7 @@ class evaluate():
 
         # model
         self.lat, self.lon = 24, 72
-        self.lr = 0.001
+        self.lr = 0.0001
         self.lat_grid, self.lon_grid = 20, 20
         self.grid_num = self.lat_grid*self.lon_grid
         # init_model is allowd to be called once otherwise layer_name will be messed up

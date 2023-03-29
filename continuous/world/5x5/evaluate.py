@@ -3,22 +3,32 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import warnings
 warnings.filterwarnings('ignore')
 import numpy as np
+from scipy import stats
+from sklearn.mixture import GaussianMixture
 
 from util import open_pickle
 from model3 import init_model
-from view import diff_bar, draw_val, draw_roc_curve
+from view import ae_bar, draw_val, draw_roc_curve, acc_map, bimodal_dist
 import matplotlib.pyplot as plt
 
 def main():
     EVAL = evaluate()
+    """
+    pred: (400, 1000)
+    y_val: (1000, 400)
+    """
     x_val, y_val, pred = EVAL.load_pred()
-    if EVAL.diff_bar_view_flag is True:
-        EVAL.diff_evaluation(pred, y_val)
+    if EVAL.mae_view_flag is True:
+        EVAL.mae_evaluation(pred, y_val)
+    if EVAL.rmse_view_flag is True:
+        EVAL.rmse_evaluation(pred, y_val)
     if EVAL.true_false_view_flag is True:
-        EVAL.true_false_bar(pred, y_val)
+        EVAL.true_false_bar(pred, y_val, criteria=0.1)
     if EVAL.auc_view_flag is True:
         roc = EVAL.auc(pred.T, y_val)
         draw_roc_curve(roc)
+    if EVAL.corr_view_flag is True:
+        EVAL.correlation(pred, y_val)
     plt.show()
 
 class evaluate():
@@ -27,17 +37,23 @@ class evaluate():
         self.epochs =100
         self.batch_size =256
         self.seed =1
-        self.var_num = 4
         self.vsample = 1000
         self.resolution = '5x5'
+
         # path
+        ####################################################################
+        # CHANGE here for different condition
+        ####################################################################
+        self.var_num = 4
         self.tors = 'predictors_coarse_std_Apr_msot'
-        self.tant = f"pr_{self.resolution}_coarse_std_MJJASO_world"
+        self.tant = f"pr_{self.resolution}_coarse_std_MJJ_world"
+        ####################################################################
         self.workdir = '/docker/mnt/d/research/D2/cnn3'
         self.train_val_path = self.workdir + f"/train_val/continuous/{self.tors}-{self.tant}.pickle"
         self.weights_dir = self.workdir + f"/weights/continuous/{self.tors}-{self.tant}"
         self.result_dir = self.workdir + f"/result/continuous/world/{self.resolution}/{self.tors}-{self.tant}"
         self.result_path = self.result_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
+
         # model
         self.lat, self.lon = 24, 72
         self.lr = 0.0001
@@ -47,15 +63,16 @@ class evaluate():
         self.model = init_model(lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
 
         # validation
-        self.diff_bar_view_flag = False
+        self.overwrite_flag = True
+        self.mae_view_flag = True
+        self.rmse_view_flag = True
         self.true_false_view_flag = True
-        self.auc_view_flag = False
+        self.auc_view_flag = True
+        self.corr_view_flag = True
 
-    def load_pred(self):
+    def load_pred(self, overwrite=False):
         x_val, y_val = open_pickle(self.train_val_path)
-        if os.path.exists(self.result_path):
-            pred_arr = np.squeeze(np.load(self.result_path))
-        else:
+        if os.path.exists(self.result_path) is False or self.overwrite_flag is True:
             pred_lst = []
             for i in range(self.grid_num):
                 weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
@@ -65,26 +82,66 @@ class evaluate():
                 pred_lst.append(pred)
             pred_arr = np.squeeze(np.array(pred_lst))
             np.save(self.result_path, pred_arr)
-        return x_val, y_val, pred_arr # pred(400, 1000)
+        else:
+            pred_arr = np.squeeze(np.load(self.result_path))
+        return x_val, y_val, pred_arr # y_val(1000, 400), pred(400, 1000)
 
-    def diff_evaluation(self, pred, y):
-        value = pred[:, self.val_index] # pred(grid_num, 1000)
-        label = y[self.val_index, :] # y(1000, grid_num)
-        diff = np.abs(value - label)
-        diff_flat = diff.reshape(-1)
-        diff_mean = np.mean(diff_flat)
-        print(diff_mean)
-        diff_bar(diff_flat)
+    def mae_evaluation(self, pred, y):
+        value = pred[:, self.val_index] # pred(400, 1000)
+        label = y[self.val_index, :] # y(1000, 400)
+        ae = np.abs(value - label)
+        ae_flat = ae.reshape(-1)
+        mae = np.mean(ae_flat)
+        print(f"mae of {self.val_index} is {mae}")
+        ae_bar(ae_flat)
+
+    def rmse_evaluation(self, pred, y):
+        rmse_flat = []
+        for px in range(len(pred)):
+            value = pred[px, :] # pred(400, 1000)
+            label = y[:, px] # y(1000, 400)
+            rmse = np.sqrt(np.mean((value - label)**2))
+            rmse_flat.append(rmse)
+        rmse_flat = np.array(rmse_flat)
+
+        n = len(rmse_flat)
+        sample_mean = np.mean(rmse_flat)
+        sample_var = stats.tvar(rmse_flat)
+        interval = stats.norm.interval(alpha=0.95,
+                                      loc=sample_mean,
+                                      scale=np.sqrt(sample_var/n))
+        print(f"rmse_95%reliable_mean spans {interval}")
+
+        rmse_map = rmse_flat.reshape(self.lat_grid, self.long_grid)
+        acc_map(rmse_map, vmin=0.10, vmax=0.35)
+
+    def GMM(self, data):
+        gmm = GaussianMixture(n_components=2, random_state=42)
+        gmm.fit(data.resahpe(-1, 1)) # 次元数2を入力とするため変形
+        estimated_group = gmm.predict(data.reshape(-1, 1))
+        return gmm
 
     def true_false_bar(self, pred, y, criteria=0.1):
         true_count, false_count = 0, 0
-        for i in range(len(y)):
-            diff = np.abs(pred[:, i] - y[i, :])
-            diff_mean = np.mean(diff)
-            if diff_mean <= criteria:
+        rmse_flat = []
+        for sam in range(len(y)):
+            value = pred[:, sam] # pred(400, 1000)
+            label = y[sam, :] # y(1000, 400)
+            rmse = np.sqrt(np.mean((value - label)**2))
+            rmse_flat.append(rmse)
+
+        rmse_flat = np.array(rmse_flat)
+        gmm = self.GMM(rmse_flat)
+        criteria = np.mean([gmm.means_[0, -1],
+                            gmm.means_[1, -1]])
+        for sam in range(len(y)):
+            if rmse_flat[sam] <= criteria:
                 true_count += 1
             else:
                 false_count += 1
+
+        print(f"mean of gmm is {criteria}")
+        bimodal_dist(rmse_flat, gmm)
         draw_val(true_count, false_count)
 
     def roc(self, sim, obs, percentile=20):
@@ -140,6 +197,28 @@ class evaluate():
         result.append([1,1])
         result = np.array(result)
         return result
+
+    def correlation(self, pred, y_val):
+        corr = []
+        pred_arr = np.squeeze(pred)
+        for i in range(self.grid_num):
+            y_val_px = y_val[:, i]
+            corr_i = np.corrcoef(pred_arr[i, :], y_val_px)
+            corr.append(np.round(corr_i[0, 1], 2))
+
+        # calculate 95% intervals
+        n = len(corr)
+        sample_mean = np.mean(corr)
+        sample_var = stats.tvar(corr)
+        interval = stats.norm.interval(alpha=0.95,
+                                       loc=sample_mean,
+                                       scale=np.sqrt(sample_var/n))
+        print(f"corr_95%reliable_mean spans {interval}")
+
+        # view corr heat-map
+        corr = np.array(corr)
+        corr = corr.reshape(self.lat_grid, self.lon_grid)
+        acc_map(corr)
 
 if __name__ == '__main__':
     main()

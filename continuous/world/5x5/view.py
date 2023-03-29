@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 from sklearn.metrics import auc
 
-def acc_map(acc, lat_grid=20, lon_grid=20):
+def acc_map(acc, lat_grid=20, lon_grid=20, vmin=0.75, vmax=1.00):
     projection = ccrs.PlateCarree(central_longitude=180)
     img_extent = (-180, 180, -60, 60)  # location = (N5-25, E90-110)
 
@@ -15,7 +15,7 @@ def acc_map(acc, lat_grid=20, lon_grid=20):
                      origin='upper',
                      extent=img_extent,
                      transform=projection,
-                     vmin=0.75, vmax=1.00,
+                     vmin=vmin, vmax=vmax,
                      cmap='tab20c')
     fig.colorbar(mat, ax=ax)
     plt.show(block=False)
@@ -37,14 +37,38 @@ def show_map(image, vmin=-1, vmax=1):
     fig.colorbar(mat, ax=ax)
     plt.show(block=False)
 
-def diff_bar(data, vmin=0, vmax=2):
+def ae_bar(data, vmin=0, vmax=2):
     # grid毎にabs(実際のlabelデータ-予測結果)を400個棒グラフにして出力する
     fig = plt.figure()
     ax = plt.subplot()
     pixcel = np.arange(len(data))
     ax.bar(pixcel, data, color='magenta')
     ax.set_ylim(vmin, vmax)
-    plt.show()
+    plt.show(block=False)
+
+def bimodal_dist(data, gmm):
+    fig, ax = plt.subplots()
+
+    # histgram
+    ax.hist(data, color='g', alpha=0.5)
+
+    # gaussian mixture modelling
+    ax2 = ax.twinx()
+    x = np.linspace(0, 1, 1000)
+    true = norm.pdf(x,
+                    gmm.means_[0, -1],
+                    np.sqrt(gmm.covariances_[0]))
+    false = norm.pdf(x,
+                     gmm.means_[1, -1],
+                     np.sqrt(gmm.covariances_[1]))
+    ax2.plot(x,
+             np.squeeze(gmm.weights_[0]*true),
+             label='true')
+    ax2.plot(x,
+             np.squeeze(gmm.weights_[1]*false),
+             label='false')
+    ax2.legend()
+    plt.show(block=False)
 
 def draw_val(true_count, false_count):
     fig = plt.figure()

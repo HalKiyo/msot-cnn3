@@ -13,36 +13,44 @@ from view import acc_map, show_map
 
 def main():
     train_flag = False
+    overwrite_flag = False
 
     px = Pixel()
     if train_flag is True:
         predictors, predictant = load(px.tors, px.tant)
-        px.training(*shuffle(predictors, predictant, px.vsample, px.seed, lat = px.lat_grid, lon = px.lon_grid))
+        px.training(*shuffle(predictors,
+                             predictant,
+                             px.vsample,
+                             px.seed,
+                             lat = px.lat_grid,
+                             lon = px.lon_grid))
         print(f"{px.weights_dir}: SAVED")
         print(f"{px.train_val_path}: SAVED")
-        px.validation()
     else:
         print(f"train_flag is {train_flag}: not saved")
 
+    px.validation(overwrite=overwrite_flag)
     px.show(val_index=px.val_index)
-    px.validation()
     plt.show()
 
 class Pixel():
     def __init__(self):
-        self.val_index = 5
+        self.val_index = 4
         self.epochs = 100
         self.batch_size = 256
         self.resolution = '5x5'
+        #############################################################
+        # CHANGE here for different experiments
+        #############################################################
         self.var_num = 4
         self.tors = 'predictors_coarse_std_Apr_msot'
-        self.tant = f"pr_{self.resolution}_coarse_std_MJJASO_world"
+        self.tant = f"pr_{self.resolution}_coarse_std_MJJ_world"
+        ##############################################################
         self.seed = 1
         self.vsample = 1000
         self.lat, self.lon= 24, 72
         self.lat_grid, self.lon_grid = 24, 72 #  1728 -> 150/h then 12 hours
         self.grid_num = self.lat_grid * self.lon_grid
-        #self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
         self.loss = tf.keras.losses.MeanSquaredError()
         self.metrics = tf.keras.metrics.MeanSquaredError()
         self.train_val_path = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous/{self.tors}-{self.tant}.pickle"
@@ -70,12 +78,12 @@ class Pixel():
         with open(self.train_val_path, 'wb') as f:
             pickle.dump(dct, f)
 
-    def validation(self):
+    def validation(self, overwrite=False):
         with open(self.train_val_path, 'rb') as f:
             data = pickle.load(f)
         x_val, y_val = data['x_val'], data['y_val']
 
-        if os.path.exists(self.result_path) is False:
+        if os.path.exists(self.result_path) is False or overwrite is True:
             pred_lst = []
             rmse = []
             corr = []

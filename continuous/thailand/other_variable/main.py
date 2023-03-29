@@ -38,7 +38,7 @@ class Pixel():
         # if you wanna change variables, don't forget to adjust var_num
         ###############################################################
         self.var_num = 3
-        self.tors = 'predictors_coarse_std_Apr_sot'
+        self.tors = 'predictors_coarse_std_Apr_mst'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
         ###############################################################
         self.seed = 1

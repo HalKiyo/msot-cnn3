@@ -110,6 +110,7 @@ class Pixel():
             pred_arr = np.array(pred_lst)
             os.makedirs(self.result_dir, exist_ok=True)
             np.save(self.result_path, pred_arr)
+            print(f"{self.result_path}: SAVED")
 
         else:
             corr = []
