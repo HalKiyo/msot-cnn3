@@ -63,7 +63,7 @@ class evaluate():
         self.model = init_model(lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
 
         # validation
-        self.overwrite_flag = True
+        self.overwrite_flag = False
         self.mae_view_flag = True
         self.rmse_view_flag = True
         self.true_false_view_flag = True
@@ -112,12 +112,12 @@ class evaluate():
                                       scale=np.sqrt(sample_var/n))
         print(f"rmse_95%reliable_mean spans {interval}")
 
-        rmse_map = rmse_flat.reshape(self.lat_grid, self.long_grid)
+        rmse_map = rmse_flat.reshape(self.lat_grid, self.lon_grid)
         acc_map(rmse_map, vmin=0.10, vmax=0.35)
 
     def GMM(self, data):
         gmm = GaussianMixture(n_components=2, random_state=42)
-        gmm.fit(data.resahpe(-1, 1)) # 次元数2を入力とするため変形
+        gmm.fit(data.reshape(-1, 1)) # 次元数2を入力とするため変形
         estimated_group = gmm.predict(data.reshape(-1, 1))
         return gmm
 

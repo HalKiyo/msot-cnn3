@@ -12,8 +12,8 @@ from util import load, shuffle, mask
 from view import acc_map, show_map
 
 def main():
-    train_flag = False
-    overwrite_flag = False
+    train_flag = True
+    overwrite_flag = True
 
     px = Pixel()
     if train_flag is True:
@@ -44,7 +44,7 @@ class Pixel():
         #############################################################
         self.var_num = 4
         self.tors = 'predictors_coarse_std_Apr_msot'
-        self.tant = f"pr_{self.resolution}_coarse_std_MJJ_world"
+        self.tant = f"pr_{self.resolution}_coarse_std_JJA_world"
         ##############################################################
         self.seed = 1
         self.vsample = 1000

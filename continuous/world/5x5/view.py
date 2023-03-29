@@ -3,6 +3,7 @@ import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 from sklearn.metrics import auc
+from scipy.stats import norm
 
 def acc_map(acc, lat_grid=20, lon_grid=20, vmin=0.75, vmax=1.00):
     projection = ccrs.PlateCarree(central_longitude=180)
