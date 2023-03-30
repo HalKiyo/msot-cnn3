@@ -44,7 +44,7 @@ class Pixel():
         #############################################################
         self.var_num = 4
         self.tors = 'predictors_coarse_std_Apr_msot'
-        self.tant = f"pr_{self.resolution}_coarse_std_JJA_world"
+        self.tant = f"pr_{self.resolution}_coarse_std_ASO_world"
         ##############################################################
         self.seed = 1
         self.vsample = 1000

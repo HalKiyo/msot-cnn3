@@ -25,8 +25,8 @@ def main():
     if EVAL.true_false_view_flag is True:
         EVAL.true_false_bar(pred, y_val, criteria=0.01)
     if EVAL.auc_view_flag is True:
-        roc = EVAL.auc(pred.T, y_val)
-        draw_roc_curve(roc)
+        result, result_mean = EVAL.auc_sample_mean(pred.T, y_val)
+        draw_roc_curve(result_mean)
     if EVAL.corr_view_flag is True:
         EVAL.correlation(pred, y_val)
     plt.show()
@@ -66,8 +66,8 @@ class evaluate():
         self.overwrite_flag = False
         self.mae_view_flag = False
         self.rmse_view_flag = False
-        self.true_false_view_flag = True
-        self.auc_view_flag = False
+        self.true_false_view_flag = False
+        self.auc_view_flag = True
         self.corr_view_flag = False
 
     def load_pred(self, overwrite=False):
@@ -151,7 +151,8 @@ class evaluate():
         if multiple events are needed to be evaluated,
         call auc function below
         """
-        # percentile should be absolute number 
+        # percentile should be absolute number
+        # otherwise intensity of rainfall is not evaluated in proper way
         sim = np.abs(sim)
         obs = np.abs(obs)
 
@@ -178,26 +179,96 @@ class evaluate():
 
         return hr, far
 
-    def auc(self, sim, obs):
+    def auc_pixcel_mean(self, sim, obs):
+        """
+        input: pixcel map
+        Calculate based on percentile of pixcel map in each validation sample
+        pred.T->sim: (1000, 400)
+        y_val->obs: (1000, 400)
+        output: AUC of validation sample
+
+        number of AUC -> validation sample
+        """
         result = [[0,0]]
         # percentile variation list
         per_list = np.arange(10, 100, 10)
         per_list = per_list[::-1]
 
         # calculate different percentile result
-        for i in per_list:
+        for per in per_list:
             # calculate multiple varidation events
+            # hr_all, far_all -> (1000)
             hr_all, far_all = [], []
-            for j in range(len(obs)):
-                hr_n, far_n = self.roc(sim[j], obs[j], percentile=i)
+            for sam in range(len(obs)):
+                hr_n, far_n = self.roc(sim[sam],
+                                       obs[sam],
+                                       percentile=per)
                 hr_all.append(hr_n)
                 far_all.append(far_n)
-            hr, far = np.mean(hr_all), np.mean(far_all)
-            result.append([hr, far])
+            hr_mean, far_mean = np.mean(hr_all), np.mean(far_all)
+            result.append([hr_mean, far_mean])
 
         result.append([1,1])
         result = np.array(result)
         return result
+
+    def auc_sample_mean(self, sim, obs):
+        """
+        input: validation sample
+            Calculate based on percentile of 1000 validation sample in each pixel
+            pred.T->sim: (1000, 400)
+            y_val->obs: (1000, 400)
+        output: AUC of pixcel map
+
+        number of AUC -> pixcel map
+        """
+        result = [[0,0]]
+        # percentile variation list
+        per_list = np.arange(10, 100, 10)
+        per_list = per_list[::-1]
+
+        # result(11, 2, 400)->(percentile, hr or far, pixcel)
+        result = []
+
+        # init hr & far
+        hr_all, far_all = [], []
+        for i in range(len(obs.T)):
+            hr_all.append(0)
+            far_all.append(0)
+        result.append([hr_all, far_all])
+
+        # different percentile hr & far
+        for per in per_list:
+            # calculate multiple varidation events
+            # len=1000
+            hr_all, far_all = [], []
+            # init hr & far
+            # calc roc
+            for px in range(len(obs.T)):
+                hr_n, far_n = self.roc(sim[:, px],
+                                       obs[:, px],
+                                       percentile=per)
+                hr_all.append(hr_n)
+                far_all.append(far_n)
+            result.append([hr_all, far_all])
+
+        # summerize hr & far
+        hr_all, far_all = [], []
+        for i in range(len(obs.T)):
+            hr_all.append(1)
+            far_all.append(1)
+        result.append([hr_all, far_all])
+
+        # result(11, 2, 400)
+        result = np.array(result)
+
+        # hr_mean(11)
+        hr_mean = np.mean(result[:, 0, :], axis=1)
+        far_mean = np.mean(result[:, 1, :], axis=1)
+        result_mean = np.array([hr_mean, far_mean])
+        result_mean = result_mean.T #(11, 2)
+
+        return result, result_mean
 
     def correlation(self, pred, y_val):
         corr = []
