@@ -5,10 +5,11 @@ warnings.filterwarnings('ignore')
 import numpy as np
 from scipy import stats
 from sklearn.mixture import GaussianMixture
+from sklearn.metrics import auc
 
 from util import open_pickle
 from model3 import init_model
-from view import ae_bar, draw_val, draw_roc_curve, acc_map, bimodal_dist
+from view import ae_bar, draw_val, draw_roc_curve, acc_map, bimodal_dist, auc_map
 import matplotlib.pyplot as plt
 
 def main():
@@ -25,7 +26,10 @@ def main():
     if EVAL.true_false_view_flag is True:
         EVAL.true_false_bar(pred, y_val, criteria=0.01)
     if EVAL.auc_view_flag is True:
-        result, result_mean = EVAL.auc_sample_mean(pred.T, y_val)
+        result, result_mean, auc_all = EVAL.auc_sample_mean(pred.T, y_val)
+        draw_roc_curve(result_mean)
+        auc_map(auc_all.reshape(20, 20))
+        result, result_mean, auc_all = EVAL.auc_pixcel_mean(pred.T, y_val)
         draw_roc_curve(result_mean)
     if EVAL.corr_view_flag is True:
         EVAL.correlation(pred, y_val)
@@ -182,35 +186,70 @@ class evaluate():
     def auc_pixcel_mean(self, sim, obs):
         """
         input: pixcel map
-        Calculate based on percentile of pixcel map in each validation sample
-        pred.T->sim: (1000, 400)
-        y_val->obs: (1000, 400)
+            Calculate based on percentile of pixcel map in each validation sample
+            pred.T->sim: (1000, 400)
+            y_val->obs: (1000, 400)
         output: AUC of validation sample
 
         number of AUC -> validation sample
         """
-        result = [[0,0]]
         # percentile variation list
         per_list = np.arange(10, 100, 10)
         per_list = per_list[::-1]
 
-        # calculate different percentile result
+        # result(11, 2, 1000)->(percentile, hr or far, vsamples)
+        result = []
+
+        # init hr & far
+        hr_all, far_all = [], []
+        for i in range(len(obs)):
+            hr_all.append(0)
+            far_all.append(0)
+        result.append([hr_all, far_all])
+
+        # different percentile hr & far
         for per in per_list:
-            # calculate multiple varidation events
-            # hr_all, far_all -> (1000)
+            # calculate multiple pixcels
+            # len=1000
             hr_all, far_all = [], []
+            # init hr & far
+            # calc roc
             for sam in range(len(obs)):
-                hr_n, far_n = self.roc(sim[sam],
-                                       obs[sam],
+                hr_n, far_n = self.roc(sim[sam, :],
+                                       obs[sam, :],
                                        percentile=per)
                 hr_all.append(hr_n)
                 far_all.append(far_n)
-            hr_mean, far_mean = np.mean(hr_all), np.mean(far_all)
-            result.append([hr_mean, far_mean])
+            result.append([hr_all, far_all])
 
-        result.append([1,1])
+        # summerize hr & far
+        hr_all, far_all = [], []
+        for i in range(len(obs)):
+            hr_all.append(1)
+            far_all.append(1)
+        result.append([hr_all, far_all])
+
+        # result(11, 2, 1000)
         result = np.array(result)
-        return result
+
+        # calculate auc_all
+        auc_all = []
+        for sam in range(len(obs)):
+            fpr = result[:, 1, sam]
+            fpr = np.sort(fpr)
+            tpr = result[:, 0, sam]
+            tpr = np.sort(tpr)
+            AUC = auc(fpr, tpr)
+            auc_all.append(AUC)
+        auc_all = np.array(auc_all)
+
+        # hr_mean(11), far_mean(11)
+        hr_mean = np.mean(result[:, 0, :], axis=1)
+        far_mean = np.mean(result[:, 1, :], axis=1)
+        result_mean = np.array([hr_mean, far_mean])
+        result_mean = result_mean.T #(11, 2)
+
+        return result, result_mean, auc_all
 
     def auc_sample_mean(self, sim, obs):
         """
@@ -222,7 +261,6 @@ class evaluate():
 
         number of AUC -> pixcel map
         """
-        result = [[0,0]]
         # percentile variation list
         per_list = np.arange(10, 100, 10)
         per_list = per_list[::-1]
@@ -240,7 +278,7 @@ class evaluate():
         # different percentile hr & far
         for per in per_list:
             # calculate multiple varidation events
-            # len=1000
+            # len=400
             hr_all, far_all = [], []
             # init hr & far
             # calc roc
@@ -262,13 +300,24 @@ class evaluate():
         # result(11, 2, 400)
         result = np.array(result)
 
-        # hr_mean(11)
+        # calculate auc_all
+        auc_all = []
+        for px in range(len(obs.T)):
+            fpr = result[:, 1, px]
+            fpr = np.sort(fpr)
+            tpr = result[:, 0, px]
+            tpr = np.sort(tpr)
+            AUC = auc(fpr, tpr)
+            auc_all.append(AUC)
+        auc_all = np.array(auc_all)
+
+        # hr_mean(11), far_mean(11)
         hr_mean = np.mean(result[:, 0, :], axis=1)
         far_mean = np.mean(result[:, 1, :], axis=1)
         result_mean = np.array([hr_mean, far_mean])
         result_mean = result_mean.T #(11, 2)
 
-        return result, result_mean
+        return result, result_mean, auc_all
 
     def correlation(self, pred, y_val):
         corr = []
