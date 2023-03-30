@@ -9,7 +9,7 @@ from sklearn.metrics import auc
 
 from util import open_pickle
 from model3 import init_model
-from view import ae_bar, draw_val, draw_roc_curve, acc_map, bimodal_dist, auc_map
+from view import ae_bar, draw_val, draw_roc_curve, acc_map, bimodal_dist
 import matplotlib.pyplot as plt
 
 def main():
@@ -28,7 +28,7 @@ def main():
     if EVAL.auc_view_flag is True:
         result, result_mean, auc_all = EVAL.auc_sample_mean(pred.T, y_val)
         draw_roc_curve(result_mean)
-        auc_map(auc_all.reshape(20, 20))
+        acc_map(auc_all.reshape(20, 20))
         result, result_mean, auc_all = EVAL.auc_pixcel_mean(pred.T, y_val)
         draw_roc_curve(result_mean)
     if EVAL.corr_view_flag is True:

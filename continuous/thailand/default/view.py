@@ -111,18 +111,3 @@ def draw_roc_curve(roc):
     plt.legend()
     plt.show(block=False)
 
-def auc_map(auc, lat_grid=20, lon_grid=20, vmin=0.75, vmax=1.00):
-    projection = ccrs.PlateCarree(central_longitude=180)
-    img_extent = (-90, -70, 5, 25)  # location = (N5-25, E90-110)
-
-    fig = plt.figure()
-    ax = plt.subplot(projection=projection)
-    ax.coastlines()
-    mat = ax.matshow(auc,
-                     origin='upper',
-                     extent=img_extent,
-                     transform=projection,
-                     vmin=vmin, vmax=vmax,
-                     cmap='tab20c')
-    fig.colorbar(mat, ax=ax)
-    plt.show(block=False)
