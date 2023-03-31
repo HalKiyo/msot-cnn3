@@ -12,8 +12,8 @@ from util import load, shuffle, mask
 from view import acc_map, show_map
 
 def main():
-    train_flag = True
-    overwrite_flag = True
+    train_flag = False
+    overwrite_flag = False
 
     px = Pixel()
     if train_flag is True:
@@ -30,7 +30,7 @@ def main():
         print(f"train_flag is {train_flag}: not saved")
 
     px.validation(overwrite=overwrite_flag)
-    px.show(val_index=px.val_index)
+    px.draw(val_index=px.val_index, vmin=-1, vmax=1, discrete=100)
     plt.show()
 
 class Pixel():
@@ -129,12 +129,15 @@ class Pixel():
         corr = corr.reshape(self.lat_grid, self.lon_grid)
         acc_map(corr)
 
-    def show(self, val_index=0):
+    def draw(self, val_index=0, vmin=-1, vmax=1, discrete=5):
         with open(self.train_val_path, 'rb') as f:
             data = pickle.load(f)
         x_val, y_val = data['x_val'], data['y_val']
         y_val_px = y_val[val_index].reshape(self.lat_grid, self.lon_grid)
-        show_map(y_val_px)
+        show_map(y_val_px, 
+                 vmin=vmin, 
+                 vmax=vmax, 
+                 discrete=discrete)
 
         pred_lst = []
         if os.path.exists(self.result_path) is True:
@@ -153,7 +156,10 @@ class Pixel():
                 pred_lst.append(result)
             pred_arr = np.array(pred_lst)
         pred_arr = pred_arr.reshape(self.lat_grid, self.lon_grid)
-        show_map(pred_arr)
+        show_map(pred_arr, 
+                 vmin=vmin, 
+                 vmax=vmax,
+                 discrete=discrete)
 
 if __name__ == '__main__':
     main()

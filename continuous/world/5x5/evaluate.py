@@ -9,7 +9,7 @@ from sklearn.metrics import auc
 
 from util import open_pickle
 from model3 import init_model
-from view import ae_bar, draw_val, draw_roc_curve, acc_map, bimodal_dist
+from view import AE_bar, TF_bar, draw_roc_curve, acc_map, bimodal_dist
 import matplotlib.pyplot as plt
 
 def main():
@@ -22,19 +22,31 @@ def main():
     if EVAL.mae_view_flag is True:
         EVAL.mae_evaluation(pred, y_val)
     if EVAL.rmse_view_flag is True:
-        EVAL.rmse_evaluation(pred, y_val)
+        rmse_all = EVAL.rmse_evaluation(pred, y_val)
+        acc_map(rmse_all, vmin=0, vmax=0.5, discrete=10)
     if EVAL.true_false_view_flag is True:
-        EVAL.true_false_bar(pred, y_val, criteria=0.1)
+        EVAL.true_false_bar(pred, y_val, criteria=0)
     if EVAL.auc_view_flag is True:
         result, result_mean, auc_all = EVAL.auc_sample_mean(pred.T, y_val)
         draw_roc_curve(result_mean)
-        acc_map(auc_all.reshape(120, 360))
+        acc_map(auc_all.reshape(24, 72), vmin=0.75, vmax=1, discrete=10)
     if EVAL.corr_view_flag is True:
-        EVAL.correlation(pred, y_val)
+        corr_all = EVAL.correlation(pred, y_val)
+        acc_map(corr_all, vmin=0.75, vmax=1.00, discrete=10)
     plt.show()
+
 
 class evaluate():
     def __init__(self):
+        # view_flag
+        self.overwrite_flag = False
+        self.mae_view_flag = True
+        self.rmse_view_flag = True
+        self.true_false_view_flag = True
+        self.auc_view_flag = True
+        self.corr_view_flag = True
+
+        # init
         self.val_index = 20
         self.epochs =100
         self.batch_size =256
@@ -64,14 +76,6 @@ class evaluate():
         # init_model is allowd to be called once otherwise layer_name will be messed up
         self.model = init_model(lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
 
-        # validation
-        self.overwrite_flag = False
-        self.mae_view_flag = True
-        self.rmse_view_flag = True
-        self.true_false_view_flag = True
-        self.auc_view_flag = True
-        self.corr_view_flag = True
-
     def load_pred(self, overwrite=False):
         x_val, y_val = open_pickle(self.train_val_path)
         if os.path.exists(self.result_path) is False or self.overwrite_flag is True:
@@ -95,7 +99,7 @@ class evaluate():
         ae_flat = ae.reshape(-1)
         mae = np.mean(ae_flat)
         print(f"mae of {self.val_index} is {mae}")
-        ae_bar(ae_flat)
+        AE_bar(ae_flat)
 
     def rmse_evaluation(self, pred, y):
         rmse_flat = []
@@ -112,10 +116,10 @@ class evaluate():
         interval = stats.norm.interval(alpha=0.95,
                                       loc=sample_mean,
                                       scale=np.sqrt(sample_var/n))
-        print(f"rmse_95%reliable_mean spans {interval}")
+        print(f"rmse_95%reliable_mean{sample_mean} spans {interval}")
 
         rmse_map = rmse_flat.reshape(self.lat_grid, self.lon_grid)
-        acc_map(rmse_map, vmin=0.10, vmax=0.35)
+        return rmse_map
 
     def GMM(self, data):
         gmm = GaussianMixture(n_components=2, random_state=42)
@@ -123,7 +127,7 @@ class evaluate():
         estimated_group = gmm.predict(data.reshape(-1, 1))
         return gmm
 
-    def true_false_bar(self, pred, y, criteria=0.1):
+    def true_false_bar(self, pred, y, criteria=0):
         true_count, false_count = 0, 0
         rmse_flat = []
         for sam in range(len(y)):
@@ -142,9 +146,9 @@ class evaluate():
             else:
                 false_count += 1
 
-        print(f"mean of gmm is {criteria}")
+        print(f"criteria(mean of gmm) is {criteria}")
         bimodal_dist(rmse_flat, gmm)
-        draw_val(true_count, false_count)
+        TF_bar(true_count, false_count)
 
     def roc(self, sim, obs, percentile=20):
         """
@@ -190,7 +194,7 @@ class evaluate():
         number of AUC -> pixcel map
         """
         # percentile variation list
-        per_list = np.arange(10, 1000, 10) # 10 ... 90
+        per_list = np.arange(10, 100, 10) # 10 ... 90
         per_list = per_list[::-1]
 
         # result(11, 2, 1728)->(percentile, hr or far, pixcel)
@@ -238,9 +242,18 @@ class evaluate():
             auc_all.append(AUC)
         auc_all = np.array(auc_all)
 
+        # calculate 95% intervals
+        n = len(auc_all)
+        sample_mean = np.mean(auc_all)
+        sample_var = stats.tvar(auc_all)
+        interval = stats.norm.interval(alpha=0.95,
+                                       loc=sample_mean,
+                                       scale=np.sqrt(sample_var/n))
+        print(f"auc_95%reliable_mean{sample_mean} spans {interval}")
+
         # hr_mean(11), far_mean(11)
         hr_mean = np.mean(result[:, 0, :], axis=1)
-        far_mean = np.mean(result[:, 1, :], axi=1)
+        far_mean = np.mean(result[:, 1, :], axis=1)
         result_mean = np.array([hr_mean, far_mean])
         result_mean = result_mean.T #(11, 2)
 
@@ -261,12 +274,12 @@ class evaluate():
         interval = stats.norm.interval(alpha=0.95,
                                        loc=sample_mean,
                                        scale=np.sqrt(sample_var/n))
-        print(f"corr_95%reliable_mean spans {interval}")
+        print(f"corr_95%reliable_mean{sample_mean} spans {interval}")
 
         # view corr heat-map
         corr = np.array(corr)
         corr = corr.reshape(self.lat_grid, self.lon_grid)
-        acc_map(corr)
+        return corr
 
 if __name__ == '__main__':
     main()
