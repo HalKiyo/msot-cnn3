@@ -23,16 +23,16 @@ def main():
         EVAL.mae_evaluation(pred, y_val)
     if EVAL.rmse_view_flag is True:
         rmse_all = EVAL.rmse_evaluation(pred, y_val)
-        acc_map(rmse_all, vmin=0, vmax=0.5, discrete=10)
+        acc_map(rmse_all, vmin=0, vmax=0.5, discrete=100)
     if EVAL.true_false_view_flag is True:
         EVAL.true_false_bar(pred, y_val, criteria=0)
     if EVAL.auc_view_flag is True:
         result, result_mean, auc_all = EVAL.auc_sample_mean(pred.T, y_val)
-        draw_roc_curve(result_mean)
-        acc_map(auc_all.reshape(24, 72), vmin=0.75, vmax=1, discrete=10)
+        #draw_roc_curve(result_mean)
+        acc_map(auc_all.reshape(24, 72), vmin=0.8, vmax=1, discrete=100)
     if EVAL.corr_view_flag is True:
         corr_all = EVAL.correlation(pred, y_val)
-        acc_map(corr_all, vmin=0.75, vmax=1.00, discrete=10)
+        acc_map(corr_all, vmin=0.8, vmax=1, discrete=100)
     plt.show()
 
 
@@ -98,7 +98,7 @@ class evaluate():
         ae = np.abs(value - label)
         ae_flat = ae.reshape(-1)
         mae = np.mean(ae_flat)
-        print(f"mae of {self.val_index} is {mae}")
+        print(f"mae of val_index {self.val_index} is {mae}")
         AE_bar(ae_flat)
 
     def rmse_evaluation(self, pred, y):

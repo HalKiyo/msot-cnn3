@@ -15,9 +15,18 @@ def acc_map(acc, vmin=0.75, vmax=1.00, discrete=5):
     """# tab20c
     projection = ccrs.PlateCarree(central_longitude=180)
     img_extent = (-180, 180, -60, 60)  # location = (N5-25, E90-110)
-    mpl.colormaps.unregister('bat')
-    mpl.colormaps.register(clm.batlow, name='bat')
-    cm = plt.cm.get_cmap('bat', discrete)
+
+    #mpl.colormaps.unregister('bat')
+    #mpl.colormaps.register(clm.batlow, name='bat')
+    #cm = plt.cm.get_cmap('bat', discrete)
+
+    mpl.colormaps.unregister('tmp')
+    mpl.colormaps.register(clm.temps, name='tmp')
+    cm = plt.cm.get_cmap('tmp', discrete)
+
+    #mpl.colormaps.unregister('tmp2')
+    #mpl.colormaps.register(clm.cet_r_bgyr, name='tmp2')
+    #cm = plt.cm.get_cmap('tmp2', discrete)
 
     fig = plt.figure()
     ax = plt.subplot(projection=projection)

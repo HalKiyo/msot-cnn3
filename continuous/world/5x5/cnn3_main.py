@@ -12,8 +12,8 @@ from util import load, shuffle, mask
 from view import acc_map, show_map
 
 def main():
-    train_flag = False
-    overwrite_flag = False
+    train_flag = True
+    overwrite_flag = True
 
     px = Pixel()
     if train_flag is True:
@@ -42,9 +42,9 @@ class Pixel():
         #############################################################
         # CHANGE here for different experiments
         #############################################################
-        self.var_num = 4
-        self.tors = 'predictors_coarse_std_Apr_msot'
-        self.tant = f"pr_{self.resolution}_coarse_std_ASO_world"
+        self.var_num = 1
+        self.tors = 'predictors_coarse_std_Apr_s'
+        self.tant = f"pr_{self.resolution}_coarse_std_MJJASO_world"
         ##############################################################
         self.seed = 1
         self.vsample = 1000
@@ -134,9 +134,9 @@ class Pixel():
             data = pickle.load(f)
         x_val, y_val = data['x_val'], data['y_val']
         y_val_px = y_val[val_index].reshape(self.lat_grid, self.lon_grid)
-        show_map(y_val_px, 
-                 vmin=vmin, 
-                 vmax=vmax, 
+        show_map(y_val_px,
+                 vmin=vmin,
+                 vmax=vmax,
                  discrete=discrete)
 
         pred_lst = []
@@ -156,8 +156,8 @@ class Pixel():
                 pred_lst.append(result)
             pred_arr = np.array(pred_lst)
         pred_arr = pred_arr.reshape(self.lat_grid, self.lon_grid)
-        show_map(pred_arr, 
-                 vmin=vmin, 
+        show_map(pred_arr,
+                 vmin=vmin,
                  vmax=vmax,
                  discrete=discrete)
 
