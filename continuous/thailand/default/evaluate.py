@@ -71,8 +71,8 @@ class evaluate():
         self.mae_view_flag = False
         self.rmse_view_flag = False
         self.true_false_view_flag = False
-        self.auc_view_flag = True
-        self.corr_view_flag = False
+        self.auc_view_flag = False
+        self.corr_view_flag = True
 
     def load_pred(self, overwrite=False):
         x_val, y_val = open_pickle(self.train_val_path)

@@ -12,7 +12,7 @@ from util import load, shuffle, mask
 from view import acc_map, show_map
 
 def main():
-    train_flag = True
+    train_flag = False
     overwrite_flag = True
 
     px = Pixel()
@@ -42,9 +42,9 @@ class Pixel():
         #############################################################
         # CHANGE here for different experiments
         #############################################################
-        self.var_num = 1
-        self.tors = 'predictors_coarse_std_Apr_m'
-        self.tant = f"pr_{self.resolution}_coarse_std_MJJASO_world"
+        self.var_num = 4
+        self.tors = 'predictors_coarse_std_Apr_msot'
+        self.tant = f"pr_{self.resolution}_coarse_std_JJA_world"
         ##############################################################
         self.seed = 1
         self.vsample = 1000

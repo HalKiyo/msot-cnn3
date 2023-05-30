@@ -42,15 +42,15 @@ class evaluate():
         ###############################################################
         # if you wanna change variables, don't forget to adjust var_num
         ###############################################################
-        self.var_num = 2
-        self.tors = 'predictors_coarse_std_Apr_mo'
+        self.var_num = 1
+        self.tors = 'predictors_coarse_std_Apr_o'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
         ###############################################################
         # path
         self.workdir = '/docker/mnt/d/research/D2/cnn3'
         self.train_val_path = self.workdir + f"/train_val/continuous/{self.tors}-{self.tant}.pickle"
         self.weights_dir = self.workdir + f"/weights/continuous/{self.tors}-{self.tant}"
-        self.result_dir = self.workdir + f"/result/continuous/thailand/{self.resolution}"
+        self.result_dir = self.workdir + f"/result/continuous/thailand/{self.resolution}/{self.tors}-{self.tant}"
         self.result_path = self.result_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
 
         # model
@@ -64,10 +64,10 @@ class evaluate():
         # view
         self.overwrite_flag = False
         self.mae_view_flag = False
-        self.rmse_view_flag = False
-        self.true_false_view_flag = True
+        self.rmse_view_flag = True
+        self.true_false_view_flag = False
         self.auc_view_flag = True
-        self.corr_view_flag = False
+        self.corr_view_flag = True
 
     def load_pred(self):
         x_val, y_val = open_pickle(self.train_val_path)
@@ -109,7 +109,7 @@ class evaluate():
         interval = stats.norm.interval(alpha=0.95,
                                        loc=sample_mean,
                                        scale=np.sqrt(sample_var/n))
-        print(f"rmse_95%reliable_mean spans {interval}")
+        print(f"rmse_95%reliable_mean spans {interval}, {sample_mean}")
 
         rmse_map = rmse_flat.reshape(self.lat_grid, self.lon_grid)
         acc_map(rmse_map, vmin=0.10, vmax=0.35)
@@ -205,7 +205,7 @@ class evaluate():
             y_val_px = y_val[:, i]
             corr_i = np.corrcoef(pred_arr[i,:], y_val_px)
             corr.append(np.round(corr_i[0, 1], 2))
-            print(f"gird: {i}")
+            #print(f"gird: {i}")
 
         # calculate 95% intervals
         n = len(corr)
@@ -214,7 +214,7 @@ class evaluate():
         interval = stats.norm.interval(alpha=0.95,
                                        loc=sample_mean,
                                        scale=np.sqrt(sample_var/n))
-        print(f"corr_95%reliable_mean spans {interval}")
+        print(f"corr_95%reliable_mean spans {interval}, {sample_mean}")
 
         # view corr heat-map
         corr = np.array(corr)
