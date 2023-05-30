@@ -12,9 +12,10 @@ from util import load, shuffle, mask
 from gradcam import grad_cam, show_heatmap, image_preprocess
 
 def main():
-    train_flag = True # modifiable
+    train_flag = False
 
     px = Pixel()
+
     if train_flag is True:
         predictors, predictant = load(px.tors, px.tant)
         px.training(*shuffle(predictors, predictant, px.vsample, px.seed, px.lat_grid, px.lon_grid))
@@ -29,10 +30,10 @@ def main():
 
 class Pixel():
     def __init__(self):
-        self.val_index = 16
-        self.class_num = 10
+        self.val_index = 330 #true_index=330, false_index=20
+        self.class_num = 5
         self.descrete_mode = 'EFD'
-        self.epochs = 200
+        self.epochs = 150
         self.batch_size = 256
         self.resolution = '1x1' # 1x1 or 5x5_coarse
         ########################### EDIT HERE

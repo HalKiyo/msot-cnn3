@@ -30,7 +30,7 @@ def main():
 
 class Pixel():
     def __init__(self):
-        self.val_index = 19 #false_index=20
+        self.val_index = 330 #true_index=330, false_index=20
         self.epochs = 100
         self.batch_size = 256
         self.resolution = '1x1'
@@ -124,7 +124,7 @@ class Pixel():
     def show(self, val_index=0):
         with open(self.train_val_path, 'rb') as f:
             data = pickle.load(f)
-        x_val, y_val, val_dict = data['x_val'], data['y_val'], data['val_dct']
+        x_val, y_val, val_dct = data['x_val'], data['y_val'], data['val_dct']
         val_model, val_year = val_dct['model'], val_dct['year']
         print(f"model: {val_model[val_index]}", f"year: {1850 + val_year[val_index]}")
 
