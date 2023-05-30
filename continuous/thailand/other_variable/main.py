@@ -13,7 +13,7 @@ from view import acc_map, show_map
 
 def main():
     train_flag = False
-    overwrite_flag = True
+    overwrite_flag = False
 
     px = Pixel()
     if train_flag is True:
@@ -30,15 +30,15 @@ def main():
 
 class Pixel():
     def __init__(self):
-        self.val_index = 20
+        self.val_index = 19 #false_index=20
         self.epochs = 100
         self.batch_size = 256
         self.resolution = '1x1'
         ###############################################################
         # if you wanna change variables, don't forget to adjust var_num
         ###############################################################
-        self.var_num = 1
-        self.tors = 'predictors_coarse_std_Apr_s'
+        self.var_num = 4
+        self.tors = 'predictors_coarse_std_Apr_msot'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
         ###############################################################
         self.seed = 1
@@ -124,7 +124,10 @@ class Pixel():
     def show(self, val_index=0):
         with open(self.train_val_path, 'rb') as f:
             data = pickle.load(f)
-        x_val, y_val = data['x_val'], data['y_val']
+        x_val, y_val, val_dict = data['x_val'], data['y_val'], data['val_dct']
+        val_model, val_year = val_dct['model'], val_dct['year']
+        print(f"model: {val_model[val_index]}", f"year: {1850 + val_year[val_index]}")
+
         y_val_px = y_val[val_index].reshape(self.lat_grid, self.lon_grid)
         show_map(y_val_px)
 

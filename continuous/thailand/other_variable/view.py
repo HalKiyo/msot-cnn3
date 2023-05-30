@@ -115,7 +115,7 @@ def draw_roc_curve(roc):
     # draw cnn_continuous line
     plt.plot(fpr,
              tpr,
-             label=f"cnn_continuous ROC curve (AUC = {round(AUC, -3)})",
+             label=f"cnn_continuous ROC curve (AUC = {round(AUC, 3)})",
              color="deeppink",
              linestyle=":",
              linewidth=4)
