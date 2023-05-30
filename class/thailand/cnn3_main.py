@@ -12,7 +12,7 @@ from util import load, shuffle, mask
 from gradcam import grad_cam, show_heatmap, image_preprocess
 
 def main():
-    train_flag = False # modifiable
+    train_flag = True # modifiable
 
     px = Pixel()
     if train_flag is True:
@@ -30,26 +30,27 @@ def main():
 class Pixel():
     def __init__(self):
         self.val_index = 16
-        self.class_num = 30
+        self.class_num = 10
         self.descrete_mode = 'EFD'
         self.epochs = 250
         self.batch_size = 256
         self.resolution = '1x1' # 1x1 or 5x5_coarse
+        ########################### EDIT HERE
+        self.var_num = 4
         self.tors = 'predictors_coarse_std_Apr_msot'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand_{self.descrete_mode}_{self.class_num}"
+        ############################
         self.seed = 1
         self.vsample = 1000
         self.lat, self.lon = 24, 72
-        self.var_num = 4
         self.lat_grid, self.lon_grid = 20, 20
         self.grid_num = self.lat_grid*self.lon_grid 
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
         self.loss = tf.keras.losses.CategoricalCrossentropy()
         self.metrics = tf.keras.metrics.CategoricalAccuracy()
         self.savefile = f"/docker/mnt/d/research/D2/cnn3/train_val/class/{self.tors}-{self.tant}.pickle"
         self.weights_dir = f"/docker/mnt/d/research/D2/cnn3/weights/class/{self.tors}-{self.tant}"
-        self.pred_dir = f"/docker/mnt/d/research/D2/cnn3/result/class/thailand/{self.resolution}"
-        self.pred_path = self.pred_dir + f"/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
+        self.result_dir = f"/docker/mnt/d/research/D2/cnn3/result/class/thailand/{self.resolution}/{self.tors}-{self.tant}"
+        self.result_path = self.result_dir + f"/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
 
     def training(self, x_train, y_train, x_val, y_val, train_dct, val_dct):
         x_train, x_val = mask(x_train), mask(x_val)
@@ -60,7 +61,9 @@ class Pixel():
             y_train_px = y_train[:, i]
             y_train_one_hot = tf.keras.utils.to_categorical(y_train_px, self.class_num)
             model = build_model((self.lat, self.lon, self.var_num), self.class_num)
-            model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                          loss=self.loss,
+                          metrics=[self.metrics])
             his = model.fit(x_train, y_train_one_hot, batch_size=self.batch_size, epochs=self.epochs)
             weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
             model.save_weights(weights_path)
@@ -80,7 +83,9 @@ class Pixel():
             y_val_px = y_val[:, i]
             y_val_one_hot = tf.keras.utils.to_categorical(y_val_px, self.class_num)
             model = build_model((self.lat, self.lon, self.var_num), self.class_num)
-            model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                          loss=self.loss, 
+                          metrics=[self.metrics])
             weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
             model.load_weights(weights_path)
             pred = model.predict(x_val) # (400, 1000, 5)
@@ -90,7 +95,9 @@ class Pixel():
             print(f"CategoricalAccuracy of pixcel{i}: {result[1]}")
 
         pred_arr = np.array(pred_lst)
-        np.save(self.pred_path, pred_arr)
+        if os.path.exists(self.result_dir) is False:
+            os.makedirs(self.result_dir, exist_ok=True) # create weight directory
+        np.save(self.result_path, pred_arr)
 
         acc = np.array(acc)
         acc = acc.reshape(self.lat_grid, self.lon_grid)
@@ -103,7 +110,9 @@ class Pixel():
         y_val_px = y_val[:, px_index]
 
         model = build_model((self.lat, self.lon, self.var_num), self.class_num)
-        model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                      loss=self.loss, 
+                      metrics=[self.metrics])
         weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{px_index}.h5"
         model.load_weights(weights_path)
 
@@ -120,15 +129,17 @@ class Pixel():
         show_class(y_val_px, class_num=self.class_num)
 
         pred_lst = []
-        if os.path.exists(self.pred_path) is True:
-            pred_arr = np.load(self.pred_path)
+        if os.path.exists(self.result_path) is True:
+            pred_arr = np.load(self.result_path)
             for i in range(self.grid_num):
                 label = np.argmax(pred_arr[i, val_index])
                 pred_lst.append(label)
         else:
             for i in range(self.grid_num):
                 model = build_model((self.lat, self.lon, self.var_num), self.class_num)
-                model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+                model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                              loss=self.loss, 
+                              metrics=[self.metrics])
                 weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
                 model.load_weights(weights_path)
                 pred = model.predict(x_val)
@@ -146,7 +157,9 @@ class Pixel():
         y_val_px = y_val[:, px_index]
         y_val_one_hot = tf.keras.utils.to_categorical(y_val_px, self.class_num)
         model = build_model((self.lat, self.lon, self.var_num), self.class_num)
-        model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                      loss=self.loss, 
+                      metrics=[self.metrics])
         weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{px_index}.h5"
         model.load_weights(weights_path)
         pred = model.predict(x_val)
@@ -159,8 +172,8 @@ class Pixel():
             data = pickle.load(f)
         x_val, y_val = data['x_val'], data['y_val']
         y_val_lst = []
-        if os.path.exists(self.pred_path) is True:
-            pred_arr = np.load(self.pred_path)
+        if os.path.exists(self.result_path) is True:
+            pred_arr = np.load(self.result_path)
             for i in range(self.grid_num):
                 y_val_px = y_val[:, i]
                 y_val_one_hot = tf.keras.utils.to_categorical(y_val_px, self.class_num)
@@ -171,7 +184,9 @@ class Pixel():
                 y_val_px = y_val[:, i]
                 y_val_one_hot = tf.keras.utils.to_categorical(y_val_px, self.class_num)
                 model = build_model((self.lat, self.lon, self.var_num), self.class_num)
-                model.compile(optimizer=self.optimizer, loss=self.loss, metrics=[self.metrics])
+                model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                              loss=self.loss, 
+                              metrics=[self.metrics])
                 weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
                 model.load_weights(weights_path)
                 pred = model.predict(x_val)
