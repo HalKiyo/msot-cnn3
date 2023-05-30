@@ -30,7 +30,7 @@ def main():
 
 class Pixel():
     def __init__(self):
-        self.val_index = 330 #true_index=330, false_index=20
+        self.val_index = 20 #true_index=330, false_index=20
         self.epochs = 100
         self.batch_size = 256
         self.resolution = '1x1'

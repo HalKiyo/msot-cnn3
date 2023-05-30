@@ -8,6 +8,7 @@ from sklearn.metrics import auc
 from scipy.stats import norm
 
 def acc_map(acc, lat_grid=20, lon_grid=20, vmin=0.75, vmax=1.00, discrete=5):
+    plt.rcParams["font.size"] = 18
     projection = ccrs.PlateCarree(central_longitude=180)
     img_extent = (-90, -70, 5, 25) # location = (N5-25, E90-110)
 
@@ -28,6 +29,7 @@ def acc_map(acc, lat_grid=20, lon_grid=20, vmin=0.75, vmax=1.00, discrete=5):
     plt.show(block=False)
 
 def show_map(image, vmin=-1, vmax=1, discrete=5):
+    plt.rcParams["font.size"] = 18
     cmap = plt.cm.get_cmap('BrBG')
 
     projection = ccrs.PlateCarree(central_longitude=180)
@@ -47,6 +49,7 @@ def show_map(image, vmin=-1, vmax=1, discrete=5):
 
 def ae_bar(data, vmin=0, vmax=2):
     # grid毎にabs(実際のlabelデータ-予測結果)を400個棒グラフにして出力する
+    plt.rcParams["font.size"] = 18
     fig = plt.figure()
     ax = plt.subplot()
     pixcel = np.arange(len(data))
@@ -55,6 +58,7 @@ def ae_bar(data, vmin=0, vmax=2):
     plt.show(block=False)
 
 def bimodal_dist(data, gmm):
+    plt.rcParams["font.size"] = 18
     fig, ax = plt.subplots()
 
     # histgram
@@ -83,6 +87,7 @@ def bimodal_dist(data, gmm):
     plt.show(block=False)
 
 def TF_bar(true_count, false_count):
+    plt.rcParams["font.size"] = 18
     fig = plt.figure()
     ax = plt.subplot()
     print(f"true: {true_count}, false: {false_count}")
@@ -105,6 +110,7 @@ def TF_bar(true_count, false_count):
     plt.show(block=False)
 
 def draw_roc_curve(roc):
+    plt.rcParams["font.size"] = 18
     # calculate auc
     fpr = roc[:, 1]
     tpr = roc[:, 0]
@@ -115,7 +121,7 @@ def draw_roc_curve(roc):
     # draw cnn_continuous line
     plt.plot(fpr,
              tpr,
-             label=f"cnn_continuous ROC curve (AUC = {round(AUC, 3)})",
+             label=f"ROC curve (AUC = {round(AUC, 3)})",
              color="deeppink",
              linestyle=":",
              linewidth=4)
