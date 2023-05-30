@@ -5,6 +5,7 @@ import matplotlib.colors as colors
 import cartopy.crs as ccrs
 
 def draw_val(val_pred, val_label_onehot, class_num=5):
+    plt.rcParams["font.size"] = 18
     fig = plt.figure()
     ax = plt.subplot()
 
@@ -28,13 +29,13 @@ def draw_val(val_pred, val_label_onehot, class_num=5):
     # false
     val_fcount = [val_false.count(j) for j in val_list]
     ax.bar(val_list, val_fcount,
-           color='orange', bottom=val_tcount, width=width, linewidth=linewidth, align=align, alpha=.8)
+           color='darkgoldenrod', bottom=val_tcount, width=width, linewidth=linewidth, align=align, alpha=.8)
 
     # count
     val_label_class =  [np.argmax(i) for i in val_label_onehot]
     u, counts = np.unique(val_label_class, return_counts=True)
 
-    plt.show()
+    plt.show(block=False)
     return u, counts
 
 def show_class(image, class_num=5, lat_grid=4, lon_grid=4, txt_flag=False):
@@ -74,8 +75,9 @@ def show_class(image, class_num=5, lat_grid=4, lon_grid=4, txt_flag=False):
                 for j, lon in enumerate(lon_lst):
                     ax.text(lon, lat, image[i,j],
                             ha="center", va="center", color='black', fontsize='15')
+    plt.rcParams["font.size"] = 18
 
-    plt.show()
+    plt.show(block=False)
 
 def view_accuracy(acc, lat_grid=4, lon_grid=4):
     projection = ccrs.PlateCarree(central_longitude=180)
@@ -101,7 +103,8 @@ def view_accuracy(acc, lat_grid=4, lon_grid=4):
             ax.text(lon, lat, acc[i,j],
                     ha="center", va="center", color='white', fontsize='15')
     cbar = fig.colorbar(mat, ax=ax)
-    plt.show()
+    plt.rcParams["font.size"] = 18
+    plt.show(block=False)
 
 def pred_accuracy(true_count, false_count):
     fig = plt.figure()
@@ -112,19 +115,41 @@ def pred_accuracy(true_count, false_count):
     ax.set_ylim(0,2)
     ax.set_yticks([1.0], ['val'])
     plt.legend()
-    plt.show()
+    plt.rcParams["font.size"] = 18
+    plt.show(block=False)
+
+def view_probability(pred, flag=False):
+    fig = plt.figure()
+    ax = plt.subplot()
+    width, linewidth, align = 0.5, 0.5, 'center'
+    if flag is False:
+        color='darkgoldenrod'
+    else:
+        color='darkslategray'
+
+    ticks = np.arange(len(pred))
+    ax.bar(ticks,
+           pred,
+           color=color,
+           width=width,
+           linewidth=linewidth,
+           align=align)
+    ax.set_ylim(0,1)
+    plt.rcParams["font.size"] = 18
+    plt.show(block=False)
 
 def box_crossentropy(true, false, class_num=5):
+    plt.rcParams["font.size"] = 18
     label = np.arange(1)
     xs = {key:val for key, val in zip(true.keys(), label)}
     shift = 0.1
 
     fig, ax = plt.subplots()
     for key in true.keys():
-        ax.boxplot(true[key], positions=[xs[key] - shift], boxprops=dict(color='b'),
+        ax.boxplot(true[key], positions=[xs[key] - shift], boxprops=dict(color='darkslategray'),
                    showfliers=False)
-        ax.boxplot(false[key], positions=[xs[key] + shift], boxprops=dict(color='r'),
+        ax.boxplot(false[key], positions=[xs[key] + shift], boxprops=dict(color='darkgoldenrod'),
                    showfliers=False)
     ax.set_xticks(range(1))
     ax.set_xticklabels(true.keys())
-    plt.show()
+    plt.show(block=False)

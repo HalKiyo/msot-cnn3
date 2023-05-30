@@ -5,6 +5,7 @@ warnings.filterwarnings('ignore')
 import pickle
 import numpy as np
 import tensorflow as tf
+import matplotlib.pyplot as plt
 
 from model3 import build_model
 from view import draw_val, show_class, view_accuracy
@@ -26,11 +27,13 @@ def main():
         print(f"train_flag is {train_flag}: not saved")
 
     px.show(val_index=px.val_index)
-    #px.label_dist_multigrid()
+    px.label_dist_multigrid()
+
+    plt.show()
 
 class Pixel():
     def __init__(self):
-        self.val_index = 330 #true_index=330, false_index=20
+        self.val_index = 20 #true_index=330, false_index=20
         self.class_num = 5
         self.descrete_mode = 'EFD'
         self.epochs = 150

@@ -3,25 +3,29 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import warnings
 warnings.filterwarnings('ignore')
 import numpy as np
+import matplotlib.pyplot as plt
 
 from util import open_pickle
 from model3 import init_model
-from view import pred_accuracy, box_crossentropy
+from view import pred_accuracy, box_crossentropy, view_probability
 
 def main():
     EVAL = evaluate()
     x_val, y_val, pred = EVAL.load_pred() # pred:(400, 1000, 5), xy_val:(1000, 400)
-    print(np.mean( [ max(pred[i, EVAL.val_index]) for i in range(400) ] ))
+    print(f"mean of prob_distribution of val_index{EVAL.val_index}: {np.mean( [ max(pred[i, EVAL.val_index]) for i in range(400) ] )}")
     if EVAL.diff_bar_view_flag is True:
         EVAL.diff_evaluation(pred, y_val)
     if EVAL.true_false_view_flag is True:
-        EVAL.true_false_bar(pred, y_val)
+        EVAL.true_false_bar(pred, y_val, criteria=300)
     if EVAL.box_cross_view_flag is True:
-        EVAL.crossentropy(pred, y_val)
+        EVAL.max_probability(pred, y_val, criteria=300)
+    if EVAL.prob_dist_view_flag is True:
+        EVAL.probability_distribution(pred, y_val, pixel_index=100)
+    plt.show()
 
 class evaluate():
     def __init__(self):
-        self.val_index = 5
+        self.val_index = 20
         self.class_num = 5
         self.discrete_mode = 'EFD'
         self.epochs = 150
@@ -50,8 +54,9 @@ class evaluate():
 
         # validation
         self.diff_bar_view_flag = False
-        self.true_false_view_flag = False
+        self.true_false_view_flag = True
         self.box_cross_view_flag = False
+        self.prob_dist_view_flag = False
 
     def load_pred(self):
         x_val, y_val = open_pickle(self.val_path)
@@ -82,22 +87,44 @@ class evaluate():
                 px_false += 1
         pred_accuracy(px_true, px_false)
 
-    def true_false_bar(self, pred, y, criteria=200):
+    def true_false_bar(self, pred, y, criteria=300):
         true_count, false_count = 0, 0
+        true_list = []
         for i in range(len(y)): # val_num
             px_true = 0
             for j in range(len(pred)): # px_num
                 pred_label = np.argmax(pred[j, i])
                 if int(pred_label) == y[i, j]:
                     px_true += 1
+            true_list.append(px_true)
             print(px_true)
+
             if px_true <= criteria:
                 false_count += 1
             else:
                 true_count += 1
+
+        # draw histgram of hitrate within a validation sample
+        true_array = np.array(true_list)
+        fig, ax = plt.subplots()
+        plt.hist(true_array)
+        plt.show(block=False)
+
         pred_accuracy(true_count, false_count)
 
-    def crossentropy(self, val_pred, val_label, criteria=200):
+    def probability_distribution(self, val_pred, val_label, pixel_index=150):
+        """
+        val_pred = (400, 1000, 5)
+        """
+        pred = val_pred[pixel_index, self.val_index]
+        pred_label = np.argmax(pred)
+        if int(pred_label) == val_label[self.val_index, pixel_index]:
+            flag = True
+        else:
+            flag = False
+        view_probability(pred, flag)
+
+    def max_probability(self, val_pred, val_label, criteria=200):
         true = {f"true, false": []}
         false = {f"true, false": []}
 
@@ -111,11 +138,20 @@ class evaluate():
                 if int(pred_label) == val_label[i, j]:
                     px_true += 1
 
+            # cross_mean is mean of max_cross in 'i'th validation sample
             cross_mean = np.mean(cross)
+
+            # count true events in 'i'th validation sample
             if px_true <= criteria:
                 false[f"true, false"].append(cross_mean)
             else:
                 true[f"true, false"].append(cross_mean)
+
+        # draw percentiles
+        t25, t50, t75 = np.percentile(true[f"true, false"], [25, 50, 75])
+        f25, f50, f75 = np.percentile(false[f"true, false"], [25, 50, 75])
+        print(f"true{t25}, {t50}, {t75}")
+        print(f"false{f25}, {f50}, {f75}")
 
         box_crossentropy(true, false)
 
