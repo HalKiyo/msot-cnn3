@@ -32,7 +32,7 @@ class Pixel():
         self.val_index = 16
         self.class_num = 10
         self.descrete_mode = 'EFD'
-        self.epochs = 250
+        self.epochs = 200
         self.batch_size = 256
         self.resolution = '1x1' # 1x1 or 5x5_coarse
         ########################### EDIT HERE
@@ -61,7 +61,7 @@ class Pixel():
             y_train_px = y_train[:, i]
             y_train_one_hot = tf.keras.utils.to_categorical(y_train_px, self.class_num)
             model = build_model((self.lat, self.lon, self.var_num), self.class_num)
-            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+            model.compile(optimizer=tf.keras.optimizers.legacy.Adam(learning_rate=0.0001),
                           loss=self.loss,
                           metrics=[self.metrics])
             his = model.fit(x_train, y_train_one_hot, batch_size=self.batch_size, epochs=self.epochs)
@@ -83,7 +83,7 @@ class Pixel():
             y_val_px = y_val[:, i]
             y_val_one_hot = tf.keras.utils.to_categorical(y_val_px, self.class_num)
             model = build_model((self.lat, self.lon, self.var_num), self.class_num)
-            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+            model.compile(optimizer=tf.keras.optimizers.legacy.Adam(learning_rate=0.0001),
                           loss=self.loss, 
                           metrics=[self.metrics])
             weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
@@ -110,7 +110,7 @@ class Pixel():
         y_val_px = y_val[:, px_index]
 
         model = build_model((self.lat, self.lon, self.var_num), self.class_num)
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+        model.compile(optimizer=tf.keras.optimizers.legacy.Adam(learning_rate=0.0001),
                       loss=self.loss, 
                       metrics=[self.metrics])
         weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{px_index}.h5"
@@ -137,7 +137,7 @@ class Pixel():
         else:
             for i in range(self.grid_num):
                 model = build_model((self.lat, self.lon, self.var_num), self.class_num)
-                model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                model.compile(optimizer=tf.keras.optimizers.legacy.Adam(learning_rate=0.0001),
                               loss=self.loss, 
                               metrics=[self.metrics])
                 weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
@@ -157,7 +157,7 @@ class Pixel():
         y_val_px = y_val[:, px_index]
         y_val_one_hot = tf.keras.utils.to_categorical(y_val_px, self.class_num)
         model = build_model((self.lat, self.lon, self.var_num), self.class_num)
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+        model.compile(optimizer=tf.keras.optimizers.legacy.Adam(learning_rate=0.0001),
                       loss=self.loss, 
                       metrics=[self.metrics])
         weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{px_index}.h5"
@@ -184,7 +184,7 @@ class Pixel():
                 y_val_px = y_val[:, i]
                 y_val_one_hot = tf.keras.utils.to_categorical(y_val_px, self.class_num)
                 model = build_model((self.lat, self.lon, self.var_num), self.class_num)
-                model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                model.compile(optimizer=tf.keras.optimizers.legacy.Adam(learning_rate=0.0001),
                               loss=self.loss, 
                               metrics=[self.metrics])
                 weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
