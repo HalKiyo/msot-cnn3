@@ -1,12 +1,19 @@
 import numpy as np
 import cartopy.crs as ccrs
+import matplotlib as mpl
 import matplotlib.pyplot as plt
+import colormaps as clm
 from matplotlib.colors import Normalize
 from sklearn.metrics import auc
+from scipy.stats import norm
 
-def acc_map(acc, lat_grid=20, lon_grid=20, vmin=0.75, vmax=1.00):
+def acc_map(acc, lat_grid=20, lon_grid=20, vmin=0.75, vmax=1.00, discrete=5):
     projection = ccrs.PlateCarree(central_longitude=180)
     img_extent = (-90, -70, 5, 25) # location = (N5-25, E90-110)
+
+    mpl.colormaps.unregister('sandbox')
+    mpl.colormaps.register(clm.temps, name='sandbox')
+    cm = plt.cm.get_cmap('sandbox', discrete)
 
     fig = plt.figure()
     ax = plt.subplot(projection=projection)
@@ -16,12 +23,13 @@ def acc_map(acc, lat_grid=20, lon_grid=20, vmin=0.75, vmax=1.00):
                      extent=img_extent,
                      transform=projection,
                      vmin=vmin, vmax=vmax,
-                     cmap='tab20c')
+                     cmap=cm)
     cbar = fig.colorbar(mat, ax=ax)
     plt.show(block=False)
 
-def show_map(image, vmin=-1, vmax=1):
+def show_map(image, vmin=-1, vmax=1, discrete=5):
     cmap = plt.cm.get_cmap('BrBG')
+
     projection = ccrs.PlateCarree(central_longitude=180)
     img_extent = (-90, -70, 5, 25) # locatin = (N5-25, E90-110)
 
@@ -50,7 +58,7 @@ def bimodal_dist(data, gmm):
     fig, ax = plt.subplots()
 
     # histgram
-    ax.hist(data, color='g', alpha=0.5)
+    ax.hist(data, color='lightsteelblue', alpha=0.8)
 
     # gaussian mixture modelling
     ax2 = ax.twinx()
@@ -63,21 +71,36 @@ def bimodal_dist(data, gmm):
                      np.sqrt(gmm.covariances_[1]))
     ax2.plot(x,
              np.squeeze(gmm.weights_[0]*true),
+             linestyle='dashed',
+             color='darkslategray',
              label='true')
     ax2.plot(x,
              np.squeeze(gmm.weights_[1]*false),
+             linestyle='solid',
+             color='darkgoldenrod',
              label='false')
     ax2.legend()
     plt.show(block=False)
 
-def draw_val(true_count, false_count):
+def TF_bar(true_count, false_count):
     fig = plt.figure()
     ax = plt.subplot()
-    print(true_count, false_count)
-    ax.barh(1, true_count, height=0.5, color='darkslategray', align='center', label='True')
-    ax.barh(1, false_count, left=true_count, height=0.5, color='orange', align='center', label='False')
+    print(f"true: {true_count}, false: {false_count}")
+    ax.barh(1,
+            true_count, 
+            height=0.5, 
+            color='darkslategray', 
+            align='center', 
+            label=f"True({true_count})")
+    ax.barh(1,
+            false_count,
+            left=true_count,
+            height=0.5,
+            color='darkgoldenrod',
+            align='center',
+            label=f"False({false_count})")
     ax.set_ylim(0,2)
-    ax.set_yticks([1.0], ['val'])
+    ax.set_yticks([1.0], ['validation(1000samples)'])
     plt.legend()
     plt.show(block=False)
 
@@ -92,7 +115,7 @@ def draw_roc_curve(roc):
     # draw cnn_continuous line
     plt.plot(fpr,
              tpr,
-             label=f"cnn_continuous ROC curve (AUC = {AUC})",
+             label=f"cnn_continuous ROC curve (AUC = {round(AUC, -3)})",
              color="deeppink",
              linestyle=":",
              linewidth=4)

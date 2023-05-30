@@ -8,7 +8,7 @@ from sklearn.mixture import GaussianMixture
 
 from util import open_pickle
 from model import init_model
-from view import ae_bar, draw_val, draw_roc_curve, acc_map, bimodal_dist
+from view import ae_bar, TF_bar, draw_roc_curve, acc_map, bimodal_dist
 import matplotlib.pyplot as plt
 
 def main():
@@ -65,7 +65,7 @@ class evaluate():
         self.overwrite_flag = False
         self.mae_view_flag = False
         self.rmse_view_flag = True
-        self.true_false_view_flag = False
+        self.true_false_view_flag = True
         self.auc_view_flag = True
         self.corr_view_flag = True
 
@@ -142,7 +142,7 @@ class evaluate():
 
         print(f"mean of gmm is {criteria}")
         bimodal_dist(rmse_flat, gmm)
-        draw_val(true_count, false_count)
+        TF_bar(true_count, false_count)
 
     def roc(self, sim, obs, percentile=20):
         """
