@@ -22,18 +22,31 @@ def main():
         predictors, predictand_class = load(px.tors, 
                                             px.class_tand, 
                                             model_type='class')
+        predictors, predictand_class = load(px.tors,
+                                            px.continuous_tand,
+                                            model_type='continuous')
         px.train_class(*shuffle(predictors, 
                                 predictand_class, 
                                 px.vsample, 
                                 px.seed, 
                                 px.lat_grid, 
                                 px.lon_grid))
+        px.train_continuous(*shuffle(predictors,
+                                     predictand_class,
+                                     px.vsample,
+                                     px.seed,
+                                     px.lat_grid,
+                                     px.lon_grid))
     else:
         print(f"train_flag is {train_flag}: not saved")
 
+    # class validation
     px.validation_class()
-    px.show(val_index=px.val_index)
+    px.draw_class(val_index=px.val_index)
+    px.labelwise_accuracy_singlegrid(px_index=150)
     px.labelwise_accuracy_gridmean()
+
+    # continuous validation
     plt.show()
 
 
@@ -45,12 +58,14 @@ class Pixel():
         self.resolution = '1x1' # 1x1 or 5x5_coarse
         self.var_num = 4
         self.tors = 'predictors_coarse_std_Apr_msot'
+
         self.seed = 1
         self.batch_size = 256
         self.vsample = 1000
         self.lat, self.lon = 24, 72
         self.lat_grid, self.lon_grid = 20, 20
         self.grid_num = self.lat_grid*self.lon_grid 
+        self.dir = f"/docker/mnt/d/research/D2/cnn3"
         ########################################################################
         ########################### class model setting ########################
         self.class_num = 5
@@ -60,13 +75,23 @@ class Pixel():
         self.class_metrics = tf.keras.metrics.CategoricalAccuracy()
 
         self.class_tand = f"pr_{self.resolution}_std_MJJASO_thailand_{self.descrete_mode}_{self.class_num}"
-        self.dir = f"/docker/mnt/d/research/D2/cnn3"
-        self.class_savefile = self.dir + f"/train_val/class/{self.tors}-{self.class_tand}.pickle"
+
+        self.class_train_val_path = self.dir + f"/train_val/class/{self.tors}-{self.class_tand}.pickle"
         self.class_weights_dir = self.dir + f"/weights/class/{self.tors}-{self.class_tand}"
         self.class_result_dir = self.dir + f"/result/class/thailand/{self.resolution}/{self.tors}-{self.class_tand}"
         self.class_result_path = self.class_result_dir + f"/class{self.class_num}_epoch{self.class_epochs}_batch{self.batch_size}_seed{self.seed}.npy"
         ########################################################################
         ########################### continuous model setting ###################
+        self.continuous_epochs = 100
+        self.continuous_loss = tf.keras.losses.MeanSquaredError()
+        self.continuous_metrics = tf.keras.metrics.MeanSquaredError()
+
+        self.continuous_tand = f"pr_{self.resolution}_std_MJJASO_thailand"
+
+        self.continuous_train_val_path = self.dir + f"/train_val/continuous/{self.tors}-{self.continuous_tand}.pickle"
+        self.continuous_weights_dir = self.dir + f"/weights/continuous/{self.tors}-{self.continuous_tand}"
+        self.continuous_result_dir = self.dir + f"/result/continuous/thailand/{self.resolution}/{self.tors}-{self.continuous_tand}"
+        self.continuous_result_path = self.continuous_result_dir + f"/epoch{self.continuous_epochs}_batch{self.batch_size}_sedd{self.seed}.npy"
         ########################################################################
 
     def train_class(self, x_train, y_train, x_val, y_val, train_dct, val_dct):
@@ -101,11 +126,42 @@ class Pixel():
                'y_val': y_val,
                'train_dct': train_dct,
                'val_dct': val_dct}
-        with open(self.class_savefile, 'wb') as f:
+        with open(self.class_train_val_path, 'wb') as f:
             pickle.dump(dct, f)
-        print(f"{self.class_savefile}: SAVED")
+        print(f"{self.class_train_val_path}: SAVED")
 
+    def train_continuous(self, x_train, y_train, x_val, y_val, train_dct, val_dct):
+        x_train = mask(x_train)
+        x_train = x_train.transpose(0, 2, 3, 1)
+        x_val = mask(x_val)
+        x_val = x_val.transpose(0, 2, 3, 1)
+        y_train = y_train.reshape(len(y_train), self.grid_num)
+        y_val   = y_val.reshape(len(y_val), self.grid_num)
 
+        os.makedirs(self.continuous_weights_dir, exist_ok=True) # create weight directory
+        for i in range(self.grid_num):
+            y_train_px = y_train[:, i]
+            model = build_continuous_model((self.lat, self.lon, self.var_num))
+            model.compile(optimizer=tf.keras.optimizers.legacy.Adam(learning_rate=0.0001),
+                          loss=self.continuous_loss,
+                          metrics=[self.continuous_metrics])
+            his = model.fit(x_train,
+                            y_train_px,
+                            batch_size=self.batch_size,
+                            epochs=self.continuous_epochs)
+            continuous_weights_path = f"{self.continuous_weights_dir}/epoch{self.continuous_epochs}_batch{self.batch_size}_{i}.h5"
+            model.save_weights(continuous_weights_path)
+        print(f"{self.continuous_weights_dir}: SAVED")
+
+        dct = {'x_train': x_train,
+               'y_train': y_train,
+               'x_val': x_val, 
+               'y_val': y_val,
+               'train_dct': train_dct,
+               'val_dct': val_dct}
+        with open(self.continuous_train_val_path, 'wb') as f:
+            pickle.dump(dct, f)
+        print(f"{self.continuous_train_val_path}: SAVED")
 ######################## TRAINING DONE ################################################
 #######################################################################################
 
@@ -115,7 +171,7 @@ class Pixel():
         averaged gridwise accuracy map 20x20 
         (ratio of true or false in grids)
         """
-        with open(self.class_savefile, 'rb') as f:
+        with open(self.class_train_val_path, 'rb') as f:
             data = pickle.load(f)
         x_val, y_val = data['x_val'], data['y_val']
 
@@ -189,14 +245,14 @@ class Pixel():
         # view accuracy
         accuracy_map(acc)
 
-    def show(self, val_index=0):
+    def draw_class(self, val_index=0):
         """
         val_index = validation sample index
         showing true map 20x20
         showing predicted map 20x20
         """
         # load train and validation data
-        with open(self.class_savefile, 'rb') as f:
+        with open(self.class_train_val_path, 'rb') as f:
             data = pickle.load(f)
         x_val, y_val = data['x_val'], data['y_val']
         y_val_px = y_val[val_index].reshape(self.lat_grid, self.lon_grid)
@@ -230,26 +286,38 @@ class Pixel():
         show_class(pred_label, class_num=self.class_num)
 
     def labelwise_accuracy_singlegrid(self, px_index):
-        with open(self.savefile, 'rb') as f:
+        with open(self.class_train_val_path, 'rb') as f:
             data = pickle.load(f)
         x_val, y_val = data['x_val'], data['y_val']
-        y_val_px = y_val[:, px_index]
-        y_val_one_hot = tf.keras.utils.to_categorical(y_val_px, self.class_num)
-        model = build_class_model((self.lat, self.lon, self.var_num), self.class_num)
-        model.compile(optimizer=tf.keras.optimizers.legacy.Adam(learning_rate=0.0001),
-                      loss=self.loss, 
-                      metrics=[self.metrics])
-        weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{px_index}.h5"
-        model.load_weights(weights_path)
-        pred = model.predict(x_val)
-        
+
+        if os.path.exists(self.class_result_path) is True:
+            pred_arr = np.load(self.class_result_path)
+            pred_arr = pred_arr.reshape(self.grid_num,
+                                        self.vsample,
+                                        self.class_num)
+            pred = pred_arr[px_index]
+            y_val_px = y_val[:, px_index]
+            y_val_one_hot = tf.keras.utils.to_categorical(y_val_px, self.class_num)
+        else:
+            y_val_px = y_val[:, px_index]
+            y_val_one_hot = tf.keras.utils.to_categorical(y_val_px, self.class_num)
+            model = build_class_model((self.lat, self.lon, self.var_num), self.class_num)
+            model.compile(optimizer=tf.keras.optimizers.legacy.Adam(learning_rate=0.0001),
+                          loss=self.class_loss, 
+                          metrics=[self.class_metrics])
+            weights_path = f"{self.class_weights_dir}/class{self.class_num}_epoch{self.class_epochs}_batch{self.batch_size}_{px_index}.h5"
+            model.load_weights(weights_path)
+            pred = model.predict(x_val)
+
         # draw_validation
-        class_label, counts = draw_val(pred, y_val_one_hot, class_num=self.class_num)
+        class_label, counts = true_false_bar(pred, 
+                                             y_val_one_hot, 
+                                             class_num=self.class_num)
         print(f"class_label: {class_label}\n" \
               f"counts: {counts}")
 
     def labelwise_accuracy_gridmean(self):
-        with open(self.class_savefile, 'rb') as f:
+        with open(self.class_train_val_path, 'rb') as f:
             data = pickle.load(f)
         x_val, y_val = data['x_val'], data['y_val']
 

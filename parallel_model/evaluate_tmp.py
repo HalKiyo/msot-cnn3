@@ -6,17 +6,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from util import open_pickle
-from model3 import init_model
-from view import pred_accuracy, box_crossentropy, view_probability, bimodal_dist
+from class_model import init_class_model
+from view_tmp import pred_accuracy, box_crossentropy, view_probability, bimodal_dist
 
 def main():
     EVAL = evaluate()
     x_val, y_val, pred = EVAL.load_pred() # pred:(400, 1000, 5), xy_val:(1000, 400)
     print(f"mean of prob_distribution of val_index{EVAL.val_index}: {np.mean( [ max(pred[i, EVAL.val_index]) for i in range(400) ] )}")
-    if EVAL.diff_bar_view_flag is True:
-        EVAL.diff_evaluation(pred, y_val)
+    if EVAL.single_bar_view_flag is True:
+        EVAL.accuracy_bar_singlesample(pred, y_val)
     if EVAL.true_false_view_flag is True:
-        EVAL.true_false_bar(pred, y_val, criteria=300)
+        EVAL.samplewise_accuracy_bar(pred, y_val, criteria=300)
     if EVAL.box_cross_view_flag is True:
         EVAL.max_probability(pred, y_val, criteria=300)
     if EVAL.prob_dist_view_flag is True:
@@ -53,7 +53,7 @@ class evaluate():
         self.model = init_model(lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
 
         # validation
-        self.diff_bar_view_flag = False
+        self.single_bar_view_flag = False
         self.true_false_view_flag = True
         self.box_cross_view_flag = False
         self.prob_dist_view_flag = False
@@ -74,7 +74,7 @@ class evaluate():
             np.save(self.result_path, pred_arr)
         return x_val, y_val, pred_arr # pred(400, 1000)
 
-    def diff_evaluation(self, pred, y):
+    def accuracy_bar_singlesample(self, pred, y):
         pred_onehot = pred[:, self.val_index] # pred(400, 1000, 5)
         label = y[self.val_index, :] # y(1000, 400)
 
@@ -87,7 +87,7 @@ class evaluate():
                 px_false += 1
         pred_accuracy(px_true, px_false)
 
-    def true_false_bar(self, pred, y, criteria=300):
+    def samplewise_accuracy_bar(self, pred, y, criteria=300):
         true_count, false_count = 0, 0
         true_list = []
         for i in range(len(y)): # val_num
