@@ -118,6 +118,11 @@ def pred_accuracy(true_count, false_count):
     plt.rcParams["font.size"] = 18
     plt.show(block=False)
 
+def bimodal_dist(true_count_of_each_individual_validation_sample):
+    fig, ax = plt.subplots()
+    ax.hist(true_count_of_each_individual_validation_sample, color='g', alpha=0.5)
+    plt.show(block=False)
+
 def view_probability(pred, flag=False):
     fig = plt.figure()
     ax = plt.subplot()

@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 from util import open_pickle
 from model3 import init_model
-from view import pred_accuracy, box_crossentropy, view_probability
+from view import pred_accuracy, box_crossentropy, view_probability, bimodal_dist
 
 def main():
     EVAL = evaluate()
@@ -97,7 +97,6 @@ class evaluate():
                 if int(pred_label) == y[i, j]:
                     px_true += 1
             true_list.append(px_true)
-            print(px_true)
 
             if px_true <= criteria:
                 false_count += 1
@@ -106,9 +105,7 @@ class evaluate():
 
         # draw histgram of hitrate within a validation sample
         true_array = np.array(true_list)
-        fig, ax = plt.subplots()
-        plt.hist(true_array)
-        plt.show(block=False)
+        bimodal_dist(true_array)
 
         pred_accuracy(true_count, false_count)
 
@@ -132,7 +129,9 @@ class evaluate():
             px_true = 0
             cross = []
             for j in range(len(val_pred)): # px_num
+                ############# max_corss = 信頼度 ###################
                 max_cross = np.max(val_pred[j, i])
+                ####################################################
                 cross.append(max_cross)
                 pred_label = np.argmax(val_pred[j, i])
                 if int(pred_label) == val_label[i, j]:
