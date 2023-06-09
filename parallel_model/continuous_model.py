@@ -14,7 +14,7 @@ def build_continuous_model(input_shape):
     model.add(layers.Dense(1, activation='linear'))
     return model
 
-def init_model(lat=24, lon=72, var_num=4, lr=0.0001):
+def init_continuous_model(lat=24, lon=72, var_num=4, lr=0.0001):
     optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
     loss = tf.keras.losses.MeanSquaredError()
     metrics = tf.keras.metrics.MeanSquaredError()
