@@ -149,3 +149,21 @@ def ACC_map(ACC, lat_grid=20, lon_grid=20, vmin=0.75, vmax=1.00, discrete=5):
                      cmap=cm)
     fig.colorbar(mat, ax=ax)
     plt.show(block=False)
+
+######################### EVALUATION #######################################
+############################################################################
+def scatter_and_marginal_density(true_accuracy_lst,
+                                 true_nrmse_lst,
+                                 true_reliability_lst,
+                                 false_accuracy_lst,
+                                 false_nrmse_lst,
+                                 false_reliability_lst,
+                                 else_accuracy_lst,
+                                 else_nrmse_lst,
+                                 else_reliability_lst):
+    fig, ax = plt.subplots()
+    ax.scatter(true_reliability_lst,
+               true_nrmse_lst,
+               color="#00AFBB",
+               alpha=true_accuracy_lst)
+    plt.show(block=False)

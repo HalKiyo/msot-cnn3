@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from util import open_pickle
 from class_model import init_class_model
 from continuous_model import init_continuous_model
-#from view import sand
+from view import scatter_and_marginal_density
 
 def main():
     EVAL = evaluate()
@@ -17,6 +17,12 @@ def main():
           f"{EVAL.val_index}: {np.mean( [ max(pred_class[i, EVAL.val_index]) for i in range(400) ] )}")
 
     x_val, y_val_continuous, pred_continuous = EVAL.load_continuous() # pred:(400, 1000), y_val:(1000, 400)
+
+    EVAL.nrmse_vs_reliability(pred_class, 
+                              pred_continuous,
+                              y_val_class,
+                              y_val_continuous)
+    plt.show()
 
     """
     EVAL.accuracy_bar_singlesample(pred, y_val)
@@ -106,13 +112,88 @@ class evaluate():
 
 ################################ pred loaded ################################
 #############################################################################
-    def reliability_vs_nrmse(self, pred_class, pred_continuous, y_val_continuous):
+    def nrmse_vs_reliability(self,
+                             pred_class,
+                             pred_continuous,
+                             y_val_class,
+                             y_val_continuous,
+                             class_threshold=200/400,
+                             continuous_threshold=0.2):
         """
         pred_class: (400, 1000, 5)
         pred_continuous: (400, 1000)
+        y_val_class: (1000, 400)
         y_val_continuous: (1000, 400)
         """
+        # reliability and nrmse calculation
+        accuracy_lst = []
+        nrmse_lst = []
+        reliability_lst = []
 
+        true_reliability_lst =  []
+        false_reliability_lst =  []
+        else_reliability_lst =  []
+
+        true_nrmse_lst = []
+        false_nrmse_lst = []
+        else_nrmse_lst = []
+
+        true_accuracy_lst = []
+        false_accuracy_lst = []
+        else_accuracy_lst = []
+
+        for sample in range(self.vsample):
+            # accuracy
+            grids_reliability = []
+            grid_true, grid_false = 0, 0
+            class_one_hot = pred_class[:, sample, :]
+            class_label = y_val_class[sample, :]
+            for g in range(self.grid_num):
+                pred_label = np.argmax(class_one_hot[g, :])
+                reliability = np.max(class_one_hot[g, :])
+                grids_reliability.append(reliability)
+                if int(pred_label) == class_label[g]:
+                    grid_true += 1
+                else:
+                    grid_false += 1
+            accuracy = (grid_true)/(grid_true + grid_false)
+            accuracy_lst.append(accuracy)
+
+            # nrmse
+            continuous = pred_continuous[:, sample]
+            continuous_label = y_val_continuous[sample, :]
+            gridmean_nrmse = np.sqrt(np.mean((continuous - continuous_label)**2))
+            nrmse_lst.append(gridmean_nrmse)
+
+            # reliability
+            gridmean_reliability = np.mean(grids_reliability)
+            reliability_lst.append(gridmean_reliability)
+
+            # classification
+            if int(accuracy) >= class_threshold and gridmean_nrmse <= continuous_threshold:
+                true_accuracy_lst.append(accuracy)
+                true_nrmse_lst.append(gridmean_nrmse)
+                true_reliability_lst.append(gridmean_reliability)
+            elif int(accuracy) < class_threshold and gridmean_nrmse > continuous_threshold:
+                false_accuracy_lst.append(accuracy)
+                false_nrmse_lst.append(gridmean_nrmse)
+                false_reliability_lst.append(gridmean_reliability)
+            else:
+                else_accuracy_lst.append(accuracy)
+                else_nrmse_lst.append(gridmean_nrmse)
+                else_reliability_lst.append(gridmean_reliability)
+
+        # plot
+        scatter_and_marginal_density(true_accuracy_lst,
+                                     true_nrmse_lst,
+                                     true_reliability_lst,
+                                     false_accuracy_lst,
+                                     false_nrmse_lst,
+                                     false_reliability_lst,
+                                     else_accuracy_lst,
+                                     else_nrmse_lst,
+                                     else_reliability_lst,
+                                     )
 
 #############################################################################
     def accuracy_bar_singlesample(self, pred, y):
