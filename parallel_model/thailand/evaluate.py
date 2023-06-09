@@ -181,6 +181,8 @@ class evaluate():
 
         # plot
 #        scatter_and_marginal_density(accuracy_lst,
+#                                     nrmse_lst,
+#                                     reliability_lst,
 #                                     true_accuracy_lst,
 #                                     true_nrmse_lst,
 #                                     true_reliability_lst,
@@ -193,7 +195,17 @@ class evaluate():
 #                                     )
         cluster_scatter(accuracy_lst,
                         nrmse_lst,
-                        reliability_lst)
+                        reliability_lst,
+                        true_accuracy_lst,
+                        true_nrmse_lst,
+                        true_reliability_lst,
+                        false_accuracy_lst,
+                        false_nrmse_lst,
+                        false_reliability_lst,
+                        else_accuracy_lst,
+                        else_nrmse_lst,
+                        else_reliability_lst,
+                        )
 
 #############################################################################
 

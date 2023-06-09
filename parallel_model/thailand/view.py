@@ -169,55 +169,75 @@ def scatter_and_marginal_density(accuracy_lst,
     """
     seaborn acctepts only dataframe stracture
     """
-    df = pd.DataFrame({
-                       'acc':    accuracy_lst,
-                       'nrmse':       nrmse_lst,
-                       'rlbl': reliability_lst,
-                       'true_acc': true_accuracy_lst,
+    control = pd.DataFrame({
+                       'acc':   accuracy_lst,
+                       'nrmse': nrmse_lst,
+                       'rlbl':  reliability_lst,
+                       })
+    true = pd.DataFrame({
+                       'true_acc':   true_accuracy_lst,
                        'true_nrmse': true_nrmse_lst,
-                       'true_rlbl': true_reliability_lst,
-                       'false_acc': false_accuracy_lst,
+                       'true_rlbl':  true_reliability_lst,
+                       })
+    false = pd.DataFrame({
+                       'false_acc':   false_accuracy_lst,
                        'false_nrmse': false_nrmse_lst,
-                       'false_rlbl': false_reliability_lst,
-                       'else_acc': else_accuracy_lst,
+                       'false_rlbl':  false_reliability_lst,
+                       })
+    els = pd.DataFrame({
+                       'else_acc':   else_accuracy_lst,
                        'else_nrmse': else_nrmse_lst,
-                       'else_rlbl': else_reliability_lst
+                       'else_rlbl':  else_reliability_lst
                       })
-    plt.rcParams["font.size"] = 20
-    fig = plt.figure(figsize=[5, 5])
-    ax = plt.subplot()
-    ax.scatter(true_reliability_lst, true_nrmse_lst,
-               c="#00AFBB",
-               s=true_accuracy_lst,
-               alpha=0.5,
-               label=(f"True (number of sample = {len(true_reliability_lst)})")
-               )
-    ax.scatter(false_reliability_lst,
-               false_nrmse_lst,
-               c="#FC4E07",
-               s=false_accuracy_lst,
-               alpha=0.5,
-               label=(f"False (number of sample={len(false_reliability_lst)})"))
-    ax.scatter(else_reliability_lst,
-               else_nrmse_lst,
-               c="#E7B800",
-               s=else_accuracy_lst,
-               alpha=0.5,
-               label=(f"Else (number of sample={len(else_reliability_lst)})"))
-    plt.xlabel('Reliability (grids_mean)')
-    plt.ylabel('NRMSE (grids_mean)')
-    plt.legend()
-    plt.show(block=False)
-
-def cluster_scatter(accuracy_lst,
-                   nrmse_lst,
-                   reliability_lst):
     plt.rcParams["font.size"] = 16
     cm = colors.ListedColormap(["#FC4E07",
                                 "#E7B800",
                                 "#00AFBB"])
-    fig = plt.figure(figsize=[6, 6])
-    ax = plt.subplot()
+    g = sns.JointGrid(data=control,
+                      x="rlbl",
+                      y="nrmse",
+                      hue="acc",
+                      palette=cm,
+                      hue_order=['false', 'else', 'true'])
+    g.plot(sns.scatterplot, sns.histplot)
+    plt.show(block=False)
+
+def cluster_scatter(accuracy_lst,
+                   nrmse_lst,
+                   reliability_lst,
+                   true_accuracy_lst,
+                   true_nrmse_lst,
+                   true_reliability_lst,
+                   false_accuracy_lst,
+                   false_nrmse_lst,
+                   false_reliability_lst,
+                   else_accuracy_lst,
+                   else_nrmse_lst,
+                   else_reliability_lst):
+    plt.rcParams["font.size"] = 16
+    cm = colors.ListedColormap(["#FC4E07",
+                                "#E7B800",
+                                "#00AFBB"])
+    fig = plt.figure(figsize=[8, 8])
+    gs = fig.add_gridspec(2,
+                          2,
+                          width_ratios=(4, 1),
+                          height_ratios=(1, 4),
+                          left=0.1,
+                          right=0.9,
+                          bottom=0.2,
+                          top=0.95,
+                          wspace=0.05,
+                          hspace=0.05)
+    ax = fig.add_subplot(gs[1 ,0])
+    cax = fig.add_axes([0.12, 0.1, 0.58, 0.01])
+    ax_x = fig.add_subplot(gs[0, 0], sharex=ax)
+    ax_y = fig.add_subplot(gs[1, 1], sharey=ax)
+    ax_x.tick_params(axis="x",
+                     labelbottom=False)
+    ax_y.tick_params(axis="y",
+                     labelleft=False)
+
     scat = ax.scatter(reliability_lst,
                       nrmse_lst,
                       c=np.array(accuracy_lst),
@@ -251,16 +271,34 @@ def cluster_scatter(accuracy_lst,
                alpha=0.5,
                label=(f"else (4 samples)")
                )
-    plt.xlabel('Reliability (grids_mean)')
-    plt.ylabel('NRMSE (grids_mean)')
+
+    ax_x.hist(false_reliability_lst,
+              bins=3,
+              color="#FC4E07")
+    ax_x.hist(true_reliability_lst,
+              bins=3,
+              color="#00AFBB")
+
+    ax_y.hist(false_nrmse_lst,
+              bins=10,
+              color="#FC4E07",
+              orientation='horizontal')
+    ax_y.hist(true_nrmse_lst,
+              bins=10,
+              color="#00AFBB",
+              orientation='horizontal')
+
+    ax.set_xlabel('Reliability (grids_mean)')
+    ax.set_ylabel('NRMSE (grids_mean)')
     clb = fig.colorbar(scat,
-                       ax=ax,
+                       cax=cax,
                        orientation='horizontal')
     clb.set_label("number of true grids in 20x20 grids",
-                  rotation=0)
-    plt.legend(bbox_to_anchor=(1, 1),
+                   rotation=0)
+    ax.legend(bbox_to_anchor=(1, 1),
                loc='upper right',
                borderaxespad=0,
                fontsize = 12)
+
     plt.show(block=False)
 
