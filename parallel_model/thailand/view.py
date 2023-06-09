@@ -166,54 +166,6 @@ def scatter_and_marginal_density(accuracy_lst,
                                  else_accuracy_lst,
                                  else_nrmse_lst,
                                  else_reliability_lst):
-    """
-    seaborn acctepts only dataframe stracture
-    """
-    control = pd.DataFrame({
-                       'acc':   accuracy_lst,
-                       'nrmse': nrmse_lst,
-                       'rlbl':  reliability_lst,
-                       })
-    true = pd.DataFrame({
-                       'true_acc':   true_accuracy_lst,
-                       'true_nrmse': true_nrmse_lst,
-                       'true_rlbl':  true_reliability_lst,
-                       })
-    false = pd.DataFrame({
-                       'false_acc':   false_accuracy_lst,
-                       'false_nrmse': false_nrmse_lst,
-                       'false_rlbl':  false_reliability_lst,
-                       })
-    els = pd.DataFrame({
-                       'else_acc':   else_accuracy_lst,
-                       'else_nrmse': else_nrmse_lst,
-                       'else_rlbl':  else_reliability_lst
-                      })
-    plt.rcParams["font.size"] = 16
-    cm = colors.ListedColormap(["#FC4E07",
-                                "#E7B800",
-                                "#00AFBB"])
-    g = sns.JointGrid(data=control,
-                      x="rlbl",
-                      y="nrmse",
-                      hue="acc",
-                      palette=cm,
-                      hue_order=['false', 'else', 'true'])
-    g.plot(sns.scatterplot, sns.histplot)
-    plt.show(block=False)
-
-def cluster_scatter(accuracy_lst,
-                   nrmse_lst,
-                   reliability_lst,
-                   true_accuracy_lst,
-                   true_nrmse_lst,
-                   true_reliability_lst,
-                   false_accuracy_lst,
-                   false_nrmse_lst,
-                   false_reliability_lst,
-                   else_accuracy_lst,
-                   else_nrmse_lst,
-                   else_reliability_lst):
     plt.rcParams["font.size"] = 16
     cm = colors.ListedColormap(["#FC4E07",
                                 "#E7B800",
@@ -272,12 +224,15 @@ def cluster_scatter(accuracy_lst,
                label=(f"else (4 samples)")
                )
 
-    ax_x.hist(false_reliability_lst,
-              bins=3,
-              color="#FC4E07")
-    ax_x.hist(true_reliability_lst,
-              bins=3,
-              color="#00AFBB")
+    bplot = ax_x.boxplot([false_reliability_lst, true_reliability_lst],
+                         notch=True,
+                         patch_artist=True,
+                         showfliers=False,
+                         vert=False,
+                         labels=['false', 'true'])
+    boxcolor = ['#FC4E07', '#00AFBB']
+    for patch, color in zip(bplot['boxes'], boxcolor):
+        patch.set_facecolor(color)
 
     ax_y.hist(false_nrmse_lst,
               bins=10,

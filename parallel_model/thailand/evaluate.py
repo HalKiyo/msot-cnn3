@@ -180,32 +180,19 @@ class evaluate():
                 else_reliability_lst.append(gridmean_reliability)
 
         # plot
-#        scatter_and_marginal_density(accuracy_lst,
-#                                     nrmse_lst,
-#                                     reliability_lst,
-#                                     true_accuracy_lst,
-#                                     true_nrmse_lst,
-#                                     true_reliability_lst,
-#                                     false_accuracy_lst,
-#                                     false_nrmse_lst,
-#                                     false_reliability_lst,
-#                                     else_accuracy_lst,
-#                                     else_nrmse_lst,
-#                                     else_reliability_lst,
-#                                     )
-        cluster_scatter(accuracy_lst,
-                        nrmse_lst,
-                        reliability_lst,
-                        true_accuracy_lst,
-                        true_nrmse_lst,
-                        true_reliability_lst,
-                        false_accuracy_lst,
-                        false_nrmse_lst,
-                        false_reliability_lst,
-                        else_accuracy_lst,
-                        else_nrmse_lst,
-                        else_reliability_lst,
-                        )
+        scatter_and_marginal_density(accuracy_lst,
+                                     nrmse_lst,
+                                     reliability_lst,
+                                     true_accuracy_lst,
+                                     true_nrmse_lst,
+                                     true_reliability_lst,
+                                     false_accuracy_lst,
+                                     false_nrmse_lst,
+                                     false_reliability_lst,
+                                     else_accuracy_lst,
+                                     else_nrmse_lst,
+                                     else_reliability_lst,
+                                     )
 
 #############################################################################
 
