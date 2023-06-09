@@ -24,13 +24,6 @@ def main():
                               y_val_continuous)
     plt.show()
 
-    """
-    EVAL.accuracy_bar_singlesample(pred, y_val)
-    EVAL.samplewise_accuracy_bar(pred, y_val, criteria=300)
-    EVAL.max_probability(pred, y_val, criteria=300)
-    EVAL.probability_distribution(pred, y_val, pixel_index=100)
-    plt.show()
-    """
 
 class evaluate():
     def __init__(self):
@@ -117,7 +110,7 @@ class evaluate():
                              pred_continuous,
                              y_val_class,
                              y_val_continuous,
-                             class_threshold=200/400,
+                             class_threshold=220,
                              continuous_threshold=0.2):
         """
         pred_class: (400, 1000, 5)
@@ -156,7 +149,8 @@ class evaluate():
                     grid_true += 1
                 else:
                     grid_false += 1
-            accuracy = (grid_true)/(grid_true + grid_false)
+            #accuracy = (grid_true)/(grid_true + grid_false)
+            accuracy = grid_true
             accuracy_lst.append(accuracy)
 
             # nrmse

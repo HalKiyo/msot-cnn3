@@ -161,9 +161,28 @@ def scatter_and_marginal_density(true_accuracy_lst,
                                  else_accuracy_lst,
                                  else_nrmse_lst,
                                  else_reliability_lst):
+    plt.rcParams["font.size"] = 20
     fig, ax = plt.subplots()
     ax.scatter(true_reliability_lst,
                true_nrmse_lst,
-               color="#00AFBB",
-               alpha=true_accuracy_lst)
+               c="#00AFBB",
+               s=true_accuracy_lst,
+               alpha=0.1,
+               label=(f"True (number of sample={len(true_reliability_lst)})"))
+    ax.scatter(false_reliability_lst,
+               false_nrmse_lst,
+               c="#FC4E07",
+               s=false_accuracy_lst,
+               alpha=0.5,
+               label=(f"False (number of sample={len(false_reliability_lst)})"))
+    ax.scatter(else_reliability_lst,
+               else_nrmse_lst,
+               c="#E7B800",
+               s=else_accuracy_lst,
+               alpha=0.5,
+               label=(f"Else (number of sample={len(else_reliability_lst)})"))
+    ax.set_xlabel('Reliability (grids_mean)')
+    ax.set_ylabel('NRMSE (grids_mean)')
+    ax.set_ylabel('NRMSE (grids_mean)')
+    plt.legend()
     plt.show(block=False)
