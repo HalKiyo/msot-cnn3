@@ -1,10 +1,12 @@
 import numpy as np
+import pandas as pd
 import cartopy.crs as ccrs
+import seaborn as sns
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
-import colormaps as clm
 from matplotlib.colors import Normalize
+import colormaps as clm
 
 ######################### CLASS ############################################
 ############################################################################
@@ -152,7 +154,10 @@ def ACC_map(ACC, lat_grid=20, lon_grid=20, vmin=0.75, vmax=1.00, discrete=5):
 
 ######################### EVALUATION #######################################
 ############################################################################
-def scatter_and_marginal_density(true_accuracy_lst,
+def scatter_and_marginal_density(accuracy_lst,
+                                 nrmse_lst,
+                                 reliability_lst,
+                                 true_accuracy_lst,
                                  true_nrmse_lst,
                                  true_reliability_lst,
                                  false_accuracy_lst,
@@ -161,14 +166,32 @@ def scatter_and_marginal_density(true_accuracy_lst,
                                  else_accuracy_lst,
                                  else_nrmse_lst,
                                  else_reliability_lst):
+    """
+    seaborn acctepts only dataframe stracture
+    """
+    df = pd.DataFrame({
+                       'acc':    accuracy_lst,
+                       'nrmse':       nrmse_lst,
+                       'rlbl': reliability_lst,
+                       'true_acc': true_accuracy_lst,
+                       'true_nrmse': true_nrmse_lst,
+                       'true_rlbl': true_reliability_lst,
+                       'false_acc': false_accuracy_lst,
+                       'false_nrmse': false_nrmse_lst,
+                       'false_rlbl': false_reliability_lst,
+                       'else_acc': else_accuracy_lst,
+                       'else_nrmse': else_nrmse_lst,
+                       'else_rlbl': else_reliability_lst
+                      })
     plt.rcParams["font.size"] = 20
-    fig, ax = plt.subplots()
-    ax.scatter(true_reliability_lst,
-               true_nrmse_lst,
+    fig = plt.figure(figsize=[5, 5])
+    ax = plt.subplot()
+    ax.scatter(true_reliability_lst, true_nrmse_lst,
                c="#00AFBB",
                s=true_accuracy_lst,
-               alpha=0.1,
-               label=(f"True (number of sample={len(true_reliability_lst)})"))
+               alpha=0.5,
+               label=(f"True (number of sample = {len(true_reliability_lst)})")
+               )
     ax.scatter(false_reliability_lst,
                false_nrmse_lst,
                c="#FC4E07",
@@ -181,8 +204,63 @@ def scatter_and_marginal_density(true_accuracy_lst,
                s=else_accuracy_lst,
                alpha=0.5,
                label=(f"Else (number of sample={len(else_reliability_lst)})"))
-    ax.set_xlabel('Reliability (grids_mean)')
-    ax.set_ylabel('NRMSE (grids_mean)')
-    ax.set_ylabel('NRMSE (grids_mean)')
+    plt.xlabel('Reliability (grids_mean)')
+    plt.ylabel('NRMSE (grids_mean)')
     plt.legend()
     plt.show(block=False)
+
+def cluster_scatter(accuracy_lst,
+                   nrmse_lst,
+                   reliability_lst):
+    plt.rcParams["font.size"] = 16
+    cm = colors.ListedColormap(["#FC4E07",
+                                "#E7B800",
+                                "#00AFBB"])
+    fig = plt.figure(figsize=[6, 6])
+    ax = plt.subplot()
+    scat = ax.scatter(reliability_lst,
+                      nrmse_lst,
+                      c=np.array(accuracy_lst),
+                      cmap=cm,
+                      s=300,
+                      alpha=0.5,
+                      vmin=0,
+                      vmax=400,
+                     )
+    ax.scatter([0.95],
+               [0.03],
+               c="#00AFBB",
+               cmap=cm,
+               s=300,
+               alpha=0.5,
+               label=(f"true (851 samples)")
+               )
+    ax.scatter([0.78],
+               [0.5],
+               c="#FC4E07",
+               cmap=cm,
+               s=300,
+               alpha=0.5,
+               label=(f"false (145 samples)")
+               )
+    ax.scatter([0.83],
+               [0.47],
+               c="#E7B800",
+               cmap=cm,
+               s=300,
+               alpha=0.5,
+               label=(f"else (4 samples)")
+               )
+    plt.xlabel('Reliability (grids_mean)')
+    plt.ylabel('NRMSE (grids_mean)')
+    clb = fig.colorbar(scat,
+                       ax=ax,
+                       orientation='horizontal')
+    clb.set_label("number of true grids in 20x20 grids",
+                  rotation=0)
+    plt.legend(bbox_to_anchor=(1, 1),
+               loc='upper right',
+               borderaxespad=0,
+               fontsize = 12)
+    plt.show(block=False)
+

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from util import open_pickle
 from class_model import init_class_model
 from continuous_model import init_continuous_model
-from view import scatter_and_marginal_density
+from view import scatter_and_marginal_density, cluster_scatter
 
 def main():
     EVAL = evaluate()
@@ -21,7 +21,9 @@ def main():
     EVAL.nrmse_vs_reliability(pred_class, 
                               pred_continuous,
                               y_val_class,
-                              y_val_continuous)
+                              y_val_continuous,
+                              continuous_threshold=0.2,
+                              class_threshold=133)
     plt.show()
 
 
@@ -110,7 +112,7 @@ class evaluate():
                              pred_continuous,
                              y_val_class,
                              y_val_continuous,
-                             class_threshold=220,
+                             class_threshold=133,
                              continuous_threshold=0.2):
         """
         pred_class: (400, 1000, 5)
@@ -178,97 +180,22 @@ class evaluate():
                 else_reliability_lst.append(gridmean_reliability)
 
         # plot
-        scatter_and_marginal_density(true_accuracy_lst,
-                                     true_nrmse_lst,
-                                     true_reliability_lst,
-                                     false_accuracy_lst,
-                                     false_nrmse_lst,
-                                     false_reliability_lst,
-                                     else_accuracy_lst,
-                                     else_nrmse_lst,
-                                     else_reliability_lst,
-                                     )
+#        scatter_and_marginal_density(accuracy_lst,
+#                                     true_accuracy_lst,
+#                                     true_nrmse_lst,
+#                                     true_reliability_lst,
+#                                     false_accuracy_lst,
+#                                     false_nrmse_lst,
+#                                     false_reliability_lst,
+#                                     else_accuracy_lst,
+#                                     else_nrmse_lst,
+#                                     else_reliability_lst,
+#                                     )
+        cluster_scatter(accuracy_lst,
+                        nrmse_lst,
+                        reliability_lst)
 
 #############################################################################
-    def accuracy_bar_singlesample(self, pred, y):
-        pred_onehot = pred[:, self.val_index] # pred(400, 1000, 5)
-        label = y[self.val_index, :] # y(1000, 400)
-
-        px_true, px_false = 0, 0
-        for i in range(len(pred)):
-            pred_label = np.argmax(pred_onehot[i])
-            if int(pred_label) == label[i]:
-                px_true += 1
-            else:
-                px_false += 1
-        pred_accuracy(px_true, px_false)
-
-    def samplewise_accuracy_bar(self, pred, y, criteria=300):
-        true_count, false_count = 0, 0
-        true_list = []
-        for i in range(len(y)): # val_num
-            px_true = 0
-            for j in range(len(pred)): # px_num
-                pred_label = np.argmax(pred[j, i])
-                if int(pred_label) == y[i, j]:
-                    px_true += 1
-            true_list.append(px_true)
-
-            if px_true <= criteria:
-                false_count += 1
-            else:
-                true_count += 1
-
-        # draw histgram of hitrate within a validation sample
-        true_array = np.array(true_list)
-        bimodal_dist(true_array)
-
-        pred_accuracy(true_count, false_count)
-
-    def probability_distribution(self, val_pred, val_label, pixel_index=150):
-        """
-        val_pred = (400, 1000, 5)
-        """
-        pred = val_pred[pixel_index, self.val_index]
-        pred_label = np.argmax(pred)
-        if int(pred_label) == val_label[self.val_index, pixel_index]:
-            flag = True
-        else:
-            flag = False
-        view_probability(pred, flag)
-
-    def max_probability(self, val_pred, val_label, criteria=200):
-        true = {f"true, false": []}
-        false = {f"true, false": []}
-
-        for i in range(len(val_label)): # val_num
-            px_true = 0
-            cross = []
-            for j in range(len(val_pred)): # px_num
-                ############# max_corss = 信頼度 ###################
-                max_cross = np.max(val_pred[j, i])
-                ####################################################
-                cross.append(max_cross)
-                pred_label = np.argmax(val_pred[j, i])
-                if int(pred_label) == val_label[i, j]:
-                    px_true += 1
-
-            # cross_mean is mean of max_cross in 'i'th validation sample
-            cross_mean = np.mean(cross)
-
-            # count true events in 'i'th validation sample
-            if px_true <= criteria:
-                false[f"true, false"].append(cross_mean)
-            else:
-                true[f"true, false"].append(cross_mean)
-
-        # draw percentiles
-        t25, t50, t75 = np.percentile(true[f"true, false"], [25, 50, 75])
-        f25, f50, f75 = np.percentile(false[f"true, false"], [25, 50, 75])
-        print(f"true{t25}, {t50}, {t75}")
-        print(f"false{f25}, {f50}, {f75}")
-
-        box_crossentropy(true, false)
 
 if __name__ == '__main__':
     main()
