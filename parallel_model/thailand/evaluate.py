@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from util import open_pickle
 from class_model import init_class_model
 from continuous_model import init_continuous_model
-from view import scatter_and_marginal_density, cluster_scatter
+from view import scatter_and_marginal_density, ensemble_kde
 
 def main():
     EVAL = evaluate()
@@ -18,12 +18,17 @@ def main():
 
     x_val, y_val_continuous, pred_continuous = EVAL.load_continuous() # pred:(400, 1000), y_val:(1000, 400)
 
+    """
     EVAL.nrmse_vs_reliability(pred_class, 
                               pred_continuous,
                               y_val_class,
                               y_val_continuous,
                               continuous_threshold=0.2,
                               class_threshold=133)
+    """
+
+    EVAL.predicted_probability_density(pred_class,
+                                       y_val_class)
     plt.show()
 
 
@@ -194,7 +199,33 @@ class evaluate():
                                      else_reliability_lst,
                                      )
 
+    def predicted_probability_density(self,
+                                     pred_class,
+                                     y_val_class):
+        """
+        pred_class: (400, 1000, 5)
+        y_val_class: (1000, 400)
+        """
+        true_density = {f"{i}": [] for i in range(self.class_num)}
+        false_density = {f"{i}": [] for i in range(self.class_num)}
+        for sample in range(self.vsample):
+            # true or false
+            class_one_hot = pred_class[:, sample, :]
+            class_label = y_val_class[sample, :]
+            for g in range(self.grid_num):
+                predicted_label = np.argmax(class_one_hot[g, :])
+                if int(predicted_label) == class_label[g]:
+                    true_density[f"{int(predicted_label)}"].append(class_one_hot[g, :])
+                else:
+                    false_density[f"{int(predicted_label)}"].append(class_one_hot[g, :])
+
+        ensemble_kde(true_density,
+                     false_density,
+                     class_num=self.class_num)
+
+
 #############################################################################
+
 
 if __name__ == '__main__':
     main()

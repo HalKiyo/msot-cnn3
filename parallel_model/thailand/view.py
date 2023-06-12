@@ -257,3 +257,8 @@ def scatter_and_marginal_density(accuracy_lst,
 
     plt.show(block=False)
 
+def ensemble_kde(true_density,
+                 false_density,
+                 class_num=5):
+    sample = true_density["0"][0]
+    print(sample.shape)
