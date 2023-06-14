@@ -257,8 +257,79 @@ def scatter_and_marginal_density(accuracy_lst,
 
     plt.show(block=False)
 
+def ensemble_step(true_density,
+                 false_density,
+                 class_num=5,
+                 key="0"):
+    ticks = [i-0.5 for i in range(class_num+1)]
+
+    fig, ax = plt.subplots()
+
+    for  i in range(len(false_density[key])):
+        sample = false_density[key][i]
+        sample = np.insert(sample, 0, sample[0])
+        ax.step(ticks, sample, where='pre', alpha=.01, color='#FC4E07')
+    for  i in range(len(true_density[key])):
+        sample = true_density[key][i]
+        sample = np.insert(sample, 0, sample[0])
+        ax.step(ticks, sample, where='pre', alpha=.01, color='#00AFBB')
+
+    ax.set_xlim(-0.5, 4.5)
+    ax.set_ylim(0, 1)
+    plt.show(block=False)
+
 def ensemble_kde(true_density,
                  false_density,
-                 class_num=5):
-    sample = true_density["0"][0]
-    print(sample.shape)
+                 class_num=5,
+                 key="0"):
+    """
+    it will take 30 min
+    """
+    ticks = np.arange(class_num)
+
+    fig, ax = plt.subplots()
+
+    false_length = len(false_density[key])
+    #false_length = 1000
+    for i in range(false_length):
+        sample = false_density[key][i]
+        thousand = [int(s*1e2) for s in sample]
+        data = []
+        for label in range(class_num):
+            data += ([ticks[label]]*thousand[label])
+        sns.kdeplot(np.array(data), bw=0.8, color='#FC4E07', alpha=0.0025)
+
+    true_length = len(true_density[key])
+    true_legnth = false_length
+    for i in range(true_length):
+        sample = true_density[key][i]
+        thousand = [int(s*1e2) for s in sample]
+        data = []
+        for label in range(class_num):
+            data += ([ticks[label]]*thousand[label])
+        sns.kdeplot(np.array(data), bw=0.8, color='#FC4E07', alpha=0.0005)
+
+    ax.set_xlim(-0.5, 4.5)
+    ax.set_ylim(0, 5)
+    plt.show(block=False)
+
+def ensemble_violin(true_density,
+                    false_density,
+                    class_num=5,
+                    key="0"):
+    ticks = np.arange(class_num)
+
+    fig, ax = plt.subplots()
+
+    dct = {"true": true_density,
+           "false": false_density}
+
+    sns.violinplot(data=df,
+                   x=ticks,
+                   y="probability",
+                   hue="alive",
+                   palette = ["#00AFBB", "#FC4E07"],
+                   split=True)
+
+    plt.show(block=False)
+
