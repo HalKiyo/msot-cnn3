@@ -284,30 +284,32 @@ def ensemble_kde(true_density,
                  key="0"):
     """
     it will take 30 min
+    true: 73882, false: 9258 for label "0"
+    and alpha should be adptive change
     """
     ticks = np.arange(class_num)
 
     fig, ax = plt.subplots()
 
-    false_length = len(false_density[key])
-    #false_length = 1000
+    #false_length = len(false_density[key])
+    false_length = 100
     for i in range(false_length):
         sample = false_density[key][i]
         thousand = [int(s*1e2) for s in sample]
         data = []
         for label in range(class_num):
             data += ([ticks[label]]*thousand[label])
-        sns.kdeplot(np.array(data), bw=0.8, color='#FC4E07', alpha=0.0025)
+        sns.kdeplot(np.array(data), bw=0.8, color='#FC4E07', alpha=0.01)
 
-    true_length = len(true_density[key])
-    true_legnth = false_length
+    #true_length = len(true_density[key])
+    true_length = false_length
     for i in range(true_length):
         sample = true_density[key][i]
         thousand = [int(s*1e2) for s in sample]
         data = []
         for label in range(class_num):
             data += ([ticks[label]]*thousand[label])
-        sns.kdeplot(np.array(data), bw=0.8, color='#FC4E07', alpha=0.0005)
+        sns.kdeplot(np.array(data), bw=0.8, color='#00AFBB', alpha=0.01)
 
     ax.set_xlim(-0.5, 4.5)
     ax.set_ylim(0, 5)
@@ -315,21 +317,45 @@ def ensemble_kde(true_density,
 
 def ensemble_violin(true_density,
                     false_density,
+                    dict_for_df,
                     class_num=5,
                     key="0"):
-    ticks = np.arange(class_num)
 
+    dic = dict_for_df[key]
+    print(f"number of items in dict: {len(dic['label'])}")
+    df = pd.DataFrame(dic)
+    ticks=[f"{i}" for i in range(class_num)]
+
+    plt.rcParams["font.size"] = 18
     fig, ax = plt.subplots()
 
-    dct = {"true": true_density,
-           "false": false_density}
-
+    sns.barplot(x=ticks,
+                y=true_density[key][100],
+                color='#00AFBB',
+                alpha=0.1,
+                width=0.5)
+    sns.barplot(x=ticks,
+                y=false_density[key][1050],
+                color='#FC4E07',
+                alpha=0.1,
+                width=1)
     sns.violinplot(data=df,
-                   x=ticks,
-                   y="probability",
-                   hue="alive",
+                   x="label",
+                   y="prob",
+                   hue="result",
+                   #scale_hue=False,
+                   split=True,
+                   cut=0,
+                   gridsize=100,
+                   width=1.5,
+                   inner=None,
                    palette = ["#00AFBB", "#FC4E07"],
-                   split=True)
+                   linewidth=0.0001,
+                   saturation=0.8,
+                   bw=0.15
+                   )
+    plt.xlim(-1, 5)
+    plt.ylim(0, 1)
 
     plt.show(block=False)
 

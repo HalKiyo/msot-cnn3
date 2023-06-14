@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from util import open_pickle
 from class_model import init_class_model
 from continuous_model import init_continuous_model
-from view import scatter_and_marginal_density, ensemble_kde
+from view import scatter_and_marginal_density, ensemble_step, ensemble_violin
 
 def main():
     EVAL = evaluate()
@@ -205,24 +205,43 @@ class evaluate():
         """
         pred_class: (400, 1000, 5)
         y_val_class: (1000, 400)
+        label: 0 or 1 or 2 or 3 or 4
+        result: True or False
+        prob: 0 < probability < 1
         """
         true_density = {f"{i}": [] for i in range(self.class_num)}
         false_density = {f"{i}": [] for i in range(self.class_num)}
+        dict_for_df = {f"{i}": {'result': [], 'label': [], 'prob': []} for i in range(self.class_num)}
         for sample in range(self.vsample):
             # true or false
             class_one_hot = pred_class[:, sample, :]
             class_label = y_val_class[sample, :]
             for g in range(self.grid_num):
                 predicted_label = np.argmax(class_one_hot[g, :])
-                if int(predicted_label) == class_label[g]:
+                predicted_label = int(predicted_label)
+
+                if predicted_label == class_label[g]:
                     true_density[f"{int(predicted_label)}"].append(class_one_hot[g, :])
+                    for c in range(self.class_num):
+                        dict_for_df[f'{predicted_label}']['result'].append('True')
+                        dict_for_df[f'{predicted_label}']['label'].append(f"{c}")
+                        dict_for_df[f'{predicted_label}']['prob'].append(class_one_hot[g, c])
                 else:
                     false_density[f"{int(predicted_label)}"].append(class_one_hot[g, :])
+                    for c in range(self.class_num):
+                        dict_for_df[f'{predicted_label}']['result'].append('False')
+                        dict_for_df[f'{predicted_label}']['label'].append(f"{c}")
+                        dict_for_df[f'{predicted_label}']['prob'].append(class_one_hot[g, c])
 
-        ensemble_kde(true_density,
-                     false_density,
-                     class_num=self.class_num)
+        """
+        ensemble_step(true_density,
+                      false_density,
+                      class_num=self.class_num)
+        """
 
+        ensemble_violin(true_density,
+                        false_density,
+                        dict_for_df)
 
 #############################################################################
 
