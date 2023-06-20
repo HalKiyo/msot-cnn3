@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from util import open_pickle, get_model_index
 from class_model import init_class_model
 from continuous_model import init_continuous_model
-from view import scatter_and_marginal_density, ensemble_step, ensemble_violin
+from view import scatter_and_marginal_density, ensemble_step, ensemble_violin, gcm_bars
 
 def main():
     EVAL = evaluate()
@@ -16,8 +16,6 @@ def main():
 
     # class load
     x_val, y_val_class, pred_class = EVAL.load_class() # pred:(400, 1000, 5), xy_val:(1000, 400)
-    print(f"gridmean of prob_distribution of val_index " \
-          f"{EVAL.val_index}: {np.mean( [ max(pred_class[i, EVAL.val_index]) for i in range(400) ] )}")
 
     # continuous load
     x_val, y_val_continuous, pred_continuous = EVAL.load_continuous() # pred:(400, 1000), y_val:(1000, 400)
@@ -34,7 +32,9 @@ def main():
     EVAL.predicted_probability_density(pred_class,
                                        y_val_class)
     """
-    EVAL.gcmwise_true_false()
+    EVAL.gcmwise_true_false(pred_class,
+                            y_val_class,
+                            val_model)
 
     # plot
     plt.show()
@@ -220,6 +220,7 @@ class evaluate():
         true_density = {f"{i}": [] for i in range(self.class_num)}
         false_density = {f"{i}": [] for i in range(self.class_num)}
         dict_for_df = {f"{i}": {'result': [], 'label': [], 'prob': []} for i in range(self.class_num)}
+
         for sample in range(self.vsample):
             # true or false
             class_one_hot = pred_class[:, sample, :]
@@ -256,11 +257,71 @@ class evaluate():
     def gcmwise_true_false(self,
                            pred_class,
                            y_val_class,
-                           val_model):
+                           val_model,
+                           class_threshold=300,
+                           model_num=42):
+        model_name = ['AWI-ESM-1-1-LR',
+                      'BCC-CSM2-MR',
+                      'BCC-ESM1',
+                      'CAS-ESM2-0',
+                      'CESM2-FV2',
+                      'CESM2-WACCM',
+                      'CESM2',
+                      'CMCC-CM2-HR4',
+                      'CMCC-CM2-SR5',
+                      'CMCC-ESM2',
+                      'CNRM-CM6-1-HR',
+                      'CNRM-CM6-1',
+                      'CNRM-ESM2-1',
+                      'CanESM5-CanOE',
+                      'CanESM5',
+                      'EC-Earth3-Veg-LR',
+                      'EC-Earth3-Veg',
+                      'EC-Earth3',
+                      'FGOALS-f3-L',
+                      'FGOALS-g3',
+                      'GISS-E2-1-G-CC',
+                      'GISS-E2-1-G',
+                      'GISS-E2-1-H',
+                      'GISS-E2-2-G',
+                      'GISS-E2-2-H',
+                      'GISS-E3-G',
+                      'HadGEM3-GC31',
+                      'ICON-ESM-LR',
+                      'IPSL-CM5A2-INCA',
+                      'IPSL-CM6A-LR-INCA',
+                      'IPSL-CM6A-LR',
+                      'MIROC-ES2H',
+                      'MIROC-ES2L',
+                      'MIROC6',
+                      'MPI-ESM-1-2-HAM',
+                      'MPI-ESM1-2-HR',
+                      'MPI-ESM1-2-LR',
+                      'MRI-ESM2-0',
+                      'NorESM2-MM',
+                      'TaiESM1',
+                      'UKESM1-0-LL',
+                      'UKESM1-1-LL'
+                      ]
+        true_gcm = {f"{i}": 0 for i in range(model_num)}
+        false_gcm = {f"{i}": 0 for i in range(model_num)}
+
         for sample in range(self.vsample):
             # true or false
             class_one_hot = pred_class[:, sample, :]
             class_label = y_val_class[sample, :]
+            truegrid_count = 0
+            for g in range(self.grid_num):
+                predicted_label = np.argmax(class_one_hot[g, :])
+                predicted_label = int(predicted_label)
+                if predicted_label == class_label[g]:
+                    truegrid_count += 1
+            if truegrid_count >= class_threshold:
+                true_gcm[f"{val_model[sample]}"] += 1
+            else:
+                false_gcm[f"{val_model[sample]}"] += 1
+
+        gcm_bars(true_gcm, false_gcm, model_name, model_num=model_num)
 
 #############################################################################
 

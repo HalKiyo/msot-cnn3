@@ -369,3 +369,28 @@ def ensemble_violin(true_density,
 
     plt.show(block=False)
 
+def gcm_bars(true_gcm,
+             false_gcm,
+             model_name,
+             model_num=42):
+    plt.rcParams["font.size"] = 12
+    plt.rcParams["figure.subplot.bottom"] = 0.4
+    width, linewidth, align = 0.8, 0.8, 'center'
+
+    xticks = np.arange(model_num)
+    true_count = list(true_gcm.values())
+    false_count = list(false_gcm.values())
+
+    fig, ax = plt.subplots(figsize=(15, 5))
+
+    ax.bar(xticks, true_count,
+           color='#00AFBB', width=width, linewidth=linewidth, align=align,
+           label='True')
+
+    ax.bar(xticks, false_count,
+           color='#FC4E07', bottom=true_count, width=width, linewidth=linewidth, align=align, alpha=.8,
+           label='False')
+
+    ax.set_xticks(xticks, model_name, rotation=90)
+    plt.legend()
+    plt.show(block=False)
