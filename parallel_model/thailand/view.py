@@ -257,35 +257,15 @@ def scatter_and_marginal_density(accuracy_lst,
 
     plt.show(block=False)
 
-def ensemble_step(true_density,
-                 false_density,
-                 class_num=5,
-                 key="0"):
-    ticks = [i-0.5 for i in range(class_num+1)]
-
-    fig, ax = plt.subplots()
-
-    for  i in range(len(false_density[key])):
-        sample = false_density[key][i]
-        sample = np.insert(sample, 0, sample[0])
-        ax.step(ticks, sample, where='pre', alpha=.01, color='#FC4E07')
-    for  i in range(len(true_density[key])):
-        sample = true_density[key][i]
-        sample = np.insert(sample, 0, sample[0])
-        ax.step(ticks, sample, where='pre', alpha=.01, color='#00AFBB')
-
-    ax.set_xlim(-0.5, 4.5)
-    ax.set_ylim(0, 1)
-    plt.show(block=False)
-
 def ensemble_kde(true_density,
                  false_density,
                  class_num=5,
                  key="0"):
     """
-    it will take 30 min
-    true: 73882, false: 9258 for label "0"
-    and alpha should be adptive change
+    it will take 30min
+    for label "0"
+    true: 73882, false: 9258
+    and alpha should be adaptive
     """
     ticks = np.arange(class_num)
 
@@ -315,11 +295,41 @@ def ensemble_kde(true_density,
     ax.set_ylim(0, 5)
     plt.show(block=False)
 
+def ensemble_step(true_density,
+                 false_density,
+                 class_num=5,
+                 key="0"):
+    ticks = [i-0.5 for i in range(class_num+1)]
+
+    fig, ax = plt.subplots()
+
+    for  i in range(len(false_density[key])):
+        sample = false_density[key][i]
+        sample = np.insert(sample, 0, sample[0])
+        ax.step(ticks, sample, where='pre', alpha=.01, color='#FC4E07')
+    for  i in range(len(true_density[key])):
+        sample = true_density[key][i]
+        sample = np.insert(sample, 0, sample[0])
+        ax.step(ticks, sample, where='pre', alpha=.01, color='#00AFBB')
+
+    ax.set_xlim(-0.5, 4.5)
+    ax.set_ylim(0, 1)
+    plt.show(block=False)
+
 def ensemble_violin(true_density,
                     false_density,
                     dict_for_df,
                     class_num=5,
-                    key="0"):
+                    key="1"):
+    """
+    key="0", true_index=100, false_index=1050
+    key="1", true_index=100, false_index=1090
+    key="2", true_index=200, false_index=1080
+    key="3", true_index=100, false_index=1050
+    key="4", true_index=200, false_index=1050
+    """
+    true_index = 100
+    false_index = 1090
 
     dic = dict_for_df[key]
     print(f"number of items in dict: {len(dic['label'])}")
@@ -330,12 +340,12 @@ def ensemble_violin(true_density,
     fig, ax = plt.subplots()
 
     sns.barplot(x=ticks,
-                y=true_density[key][100],
+                y=true_density[key][true_index],
                 color='#00AFBB',
                 alpha=0.1,
                 width=0.5)
     sns.barplot(x=ticks,
-                y=false_density[key][1050],
+                y=false_density[key][false_index],
                 color='#FC4E07',
                 alpha=0.1,
                 width=1)

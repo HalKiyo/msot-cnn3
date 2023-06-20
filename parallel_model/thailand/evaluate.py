@@ -234,6 +234,7 @@ class evaluate():
                         dict_for_df[f'{predicted_label}']['prob'].append(class_one_hot[g, c])
 
         """
+        # draw step_plot(take much time)
         ensemble_step(true_density,
                       false_density,
                       class_num=self.class_num)
@@ -241,7 +242,8 @@ class evaluate():
 
         ensemble_violin(true_density,
                         false_density,
-                        dict_for_df)
+                        dict_for_df,
+                        )
 
 #############################################################################
 
