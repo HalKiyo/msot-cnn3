@@ -5,30 +5,38 @@ warnings.filterwarnings('ignore')
 import numpy as np
 import matplotlib.pyplot as plt
 
-from util import open_pickle
+from util import open_pickle, get_model_index
 from class_model import init_class_model
 from continuous_model import init_continuous_model
 from view import scatter_and_marginal_density, ensemble_step, ensemble_violin
 
 def main():
     EVAL = evaluate()
+    train_model, train_year, val_model, val_year = get_model_index(EVAL.class_train_val_path)
+
+    # class load
     x_val, y_val_class, pred_class = EVAL.load_class() # pred:(400, 1000, 5), xy_val:(1000, 400)
     print(f"gridmean of prob_distribution of val_index " \
           f"{EVAL.val_index}: {np.mean( [ max(pred_class[i, EVAL.val_index]) for i in range(400) ] )}")
 
+    # continuous load
     x_val, y_val_continuous, pred_continuous = EVAL.load_continuous() # pred:(400, 1000), y_val:(1000, 400)
 
     """
+    # evaluation
     EVAL.nrmse_vs_reliability(pred_class, 
                               pred_continuous,
                               y_val_class,
                               y_val_continuous,
                               continuous_threshold=0.2,
                               class_threshold=133)
-    """
 
     EVAL.predicted_probability_density(pred_class,
                                        y_val_class)
+    """
+    EVAL.gcmwise_true_false()
+
+    # plot
     plt.show()
 
 
@@ -244,6 +252,15 @@ class evaluate():
                         false_density,
                         dict_for_df,
                         )
+
+    def gcmwise_true_false(self,
+                           pred_class,
+                           y_val_class,
+                           val_model):
+        for sample in range(self.vsample):
+            # true or false
+            class_one_hot = pred_class[:, sample, :]
+            class_label = y_val_class[sample, :]
 
 #############################################################################
 

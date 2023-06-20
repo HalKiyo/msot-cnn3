@@ -21,6 +21,17 @@ def open_pickle(path):
     x_val, y_val = data['x_val'], data['y_val']
     return x_val, y_val
 
+def get_model_index(path):
+    with open(path, 'rb') as f:
+        data = pickle.load(f)
+    train_dct = data['train_dct']
+    train_model = train_dct['model']
+    train_year = train_dct['year']
+    val_dct = data['val_dct']
+    val_model = val_dct['model']
+    val_year = val_dct['year']
+    return train_model, train_year, val_model, val_year
+
 def shuffle(indata, outdata, vsample, seed=1, lat_grid=4, lon_grid=4):
     rng = np.random.default_rng(seed)
 
