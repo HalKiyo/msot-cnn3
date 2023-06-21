@@ -167,9 +167,19 @@ def scatter_and_marginal_density(accuracy_lst,
                                  else_nrmse_lst,
                                  else_reliability_lst):
     plt.rcParams["font.size"] = 16
+    minimum = 0
+    criteria_low = 150
+    criteria_high = 390
+    maximum = 400
     cm = colors.ListedColormap(["#FC4E07",
+                                "#FFFFFF",
                                 "#E7B800",
+                                "#FFFFFF",
                                 "#00AFBB"])
+    bounds = [minimum, criteria_low, 190, 230, criteria_high, maximum]
+    norm = colors.BoundaryNorm(bounds, cm.N)
+    labels = [f"{i}" for i in bounds]
+
     fig = plt.figure(figsize=[8, 8])
     gs = fig.add_gridspec(2,
                           2,
@@ -190,66 +200,71 @@ def scatter_and_marginal_density(accuracy_lst,
     ax_y.tick_params(axis="y",
                      labelleft=False)
 
+    size = 200
     scat = ax.scatter(reliability_lst,
                       nrmse_lst,
                       c=np.array(accuracy_lst),
                       cmap=cm,
-                      s=300,
+                      norm=norm,
+                      s=size,
                       alpha=0.5,
-                      vmin=0,
-                      vmax=400,
-                     )
+                      )
     ax.scatter([0.95],
                [0.03],
                c="#00AFBB",
                cmap=cm,
-               s=300,
+               s=size,
                alpha=0.5,
-               label=(f"true (851 samples)")
+               label=(f"True (851 samples)")
                )
     ax.scatter([0.78],
                [0.5],
                c="#FC4E07",
                cmap=cm,
-               s=300,
+               s=size,
                alpha=0.5,
-               label=(f"false (145 samples)")
+               label=(f"False (146 samples)")
                )
     ax.scatter([0.83],
                [0.47],
                c="#E7B800",
                cmap=cm,
-               s=300,
+               s=size,
                alpha=0.5,
-               label=(f"else (4 samples)")
+               label=(f"Else (3 samples)")
                )
 
     bplot = ax_x.boxplot([false_reliability_lst, true_reliability_lst],
                          notch=True,
                          patch_artist=True,
-                         showfliers=False,
+                         showfliers=True,
+                         widths=(0.8, 0.8),
                          vert=False,
-                         labels=['false', 'true'])
+                         labels=['False', 'True'])
     boxcolor = ['#FC4E07', '#00AFBB']
     for patch, color in zip(bplot['boxes'], boxcolor):
         patch.set_facecolor(color)
 
+    bins = 10
     ax_y.hist(false_nrmse_lst,
-              bins=10,
+              bins=bins,
               color="#FC4E07",
-              orientation='horizontal')
+              orientation='horizontal',
+              label='False')
     ax_y.hist(true_nrmse_lst,
-              bins=10,
+              bins=bins,
               color="#00AFBB",
-              orientation='horizontal')
+              orientation='horizontal',
+              label='True')
 
-    ax.set_xlabel('Reliability (grids_mean)')
+    ax.set_xlabel('Concentration Index (grids_mean)')
     ax.set_ylabel('NRMSE (grids_mean)')
     clb = fig.colorbar(scat,
                        cax=cax,
                        orientation='horizontal')
-    clb.set_label("number of true grids in 20x20 grids",
+    clb.set_label("Correct grids count in 20x20 grids",
                    rotation=0)
+    clb.ax.set_xticklabels(labels)
     ax.legend(bbox_to_anchor=(1, 1),
                loc='upper right',
                borderaxespad=0,
@@ -320,7 +335,7 @@ def ensemble_violin(true_density,
                     false_density,
                     dict_for_df,
                     class_num=5,
-                    key="1"):
+                    key="0"):
     """
     key="0", true_index=100, false_index=1050
     key="1", true_index=100, false_index=1090
@@ -329,7 +344,7 @@ def ensemble_violin(true_density,
     key="4", true_index=200, false_index=1050
     """
     true_index = 100
-    false_index = 1090
+    false_index = 1050
 
     dic = dict_for_df[key]
     print(f"number of items in dict: {len(dic['label'])}")

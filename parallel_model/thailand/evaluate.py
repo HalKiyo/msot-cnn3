@@ -20,7 +20,6 @@ def main():
     # continuous load
     x_val, y_val_continuous, pred_continuous = EVAL.load_continuous() # pred:(400, 1000), y_val:(1000, 400)
 
-    """
     # evaluation
     EVAL.nrmse_vs_reliability(pred_class, 
                               pred_continuous,
@@ -29,12 +28,14 @@ def main():
                               continuous_threshold=0.2,
                               class_threshold=133)
 
-    EVAL.predicted_probability_density(pred_class,
-                                       y_val_class)
     """
     EVAL.gcmwise_true_false(pred_class,
                             y_val_class,
                             val_model)
+
+    EVAL.predicted_probability_density(pred_class,
+                                       y_val_class)
+    """
 
     # plot
     plt.show()
@@ -126,7 +127,7 @@ class evaluate():
                              y_val_class,
                              y_val_continuous,
                              class_threshold=133,
-                             continuous_threshold=0.2):
+                             continuous_threshold=0.3):
         """
         pred_class: (400, 1000, 5)
         pred_continuous: (400, 1000)
