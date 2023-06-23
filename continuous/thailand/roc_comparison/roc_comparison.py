@@ -54,17 +54,17 @@ def main():
 					f"/predictors_coarse_std_Apr_ot-pr_1x1_std_MJJASO_thailand.pickle" 
 
 	input_path_list = [val_msot_MJJASO,
-					val_m_MJJASO,
-					val_s_MJJASO,
 					val_o_MJJASO,
-					val_t_MJJASO]
+					val_m_MJJASO,
+					val_t_MJJASO,
+					val_s_MJJASO]
 	result_path_list = [result_msot_MJJASO,
-						result_m_MJJASO,
-						result_s_MJJASO,
 						result_o_MJJASO,
-						result_t_MJJASO]
-	name_list = ['Experiment 8', 'Experiment 2', 'Experiment 4', 'Experiment 1', 'Experiment 3']
-	color_list = ['dimgrey', 'olive', 'powderblue', 'dodgerblue', 'goldenrod']
+						result_m_MJJASO,
+						result_t_MJJASO,
+						result_s_MJJASO]
+	name_list = ['Experiment 8', 'Experiment 1', 'Experiment 2', 'Experiment 3', 'Experiment 4']
+	color_list = ['dimgrey', 'dodgerblue', 'olive', 'goldenrod', 'powderblue']
 
 # result_mean has (11, 2)shape
 	roc_list = []
@@ -198,7 +198,7 @@ def auc_sample_mean(sim, obs):
 
 def draw_roc_curve(roc_array, auc_array, name_list, color_list):
 	plt.rcParams["font.size"] = 18
-	fig, ax = plt.subplots(figsize=(10, 10))
+	fig, ax = plt.subplots(figsize=(8, 8))
 	for i in range(len(name_list)):
 		plt.plot(roc_array[i, :, 1], 
 				roc_array[i, :, 0], 

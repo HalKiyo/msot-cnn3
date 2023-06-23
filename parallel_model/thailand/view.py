@@ -409,3 +409,24 @@ def gcm_bars(true_gcm,
     ax.set_xticks(xticks, model_name, rotation=90)
     plt.legend()
     plt.show(block=False)
+
+def concentration_bar(true_density,
+                      false_density,
+                      class_num=5,
+                      key="2"):
+    plt.rcParams["font.size"] = 12
+    xticks = [i for i in range(class_num)]
+    sample_num = 9
+
+    fig, ax = plt.subplots()
+
+    for  i in range(sample_num):
+        sample = false_density[key][i]
+        ax.bar(xticks, sample, alpha=i*5.5e-2, color='#FC4E07', width=(8-i)*1.3e-1)
+    for  i in range(sample_num):
+        sample = true_density[key][i]
+        ax.bar(xticks, sample, alpha=i*5.5e-2, color='#00AFBB', width=(8-i)*1e-1)
+
+    ax.set_xlim(-0.5, 4.5)
+    ax.set_ylim(0, 1)
+    plt.show(block=False)

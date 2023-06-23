@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from util import open_pickle, get_model_index
 from class_model import init_class_model
 from continuous_model import init_continuous_model
-from view import scatter_and_marginal_density, ensemble_step, ensemble_violin, gcm_bars
+from view import scatter_and_marginal_density, ensemble_step, ensemble_violin, gcm_bars, concentration_bar
 
 def main():
     EVAL = evaluate()
@@ -35,11 +35,15 @@ def main():
 
     EVAL.predicted_probability_density(pred_class,
                                        y_val_class)
-    """
+
     EVAL.continuos_class_coherence(pred_class,
                                    pred_continuous,
                                    y_val_class,
                                    )
+
+    EVAL.concentration_demo(pred_class,
+                            y_val_class)
+    """
 
     # plot
     plt.show()
@@ -386,6 +390,45 @@ class evaluate():
             tmp = len(target) - box # numbe of false 
             print(tmp)
             print(tmp/len(target))
+
+    def concentration_demo(self,
+                          pred_class,
+                          y_val_class):
+        """
+        pred_class: (400, 1000, 5)
+        y_val_class: (1000, 400)
+        label: 0 or 1 or 2 or 3 or 4
+        result: True or False
+        prob: 0 < probability < 1
+
+        sampling True and False typical probability density curve
+        threshold = 0.753, 0.769, 0.790
+        threshold = 0.927, 0.938, 0.947
+        """
+        true_density = {f"{i}": [] for i in range(self.class_num)}
+        false_density = {f"{i}": [] for i in range(self.class_num)}
+
+        t_threshold_up = 0.95
+        t_threshold_bottom = 0.88
+        f_threshold_up = 0.75
+        f_threshold_bottom = 0.6
+
+        for sample in range(self.vsample):
+            class_one_hot = pred_class[:, sample, :]
+            class_label = y_val_class[sample, :]
+            for g in range(self.grid_num):
+                concentration = np.max(class_one_hot[g, :])
+                predicted_label = np.argmax(class_one_hot[g, :])
+                predicted_label = int(predicted_label)
+
+                if t_threshold_bottom <= concentration <= t_threshold_up:
+                    true_density[f"{int(predicted_label)}"].append(class_one_hot[g, :])
+                elif f_threshold_bottom <= concentration <= f_threshold_up:
+                    false_density[f"{int(predicted_label)}"].append(class_one_hot[g, :])
+
+        concentration_bar(true_density,
+                         false_density,
+                         )
 #############################################################################
 
 
