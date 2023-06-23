@@ -407,7 +407,7 @@ def gcm_bars(true_gcm,
            label='False')
 
     ax.set_xticks(xticks, model_name, rotation=90)
-    plt.legend()
+    plt.legend(loc='upper left', bbox_to_anchor=(0.9, 0.9), bbox_transform=plt.gcf().transFigure)
     plt.show(block=False)
 
 def concentration_bar(true_density,
