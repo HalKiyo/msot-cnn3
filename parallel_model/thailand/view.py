@@ -434,7 +434,7 @@ def concentration_bar(true_density,
 def pdf_box(true_dct,
             false_dct,
             class_num=5,
-            label="4"):
+            label="2"):
     fig, ax = plt.subplots()
     plt.rcParams["font.size"] = 20
     true_data = true_dct[label]
@@ -452,9 +452,9 @@ def pdf_box(true_dct,
                              showfliers=showfliers,
                              widths=widths,
                             )
-        patch = tbplot['boxes']
-        for box in patch:
-            box.set_facecolor('#00AFBB')
+        tpatch = tbplot['boxes']
+        for tbox in tpatch:
+            tbox.set_facecolor('#00AFBB')
 
         fbplot = ax.boxplot(false_data[key],
                             positions=[xs[key] + shift],
@@ -463,9 +463,9 @@ def pdf_box(true_dct,
                              showfliers=showfliers,
                              widths=widths,
                             )
-        patch = tbplot['boxes']
-        for box in patch:
-            box.set_facecolor('#FC4E07')
+        fpatch = fbplot['boxes']
+        for fbox in fpatch:
+            fbox.set_facecolor('#FC4E07')
 
     ax.set_ylim(0,1)
     ax.set_xlim(-0.5, 4.5)

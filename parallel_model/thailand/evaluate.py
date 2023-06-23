@@ -41,13 +41,13 @@ def main():
     EVAL.concentration_demo(pred_class,
                             y_val_class)
 
-    EVAL.ensemble_pdf_boxplot(pred_class,
-                              y_val_class)
-    """
-
     EVAL.gcmwise_true_false(pred_class,
                             y_val_class,
                             val_model)
+    """
+
+    EVAL.ensemble_pdf_boxplot(pred_class,
+                              y_val_class)
 
     # plot
     plt.show()
