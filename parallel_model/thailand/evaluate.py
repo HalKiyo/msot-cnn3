@@ -21,14 +21,14 @@ def main():
     x_val, y_val_continuous, pred_continuous = EVAL.load_continuous() # pred:(400, 1000), y_val:(1000, 400)
 
     # evaluation
+    """
     EVAL.nrmse_vs_reliability(pred_class, 
                               pred_continuous,
                               y_val_class,
                               y_val_continuous,
-                              continuous_threshold=0.2,
-                              class_threshold=133)
+                              continuous_threshold=0.3,
+                              class_threshold=150)
 
-    """
     EVAL.gcmwise_true_false(pred_class,
                             y_val_class,
                             val_model)
@@ -36,6 +36,10 @@ def main():
     EVAL.predicted_probability_density(pred_class,
                                        y_val_class)
     """
+    EVAL.continuos_class_coherence(pred_class,
+                                   pred_continuous,
+                                   y_val_class,
+                                   )
 
     # plot
     plt.show()
@@ -324,6 +328,64 @@ class evaluate():
 
         gcm_bars(true_gcm, false_gcm, model_name, model_num=model_num)
 
+    def continuos_class_coherence(self, 
+                                  pred_class, 
+                                  pred_continuous,
+                                  y_val_class,
+                                  class_threshold=390,
+                                  ):
+        """
+        match_index containes [grid_index, sample_index, x, label, bool]
+        """
+        boundaries = [-3.43, -0.34, -0.12, 0.09, 0.34, 2.73]
+        true_match_index = [] 
+        true_unmatch_index = []
+        false_match_index = [] 
+        false_unmatch_index = []
+
+        for sample in range(self.vsample):
+            class_one_hot = pred_class[:, sample, :]
+            class_label = y_val_class[sample, :]
+            correct_grid_count =0
+            for g in range(self.grid_num):
+                predicted_label = np.argmax(class_one_hot[g, :])
+                predicted_label = int(predicted_label)
+                if predicted_label == class_label[g]:
+                    correct_grid_count += 1
+
+            for g in range(self.grid_num):
+                predicted_label = np.argmax(class_one_hot[g, :])
+                predicted_label = int(predicted_label)
+                x = pred_continuous[g, sample]
+                if predicted_label == class_label[g]:
+                    flag = True
+                else:
+                    flag = False
+
+                if correct_grid_count >= class_threshold:
+                    if boundaries[predicted_label] <= x <= boundaries[predicted_label+1]:
+                        true_match_index.append([g, sample, x, predicted_label, flag])
+                    else:
+                        true_unmatch_index.append([g, sample, x, predicted_label, flag])
+                else:
+                    if boundaries[predicted_label] <= x <= boundaries[predicted_label+1]:
+                        false_match_index.append([g, sample, x, predicted_label, flag])
+                    else:
+                        false_unmatch_index.append([g, sample, x, predicted_label, flag])
+
+        true_match_array = np.array(true_match_index)
+        true_unmatch_array = np.array(true_unmatch_index)
+        false_match_array = np.array(false_match_index)
+        false_unmatch_array = np.array(false_unmatch_index)
+
+        print(len(true_match_array), len(true_unmatch_array), len(false_match_array), len(false_unmatch_array))
+
+        for target in [true_match_array, true_unmatch_array, false_match_array, false_unmatch_array]:
+            sand = target[:, 4]
+            box = np.count_nonzero(sand)
+            tmp = len(target) - box # numbe of false 
+            print(tmp)
+            print(tmp/len(target))
 #############################################################################
 
 
