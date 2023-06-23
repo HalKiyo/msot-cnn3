@@ -430,3 +430,45 @@ def concentration_bar(true_density,
     ax.set_xlim(-0.5, 4.5)
     ax.set_ylim(0, 1)
     plt.show(block=False)
+
+def pdf_box(true_dct,
+            false_dct,
+            class_num=5,
+            label="4"):
+    fig, ax = plt.subplots()
+    plt.rcParams["font.size"] = 20
+    true_data = true_dct[label]
+    false_data = false_dct[label]
+    xs = {key:val for key, val in zip(true_data.keys(), np.arange(class_num))}
+    shift = 0.15
+    widths = 0.3
+    showfliers=False
+
+    for key in true_data.keys():
+        tbplot = ax.boxplot(true_data[key],
+                            positions=[xs[key] - shift],
+                             notch=True,
+                             patch_artist=True,
+                             showfliers=showfliers,
+                             widths=widths,
+                            )
+        patch = tbplot['boxes']
+        for box in patch:
+            box.set_facecolor('#00AFBB')
+
+        fbplot = ax.boxplot(false_data[key],
+                            positions=[xs[key] + shift],
+                             notch=True,
+                             patch_artist=True,
+                             showfliers=showfliers,
+                             widths=widths,
+                            )
+        patch = tbplot['boxes']
+        for box in patch:
+            box.set_facecolor('#FC4E07')
+
+    ax.set_ylim(0,1)
+    ax.set_xlim(-0.5, 4.5)
+    ax.set_xticks(np.arange(class_num))
+    ax.set_xticklabels(np.arange(class_num))
+    plt.show(block=False)

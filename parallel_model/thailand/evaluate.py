@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 from util import open_pickle, get_model_index
 from class_model import init_class_model
 from continuous_model import init_continuous_model
-from view import scatter_and_marginal_density, ensemble_step, ensemble_violin, gcm_bars, concentration_bar
+from view import scatter_and_marginal_density, ensemble_step, \
+                 ensemble_violin, gcm_bars, concentration_bar, pdf_box
 
 def main():
     EVAL = evaluate()
@@ -44,6 +45,8 @@ def main():
     EVAL.concentration_demo(pred_class,
                             y_val_class)
     """
+    EVAL.ensemble_pdf_boxplot(pred_class,
+                              y_val_class)
 
     # plot
     plt.show()
@@ -397,9 +400,6 @@ class evaluate():
         """
         pred_class: (400, 1000, 5)
         y_val_class: (1000, 400)
-        label: 0 or 1 or 2 or 3 or 4
-        result: True or False
-        prob: 0 < probability < 1
 
         sampling True and False typical probability density curve
         threshold = 0.753, 0.769, 0.790
@@ -429,6 +429,74 @@ class evaluate():
         concentration_bar(true_density,
                          false_density,
                          )
+
+    def ensemble_pdf_boxplot(self,
+                              pred_class,
+                              y_val_class,
+                              class_threshold=300):
+        """
+        pred_class: (400, 1000, 5)
+        y_val_class: (1000, 400)
+
+        true -> average of each label probability -> boxplot
+        label = dict, key: 0:4
+        key = dict, key: 0:4
+        """
+        true_dct = {f"{i}": {'0': [], '1': [], '2': [], '3': [], '4': []} for i in range(self.class_num)}
+        false_dct = {f"{i}": {'0': [], '1': [], '2': [], '3': [], '4': []} for i in range(self.class_num)}
+
+        for sample in range(self.vsample):
+            class_one_hot = pred_class[:, sample, :]
+            class_label = y_val_class[sample, :]
+
+            # true or false
+            correct_grid_count =0
+            for g in range(self.grid_num):
+                predicted_label = np.argmax(class_one_hot[g, :])
+                predicted_label = int(predicted_label)
+                if predicted_label == class_label[g]:
+                    correct_grid_count += 1
+
+            # labelwise pdf at each grid
+            true_pdf_of_label_eachgrid = {f"{i}": [] for i in range(self.class_num)}
+            false_pdf_of_label_eachgrid = {f"{i}": [] for i in range(self.class_num)}
+            for g in range(self.grid_num):
+                predicted_label = np.argmax(class_one_hot[g, :])
+                predicted_label = int(predicted_label)
+                if correct_grid_count >= class_threshold:
+                    true_pdf_of_label_eachgrid[f"{predicted_label}"].append([class_one_hot[g, :]])
+                else:
+                    false_pdf_of_label_eachgrid[f"{predicted_label}"].append([class_one_hot[g, :]])
+
+            # mean pdf of the same predicted label 
+            if correct_grid_count >= class_threshold:
+                true_mean = [np.mean(true_pdf_of_label_eachgrid[f"{i}"], axis = 0) \
+                             for i in range(self.class_num)]
+                for label in range(self.class_num):
+                    dct = true_dct[f"{label}"]
+                    mean = np.array(true_mean[label])
+                    mean = np.squeeze(mean)
+                    if mean.ndim == 0:
+                        print('empty') 
+                    else:
+                        for i in range(self.class_num):
+                            dct[f"{i}"].append(mean[i])
+            else:
+                false_mean = [np.mean(false_pdf_of_label_eachgrid[f"{i}"], axis = 0) \
+                             for i in range(self.class_num)]
+                for label in range(self.class_num):
+                    dct = false_dct[f"{label}"]
+                    mean = np.array(false_mean[label])
+                    mean = np.squeeze(mean)
+                    if mean.ndim == 0:
+                        print('empty') 
+                    else:
+                        for i in range(self.class_num):
+                            dct[f"{i}"].append(mean[i])
+
+        pdf_box(true_dct,
+                false_dct
+               )
 #############################################################################
 
 
