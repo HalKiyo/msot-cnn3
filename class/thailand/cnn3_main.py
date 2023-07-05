@@ -14,7 +14,7 @@ from gradcam import grad_cam, show_heatmap, image_preprocess
 
 def main():
     train_flag = False
-    overwrite_flag = True
+    overwrite_flag = False
 
     px = Pixel()
 
@@ -130,13 +130,14 @@ class Pixel():
                 pred_px = load_pred[i, :, :]
                 y_val_px = y_val[:, i]
                 for pred, tr in zip(pred_px, y_val_px):
-                    if np.argmax(pred) == np.int(tr):
-                        val_true.append(np.int(tr))
+                    if np.argmax(pred) == int(tr):
+                        val_true.append(int(tr))
                     else:
-                        val_false.append(np.int(tr))
+                        val_false.append(int(tr))
 
                 acc_i = len(val_true)/(len(val_true ) + len(val_false))
                 acc_i_round = np.round(acc_i, 2)
+                print(f"pixel{i}: {acc_i_round}")
                 acc.append(acc_i_round)
 
         acc = np.array(acc)
