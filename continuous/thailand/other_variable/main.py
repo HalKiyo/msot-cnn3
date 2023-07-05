@@ -37,8 +37,8 @@ class Pixel():
         ###############################################################
         # if you wanna change variables, don't forget to adjust var_num
         ###############################################################
-        self.var_num = 4
-        self.tors = 'predictors_coarse_std_Apr_msot'
+        self.var_num = 1
+        self.tors = 'predictors_coarse_std_Apr_o'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
         ###############################################################
         self.seed = 1
@@ -54,6 +54,9 @@ class Pixel():
         self.result_path = self.result_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
 
     def training(self, x_train, y_train, x_val, y_val, train_dct, val_dct):
+        """
+        (5930, 1, 24, 27) -> (5930, 24, 72, 1)
+        """
         x_train, x_val = mask(x_train), mask(x_val)
         x_train, x_val = x_train.transpose(0, 2, 3, 1), x_val.transpose(0, 2, 3, 1)
         y_train, y_val = y_train.reshape(len(y_train), self.grid_num), y_val.reshape(len(y_val), self.grid_num)
