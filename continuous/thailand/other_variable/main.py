@@ -12,14 +12,15 @@ from util import load, shuffle, mask
 from view import acc_map, show_map
 
 def main():
-    train_flag = True
-    overwrite_flag = True
+    train_flag = False
+    overwrite_flag = False
     patience_num = 2
 
     px = Pixel()
     if train_flag is True:
         predictors, predictant = load(px.tors, px.tant)
-        px.training(*shuffle(predictors, predictant, px.vsample, px.seed), patience=patience_num)
+        x_train, y_train, x_val, y_val, train_dct, val_dct = shuffle(predictors, predictant, px.vsample, px.seed)
+        px.training(x_train, y_train, x_val, y_val, train_dct, val_dct, patience_num=patience_num)
         print(f"{px.weights_dir}: SAVED")
         print(f"{px.train_val_path}: SAVED")
     else:
