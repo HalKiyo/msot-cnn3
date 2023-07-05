@@ -12,13 +12,14 @@ from util import load, shuffle, mask
 from view import acc_map, show_map
 
 def main():
-    train_flag = False
-    overwrite_flag = False
+    train_flag = True
+    overwrite_flag = True
+    patience_num = 2
 
     px = Pixel()
     if train_flag is True:
         predictors, predictant = load(px.tors, px.tant)
-        px.training(*shuffle(predictors, predictant, px.vsample, px.seed))
+        px.training(*shuffle(predictors, predictant, px.vsample, px.seed), patience=patience_num)
         print(f"{px.weights_dir}: SAVED")
         print(f"{px.train_val_path}: SAVED")
     else:
@@ -53,7 +54,7 @@ class Pixel():
         self.result_dir = f"/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/{self.resolution}/{self.tors}-{self.tant}"
         self.result_path = self.result_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
 
-    def training(self, x_train, y_train, x_val, y_val, train_dct, val_dct):
+    def training(self, x_train, y_train, x_val, y_val, train_dct, val_dct, patience_num=1000):
         """
         (5930, 1, 24, 27) -> (5930, 24, 72, 1)
         """
@@ -61,15 +62,33 @@ class Pixel():
         x_train, x_val = x_train.transpose(0, 2, 3, 1), x_val.transpose(0, 2, 3, 1)
         y_train, y_val = y_train.reshape(len(y_train), self.grid_num), y_val.reshape(len(y_val), self.grid_num)
         os.makedirs(self.weights_dir, exist_ok=True)
+
         for i in range(self.grid_num):
             y_train_px = y_train[:, i]
+            y_val_px = y_val[:, i]
+
+            # model setting
             model = build_model((self.lat, self.lon, self.var_num))
             model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
                           loss=self.loss,
                           metrics=[self.metrics])
-            his = model.fit(x_train, y_train_px, batch_size=self.batch_size, epochs=self.epochs)
+
+            # early stop setting
+            early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=patience_num)
+            his = model.fit(x_train,
+                            y_train_px,
+                            batch_size=self.batch_size,
+                            epochs=self.epochs,
+                            validation_data=(x_val, y_val_px),
+                            verbose=1,
+                            callbacks=[early_stop]
+                            )
+
+            # save weights path
             weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
             model.save_weights(weights_path)
+
+        # save train_val pickle
         dct = {'x_train': x_train, 'y_train': y_train,
                'x_val': x_val, 'y_val': y_val,
                'train_dct': train_dct, 'val_dct': val_dct}

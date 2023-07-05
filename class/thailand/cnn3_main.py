@@ -13,7 +13,7 @@ from util import load, shuffle, mask
 from gradcam import grad_cam, show_heatmap, image_preprocess
 
 def main():
-    train_flag = True
+    train_flag = False
     overwrite_flag = True
 
     px = Pixel()
