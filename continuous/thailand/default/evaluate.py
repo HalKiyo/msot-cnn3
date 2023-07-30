@@ -69,7 +69,7 @@ class evaluate():
         # view_flag
         self.overwrite_flag = False
         self.mae_view_flag = False
-        self.rmse_view_flag = False
+        self.rmse_view_flag = True
         self.true_false_view_flag = False
         self.auc_view_flag = False
         self.corr_view_flag = True

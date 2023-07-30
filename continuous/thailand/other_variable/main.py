@@ -40,8 +40,8 @@ class Pixel():
         # if you wanna change variables, don't forget to adjust var_num
         ###############################################################
         self.var_num = 1
-        self.tors = 'predictors_coarse_std_July_o'
-        self.tant = f"pr_{self.resolution}_std_Aug_thailand"
+        self.tors = 'predictors_coarse_std_Jun_o'
+        self.tant = f"pr_{self.resolution}_std_Jul_thailand"
         ###############################################################
         self.seed = 1
         self.vsample = 1000

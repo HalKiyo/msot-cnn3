@@ -1,13 +1,19 @@
 import numpy as np
 import cartopy.crs as ccrs
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 from sklearn.metrics import auc
 from scipy.stats import norm
+import colormaps as clm
 
-def acc_map(acc, lat_grid=20, lon_grid=20, vmin=0.75, vmax=1.00):
+def acc_map(acc, lat_grid=20, lon_grid=20, vmin=0.75, vmax=1.00, discrete=5):
     projection = ccrs.PlateCarree(central_longitude=180)
     img_extent = (-90, -70, 5, 25)  # location = (N5-25, E90-110)
+
+    mpl.colormaps.unregister('sandbox')
+    mpl.colormaps.register(clm.temps, name='sandbox')
+    cm = plt.cm.get_cmap('sandbox', discrete)
 
     fig = plt.figure()
     ax = plt.subplot(projection=projection)
@@ -18,7 +24,9 @@ def acc_map(acc, lat_grid=20, lon_grid=20, vmin=0.75, vmax=1.00):
                      transform=projection,
                      vmin=vmin, vmax=vmax,
                      # cmap is not proper
-                     cmap='tab20c')
+                     #cmap='tab20c',
+                     cmap=cm,
+                     )
     fig.colorbar(mat, ax=ax)
     plt.show(block=False)
 
