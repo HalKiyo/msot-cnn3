@@ -45,7 +45,7 @@ class Pixel():
         # edit here for experiment condition
         ##################################################################################################
         self.var_num = 1 
-        self.tors = 'predictors_coarse_std_Apr_o'
+        self.tors = 'predictors_coarse_std_Apr_msot'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand_{self.descrete_mode}_{self.class_num}"
         #################################################################################################
         # do not change here

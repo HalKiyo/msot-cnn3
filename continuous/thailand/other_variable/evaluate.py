@@ -36,6 +36,7 @@ class evaluate():
         self.val_index = 20
         self.epochs =100
         self.batch_size =256
+        self.patience_num = 1000
         self.seed =1
         self.vsample = 1000
         self.resolution = '1x1'
@@ -74,7 +75,7 @@ class evaluate():
         if os.path.exists(self.result_path) is False or self.overwrite_flag is True:
             pred_lst = []
             for i in range(self.grid_num):
-                weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
+                weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_patience{self.patience_num}_{i}.h5"
                 model = self.model
                 model.load_weights(weights_path)
                 pred = model.predict(x_val)

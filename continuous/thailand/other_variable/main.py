@@ -14,13 +14,12 @@ from view import acc_map, show_map
 def main():
     train_flag = True
     overwrite_flag = True
-    patience_num = 1000
 
     px = Pixel()
     if train_flag is True:
         predictors, predictant = load(px.tors, px.tant)
         x_train, y_train, x_val, y_val, train_dct, val_dct = shuffle(predictors, predictant, px.vsample, px.seed)
-        px.training(x_train, y_train, x_val, y_val, train_dct, val_dct, patience_num=patience_num)
+        px.training(x_train, y_train, x_val, y_val, train_dct, val_dct)
         print(f"{px.weights_dir}: SAVED")
         print(f"{px.train_val_path}: SAVED")
     else:
@@ -34,14 +33,15 @@ class Pixel():
     def __init__(self):
         self.val_index = 20 #true_index=330, false_index=20
         self.epochs = 100
+        self.patience_num = 1000
         self.batch_size = 256
         self.resolution = '1x1'
         ###############################################################
         # if you wanna change variables, don't forget to adjust var_num
         ###############################################################
         self.var_num = 1
-        self.tors = 'predictors_coarse_std_Jun_o'
-        self.tant = f"pr_{self.resolution}_std_Jul_thailand"
+        self.tors = 'predictors_coarse_std_Apr_o'
+        self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
         ###############################################################
         self.seed = 1
         self.vsample = 1000
@@ -55,7 +55,7 @@ class Pixel():
         self.result_dir = f"/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/{self.resolution}/{self.tors}-{self.tant}"
         self.result_path = self.result_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
 
-    def training(self, x_train, y_train, x_val, y_val, train_dct, val_dct, patience_num=1000):
+    def training(self, x_train, y_train, x_val, y_val, train_dct, val_dct):
         """
         (5930, 1, 24, 27) -> (5930, 24, 72, 1)
         """
@@ -75,7 +75,7 @@ class Pixel():
                           metrics=[self.metrics])
 
             # early stop setting
-            early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=patience_num)
+            early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=self.patience_num)
             his = model.fit(x_train,
                             y_train_px,
                             batch_size=self.batch_size,
@@ -86,7 +86,7 @@ class Pixel():
                             )
 
             # save weights path
-            weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
+            weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_patience{self.patience_num}_{i}.h5"
             model.save_weights(weights_path)
 
         # save train_val pickle
