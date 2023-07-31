@@ -220,7 +220,7 @@ class evaluate():
         # view corr heat-map
         corr = np.array(corr)
         corr = corr.reshape(self.lat_grid, self.lon_grid)
-        acc_map(corr)
+        acc_map(corr, vmin=0.75, vmax=1.00)
 
 
 if __name__ == '__main__':

@@ -13,7 +13,7 @@ from view import acc_map, show_map
 from displaycallback import DisplayCallBack
 
 def main():
-    train_flag = False
+    train_flag = True
     overwrite_flag = True
 
     px = Pixel()
@@ -41,8 +41,8 @@ class Pixel():
         ###############################################################
         # if you wanna change variables, don't forget to adjust var_num
         ###############################################################
-        self.var_num = 1
-        self.tors = 'predictors_coarse_std_Apr_o'
+        self.var_num = 4
+        self.tors = 'predictors_coarse_std_Apr_msot'
         self.tant = f"pr_{self.resolution}_std_MJJASO_thailand"
         ###############################################################
         self.seed = 1
@@ -91,6 +91,14 @@ class Pixel():
             # save weights path
             weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_patience{self.patience_num}_{i}.h5"
             model.save_weights(weights_path)
+
+        """
+        # loss vasualization
+        loss = his.history['loss']
+        val_loss = his.history['val_loss']
+        self.loss_visualization(loss, val_loss)
+        plt.show()
+        """
 
         # save train_val pickle
         dct = {'x_train': x_train, 'y_train': y_train,
@@ -175,6 +183,14 @@ class Pixel():
             pred_arr = np.array(pred_lst)
         pred_arr = pred_arr.reshape(self.lat_grid, self.lon_grid)
         show_map(pred_arr)
+
+    def loss_visualization(self, loss, val_loss):
+        epochs = range(1, len(loss) + 1)
+        plt.plot(epochs, loss, 'bo', label='Training loss')
+        plt.plot(epochs, val_loss, 'b', label='Validation loss')
+        plt.title("Training and validation loss")
+        plt.legend()
+        plt.show(block=False)
 
 if __name__ == '__main__':
     main()
