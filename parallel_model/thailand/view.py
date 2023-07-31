@@ -484,8 +484,8 @@ def scatter_and_marginal_and_bimodal(accuracy_lst,
     minimum = 0
     class_threshold = 300
     maximum = 400
-    cm = colors.ListedColormap(["darkslategray",
-                                "darkgoldenrod"])
+    cm = colors.ListedColormap(["darkgoldenrod",
+                                "darkslategray"])
     bounds = [minimum, class_threshold, maximum]
     norm = colors.BoundaryNorm(bounds, cm.N)
     labels = [f"{i}" for i in bounds]
@@ -502,7 +502,6 @@ def scatter_and_marginal_and_bimodal(accuracy_lst,
                           wspace=0.05,
                           hspace=0.05)
     ax = fig.add_subplot(gs[1 ,0])
-    cax = fig.add_axes([0.12, 0.1, 0.58, 0.01])
     ax_x = fig.add_subplot(gs[0, 0], sharex=ax)
     ax_y = fig.add_subplot(gs[1, 1], sharey=ax)
     ax_x.tick_params(axis="x",
@@ -510,78 +509,43 @@ def scatter_and_marginal_and_bimodal(accuracy_lst,
     ax_y.tick_params(axis="y",
                      labelleft=False)
 
-    size = 200
+    size = 20
     scat = ax.scatter(accuracy_lst,
                       nrmse_lst,
                       c=np.array(accuracy_lst),
                       cmap=cm,
                       norm=norm,
                       s=size,
-                      alpha=0.5,
+                      alpha=0.8,
                       )
-    """
-    ax.scatter([0.95],
-               [0.03],
-               c="#00AFBB",
-               cmap=cm,
-               s=size,
-               alpha=0.5,
-               label=(f"True (851 samples)")
-               )
-    ax.scatter([0.78],
-               [0.5],
-               c="#FC4E07",
-               cmap=cm,
-               s=size,
-               alpha=0.5,
-               label=(f"False (146 samples)")
-               )
-    ax.scatter([0.83],
-               [0.47],
-               c="#E7B800",
-               cmap=cm,
-               s=size,
-               alpha=0.5,
-               label=(f"Else (3 samples)")
-               )
-    """
-    x_bins = 10
+
     ax_x.hist(false_accuracy_lst,
-              bins=x_bins,
+              bins=5,
               color="darkgoldenrod",
-              orientation='horizontal',
+              orientation='vertical',
               label='False')
     ax_x.hist(true_accuracy_lst,
-              bins=x_bins,
+              bins=1,
               color="darkslategray",
-              orientation='horizontal',
+              orientation='vertical',
               label='True')
 
-    y_bins = 10
     ax_y.hist(false_nrmse_lst,
-              bins=y_bins,
+              bins=5,
               color="darkgoldenrod",
               orientation='horizontal',
               label='False')
     ax_y.hist(true_nrmse_lst,
-              bins=y_bins,
+              bins=1,
               color="darkslategray",
               orientation='horizontal',
               label='True')
 
-    ax.set_xlabel('Accuracy (true_grid_count/all_grids)')
+    ax.set_xlabel('Accuracy (true_grid_count)')
     ax.set_ylabel('NRMSE (grids_mean)')
-    """
-    clb = fig.colorbar(scat,
-                       cax=cax,
-                       orientation='horizontal')
-    clb.set_label("Correct grids count in 20x20 grids",
-                   rotation=0)
-    clb.ax.set_xticklabels(labels)
-    """
-    ax.legend(bbox_to_anchor=(1, 1),
-               loc='upper right',
-               borderaxespad=0,
+    ax_x.legend(bbox_to_anchor=(0.8, 0),
+               loc='lower right',
+               borderaxespad=-5,
                fontsize = 12)
 
     plt.show(block=False)
