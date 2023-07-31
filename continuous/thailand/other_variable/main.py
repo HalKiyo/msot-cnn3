@@ -10,16 +10,18 @@ import matplotlib.pyplot as plt
 from model import build_model
 from util import load, shuffle, mask
 from view import acc_map, show_map
+from displaycallback import DisplayCallBack
 
 def main():
-    train_flag = True
+    train_flag = False
     overwrite_flag = True
 
     px = Pixel()
+    cdDisplay = DisplayCallBack()
     if train_flag is True:
         predictors, predictant = load(px.tors, px.tant)
         x_train, y_train, x_val, y_val, train_dct, val_dct = shuffle(predictors, predictant, px.vsample, px.seed)
-        px.training(x_train, y_train, x_val, y_val, train_dct, val_dct)
+        px.training(x_train, y_train, x_val, y_val, train_dct, val_dct, cdDisplay)
         print(f"{px.weights_dir}: SAVED")
         print(f"{px.train_val_path}: SAVED")
     else:
@@ -55,7 +57,7 @@ class Pixel():
         self.result_dir = f"/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/{self.resolution}/{self.tors}-{self.tant}"
         self.result_path = self.result_dir + f"/epoch{self.epochs}_batch{self.batch_size}_seed{self.seed}.npy"
 
-    def training(self, x_train, y_train, x_val, y_val, train_dct, val_dct):
+    def training(self, x_train, y_train, x_val, y_val, train_dct, val_dct, display):
         """
         (5930, 1, 24, 27) -> (5930, 24, 72, 1)
         """
@@ -76,13 +78,14 @@ class Pixel():
 
             # early stop setting
             early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=self.patience_num)
+            print(f"\ntraining_pixel: {i}")
             his = model.fit(x_train,
                             y_train_px,
                             batch_size=self.batch_size,
                             epochs=self.epochs,
                             validation_data=(x_val, y_val_px),
-                            verbose=1,
-                            callbacks=[early_stop]
+                            verbose=0,
+                            callbacks=[display, early_stop]
                             )
 
             # save weights path
@@ -112,7 +115,7 @@ class Pixel():
                 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
                               loss=self.loss,
                               metrics=[self.metrics])
-                weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
+                weights_path = f"{self.weights_dir}/epoch{self.epochs}_batch{self.batch_size}_patience{self.patience_num}_{i}.h5"
                 model.load_weights(weights_path)
 
                 pred = model.predict(x_val) # (400, 1000)

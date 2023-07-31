@@ -9,7 +9,8 @@ from util import open_pickle, get_model_index
 from class_model import init_class_model
 from continuous_model import init_continuous_model
 from view import scatter_and_marginal_density, ensemble_step, \
-                 ensemble_violin, gcm_bars, concentration_bar, pdf_box
+                 ensemble_violin, gcm_bars, concentration_bar, pdf_box, \
+                scatter_and_marginal_and_bimodal
 
 def main():
     EVAL = evaluate()
@@ -44,10 +45,17 @@ def main():
     EVAL.gcmwise_true_false(pred_class,
                             y_val_class,
                             val_model)
-    """
 
     EVAL.ensemble_pdf_boxplot(pred_class,
                               y_val_class)
+    """
+
+    EVAL.nrmse_vs_accuracy(pred_class, 
+                           pred_continuous,
+                           y_val_class,
+                           y_val_continuous,
+                           continuous_threshold=0.3,
+                           class_threshold=300)
 
     # plot
     plt.show()
@@ -498,6 +506,66 @@ class evaluate():
         pdf_box(true_dct,
                 false_dct
                )
+
+    def nrmse_vs_accuracy(self,
+                          pred_class,
+                          pred_continuous,
+                          y_val_class,
+                          y_val_continuous,
+                          class_threshold=300,
+                          continuous_threshold=0.3):
+        """
+        pred_class: (400, 1000, 5)
+        pred_continuous: (400, 1000)
+        y_val_class: (1000, 400)
+        y_val_continuous: (1000, 400)
+        """
+        # reliability and nrmse calculation
+        accuracy_lst = []
+        nrmse_lst = []
+
+        true_accuracy_lst = []
+        false_accuracy_lst = []
+
+        true_nrmse_lst = []
+        false_nrmse_lst = []
+
+        for sample in range(self.vsample):
+            # accuracy
+            grid_true, grid_false = 0, 0
+            class_one_hot = pred_class[:, sample, :]
+            class_label = y_val_class[sample, :]
+            for g in range(self.grid_num):
+                pred_label = np.argmax(class_one_hot[g, :])
+                if int(pred_label) == class_label[g]:
+                    grid_true += 1
+                else:
+                    grid_false += 1
+            accuracy = grid_true
+            accuracy_lst.append(accuracy)
+
+            # nrmse
+            continuous = pred_continuous[:, sample]
+            continuous_label = y_val_continuous[sample, :]
+            gridmean_nrmse = np.sqrt(np.mean((continuous - continuous_label)**2))
+            nrmse_lst.append(gridmean_nrmse)
+
+            # classification
+            if int(accuracy) >= class_threshold and gridmean_nrmse <= continuous_threshold:
+                true_accuracy_lst.append(accuracy)
+                true_nrmse_lst.append(gridmean_nrmse)
+            elif int(accuracy) < class_threshold and gridmean_nrmse > continuous_threshold:
+                false_accuracy_lst.append(accuracy)
+                false_nrmse_lst.append(gridmean_nrmse)
+
+        # plot
+        scatter_and_marginal_and_bimodal(accuracy_lst,
+                                         nrmse_lst,
+                                         true_accuracy_lst,
+                                         true_nrmse_lst,
+                                         false_accuracy_lst,
+                                         false_nrmse_lst,
+                                         )
 #############################################################################
 
 

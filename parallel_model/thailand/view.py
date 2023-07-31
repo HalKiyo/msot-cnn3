@@ -472,3 +472,116 @@ def pdf_box(true_dct,
     ax.set_xticks(np.arange(class_num))
     ax.set_xticklabels(np.arange(class_num))
     plt.show(block=False)
+
+def scatter_and_marginal_and_bimodal(accuracy_lst,
+                                     nrmse_lst,
+                                     true_accuracy_lst,
+                                     true_nrmse_lst,
+                                     false_accuracy_lst,
+                                     false_nrmse_lst,
+                                     ):
+    plt.rcParams["font.size"] = 16
+    minimum = 0
+    class_threshold = 300
+    maximum = 400
+    cm = colors.ListedColormap(["darkslategray",
+                                "darkgoldenrod"])
+    bounds = [minimum, class_threshold, maximum]
+    norm = colors.BoundaryNorm(bounds, cm.N)
+    labels = [f"{i}" for i in bounds]
+
+    fig = plt.figure(figsize=[8, 8])
+    gs = fig.add_gridspec(2,
+                          2,
+                          width_ratios=(4, 1),
+                          height_ratios=(1, 4),
+                          left=0.1,
+                          right=0.9,
+                          bottom=0.2,
+                          top=0.95,
+                          wspace=0.05,
+                          hspace=0.05)
+    ax = fig.add_subplot(gs[1 ,0])
+    cax = fig.add_axes([0.12, 0.1, 0.58, 0.01])
+    ax_x = fig.add_subplot(gs[0, 0], sharex=ax)
+    ax_y = fig.add_subplot(gs[1, 1], sharey=ax)
+    ax_x.tick_params(axis="x",
+                     labelbottom=False)
+    ax_y.tick_params(axis="y",
+                     labelleft=False)
+
+    size = 200
+    scat = ax.scatter(accuracy_lst,
+                      nrmse_lst,
+                      c=np.array(accuracy_lst),
+                      cmap=cm,
+                      norm=norm,
+                      s=size,
+                      alpha=0.5,
+                      )
+    """
+    ax.scatter([0.95],
+               [0.03],
+               c="#00AFBB",
+               cmap=cm,
+               s=size,
+               alpha=0.5,
+               label=(f"True (851 samples)")
+               )
+    ax.scatter([0.78],
+               [0.5],
+               c="#FC4E07",
+               cmap=cm,
+               s=size,
+               alpha=0.5,
+               label=(f"False (146 samples)")
+               )
+    ax.scatter([0.83],
+               [0.47],
+               c="#E7B800",
+               cmap=cm,
+               s=size,
+               alpha=0.5,
+               label=(f"Else (3 samples)")
+               )
+    """
+    x_bins = 10
+    ax_x.hist(false_accuracy_lst,
+              bins=x_bins,
+              color="darkgoldenrod",
+              orientation='horizontal',
+              label='False')
+    ax_x.hist(true_accuracy_lst,
+              bins=x_bins,
+              color="darkslategray",
+              orientation='horizontal',
+              label='True')
+
+    y_bins = 10
+    ax_y.hist(false_nrmse_lst,
+              bins=y_bins,
+              color="darkgoldenrod",
+              orientation='horizontal',
+              label='False')
+    ax_y.hist(true_nrmse_lst,
+              bins=y_bins,
+              color="darkslategray",
+              orientation='horizontal',
+              label='True')
+
+    ax.set_xlabel('Accuracy (true_grid_count/all_grids)')
+    ax.set_ylabel('NRMSE (grids_mean)')
+    """
+    clb = fig.colorbar(scat,
+                       cax=cax,
+                       orientation='horizontal')
+    clb.set_label("Correct grids count in 20x20 grids",
+                   rotation=0)
+    clb.ax.set_xticklabels(labels)
+    """
+    ax.legend(bbox_to_anchor=(1, 1),
+               loc='upper right',
+               borderaxespad=0,
+               fontsize = 12)
+
+    plt.show(block=False)
