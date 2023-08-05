@@ -42,7 +42,7 @@ class Pixel():
         # if you wanna change variables, don't forget to adjust var_num
         ###############################################################
         self.var_num = 1
-        self.tors = 'predictors_coarse_std_Apr_o'
+        self.tors = 'predictors_coarse_std_Apr_s'
         self.tant = f"pr_{self.resolution}_coarse_std_MJJASO_monsoon"
         ###############################################################
         self.seed = 1
@@ -107,6 +107,9 @@ class Pixel():
         with open(self.train_val_path, 'wb') as f:
             pickle.dump(dct, f)
 
+    ############################ training done ################################
+    ###########################################################################
+
     def validation(self, overwrite=False):
         with open(self.train_val_path, 'rb') as f:
             data = pickle.load(f)
@@ -140,9 +143,11 @@ class Pixel():
                 rr.append(np.round(rr_i, 2))
 
                 print(f"Correlation Coefficient of pixel{i}: {np.round(corr_i[0,1], 2)}")
-                os.makedirs(self.result_dir, exist_ok=True)
-                pred_arr = np.array(pred_lst)
-                np.save(self.result_path, pred_arr)
+
+            pred_arr = np.array(pred_lst)
+            os.makedirs(self.result_dir, exist_ok=True)
+            np.save(self.result_path, pred_arr)
+
         else:
             corr = []
             pred_arr = np.squeeze(np.load(self.result_path))
