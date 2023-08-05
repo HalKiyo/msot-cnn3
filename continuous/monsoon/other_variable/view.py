@@ -10,7 +10,7 @@ from scipy.stats import norm
 def acc_map(acc, lat_grid=20, lon_grid=20, vmin=0.0, vmax=1.00, discrete=5):
     plt.rcParams["font.size"] = 18
     projection = ccrs.PlateCarree(central_longitude=180)
-    img_extent = (-90, -70, 5, 25) # location = (N5-25, E90-110)
+    img_extent = (-120, -30, -15, 55) # location = (15S-55N, 60-150E)
 
     mpl.colormaps.unregister('sandbox')
     mpl.colormaps.register(clm.temps, name='sandbox')

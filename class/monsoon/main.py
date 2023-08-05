@@ -29,7 +29,7 @@ def main():
                                                                      px.lat_grid,
                                                                      px.lon_grid,
                                                                      )
-        px.training(x_train, y_train, x_val, y_val, train_dct, cdDisplay)
+        px.training(x_train, y_train, x_val, y_val, train_dct, val_dct, cdDisplay)
         print(f"{px.weights_dir}: SAVED")
         print(f"{px.train_val_path}: SAVED")
     else:
@@ -193,7 +193,7 @@ class Pixel():
 
         acc = np.array(acc)
         acc = acc.reshape(self.lat_grid, self.lon_grid)
-        view_accuracy(acc, lat_grid=self.lat_grid, lon_grid=self.lon_grid)
+        view_accuracy(acc, lat_grid=self.lat_grid, lon_grid=self.lon_grid, vmin=0.75, vmax=1.00)
 
     def _show(self, val_index):
         # show true data

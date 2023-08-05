@@ -70,14 +70,14 @@ def show_class(image, class_num=5, lat_grid=4, lon_grid=4, txt_flag=False):
 
     plt.show(block=False)
 
-def view_accuracy(acc, lat_grid=4, lon_grid=4, vmin=0.0, vmax=1.00, class_num=5):
+def view_accuracy(acc, lat_grid=4, lon_grid=4, vmin=0.0, vmax=1.00, discrete=5):
     plt.rcParams["font.size"] = 18
     projection = ccrs.PlateCarree(central_longitude=180)
     img_extent = (-120, -30, -15, 55) # location = (15S-55N, 60-150E)
 
     mpl.colormaps.unregister('sandbox')
     mpl.colormaps.register(clm.temps, name='sandbox')
-    cm = plt.cm.get_cmap('sandbox', class_num)
+    cm = plt.cm.get_cmap('sandbox', discrete)
 
     fig = plt.figure()
     ax = plt.subplot(projection=projection)
