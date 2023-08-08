@@ -15,7 +15,7 @@ from displaycallback import DisplayCallBack
 
 def main():
     train_flag = False
-    overwrite_flag = False
+    overwrite_flag = True
 
     px = Pixel()
     cdDisplay = DisplayCallBack()
@@ -110,7 +110,7 @@ class Pixel():
                             )
 
             # save weights path
-            weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
+            weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_patience{self.patience_num}_{i}.h5"
             model.save_weights(weights_path)
 
         """
@@ -216,7 +216,7 @@ class Pixel():
                 model.compile(optimizer=tf.keras.optimizers.legacy.Adam(learning_rate=0.0001),
                               loss=self.loss, 
                               metrics=[self.metrics])
-                weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
+                weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_patience{self.patience_num}_{i}.h5"
                 model.load_weights(weights_path)
                 pred = model.predict(x_val)
                 label = np.argmax(pred[val_index])
@@ -240,7 +240,7 @@ class Pixel():
         model.compile(optimizer=tf.keras.optimizers.legacy.Adam(learning_rate=0.0001),
                       loss=self.loss, 
                       metrics=[self.metrics])
-        weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{px_index}.h5"
+        weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_patience{self.patience_num}_{px_index}.h5"
         model.load_weights(weights_path)
 
         preprocessed_image = image_preprocess(x_val, gradcam_index)
@@ -259,7 +259,7 @@ class Pixel():
         model.compile(optimizer=tf.keras.optimizers.legacy.Adam(learning_rate=0.0001),
                       loss=self.loss, 
                       metrics=[self.metrics])
-        weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{px_index}.h5"
+        weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_patience{self.patience_num}_{px_index}.h5"
         model.load_weights(weights_path)
         pred = model.predict(x_val)
         class_label, counts = draw_val(pred, y_val_one_hot, class_num=self.class_num)
@@ -287,7 +287,7 @@ class Pixel():
                 model.compile(optimizer=tf.keras.optimizers.legacy.Adam(learning_rate=0.0001),
                               loss=self.loss, 
                               metrics=[self.metrics])
-                weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
+                weights_path = f"{self.weights_dir}/class{self.class_num}_epoch{self.epochs}_batch{self.batch_size}_patience{self.patience_num}_{i}.h5"
                 model.load_weights(weights_path)
                 pred = model.predict(x_val)
                 pred_lst.append(pred)

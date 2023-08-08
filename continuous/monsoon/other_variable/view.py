@@ -3,18 +3,20 @@ import cartopy.crs as ccrs
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import colormaps as clm
+import colorcet as cc
 from matplotlib.colors import Normalize
 from sklearn.metrics import auc
 from scipy.stats import norm
 
-def acc_map(acc, lat_grid=20, lon_grid=20, vmin=0.0, vmax=1.00, discrete=5):
+def acc_map(acc, lat_grid=14, lon_grid=18, vmin=0.0, vmax=1.00, discrete=5):
     plt.rcParams["font.size"] = 18
     projection = ccrs.PlateCarree(central_longitude=180)
     img_extent = (-120, -30, -15, 55) # location = (15S-55N, 60-150E)
 
     mpl.colormaps.unregister('sandbox')
     mpl.colormaps.register(clm.temps, name='sandbox')
-    cm = plt.cm.get_cmap('sandbox', discrete)
+    #cm = plt.cm.get_cmap('sandbox', discrete)
+    cm = cc.cm.rainbow
 
     fig = plt.figure()
     ax = plt.subplot(projection=projection)
