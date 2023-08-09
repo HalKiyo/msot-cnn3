@@ -101,7 +101,7 @@ def accuracy_map(acc, lat_grid=14, lon_grid=18, discrete=5):
 ######################### CONTINUOUS #######################################
 ############################################################################
 def show_continuous(image, vmin=-1, vmax=1):
-    plt.rcParamas["font.size"] = 18
+    plt.rcParams["font.size"] = 18
     cmap = plt.cm.get_cmap('BrBG')
 
     projection = ccrs.PlateCarree(central_longitude=180)
@@ -120,7 +120,7 @@ def show_continuous(image, vmin=-1, vmax=1):
     plt.show(block=False)
 
 def ACC_map(ACC, lat_grid=14, lon_grid=18, vmin=0.75, vmax=1.00, discrete=5):
-    plt.rcParamas["font.size"] = 18
+    plt.rcParams["font.size"] = 18
     projection = ccrs.PlateCarree(central_longitude=180)
     img_extent = (-120, -30, -15, 55) # location = (15S-55N, 60-150E)
 

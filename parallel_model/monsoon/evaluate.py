@@ -17,10 +17,10 @@ def main():
     train_model, train_year, val_model, val_year = get_model_index(EVAL.class_train_val_path)
 
     # class load
-    x_val, y_val_class, pred_class = EVAL.load_class() # pred:(400, 1000, 5), xy_val:(1000, 400)
+    x_val, y_val_class, pred_class = EVAL.load_class() # pred:(252, 1000, 5), xy_val:(1000, 252)
 
     # continuous load
-    x_val, y_val_continuous, pred_continuous = EVAL.load_continuous() # pred:(400, 1000), y_val:(1000, 400)
+    x_val, y_val_continuous, pred_continuous = EVAL.load_continuous() # pred:(252, 1000), y_val:(1000, 252)
 
     # evaluation
     """
@@ -120,7 +120,7 @@ class evaluate():
             pred_arr = np.squeeze(np.array(pred_lst))
             np.save(self.class_result_path, pred_arr)
             print(f"{self.class_result_path} is SAVED")
-        return x_val, y_val_class, pred_arr # x_val(1000, 400, 4) y_val(1000, 400) pred(400, 1000, 5)
+        return x_val, y_val_class, pred_arr # x_val(1000, 252, 4) y_val(1000, 252) pred(252, 1000, 5)
 
     def load_continuous(self):
         x_val, y_val_continuous = open_pickle(self.continuous_train_val_path)
@@ -137,7 +137,7 @@ class evaluate():
             pred_arr = np.squeeze(np.array(pred_lst))
             np.save(self.continuous_result_path, pred_arr)
             print(f"{self.continuous_result_path} is SAVED")
-        return x_val, y_val_continuous, pred_arr # x_val(1000, 400, 4) y_val(1000, 400) pred(400, 1000)
+        return x_val, y_val_continuous, pred_arr # x_val(1000, 252, 4) y_val(1000, 252) pred(252, 1000)
 
 ################################ pred loaded ################################
 #############################################################################
@@ -149,10 +149,10 @@ class evaluate():
                              class_threshold=133,
                              continuous_threshold=0.3):
         """
-        pred_class: (400, 1000, 5)
-        pred_continuous: (400, 1000)
-        y_val_class: (1000, 400)
-        y_val_continuous: (1000, 400)
+        pred_class: (252, 1000, 5)
+        pred_continuous: (252, 1000)
+        y_val_class: (1000, 252)
+        y_val_continuous: (1000, 252)
         """
         # reliability and nrmse calculation
         accuracy_lst = []
@@ -232,8 +232,8 @@ class evaluate():
                                      pred_class,
                                      y_val_class):
         """
-        pred_class: (400, 1000, 5)
-        y_val_class: (1000, 400)
+        pred_class: (252, 1000, 5)
+        y_val_class: (1000, 252)
         label: 0 or 1 or 2 or 3 or 4
         result: True or False
         prob: 0 < probability < 1
@@ -407,8 +407,8 @@ class evaluate():
                           pred_class,
                           y_val_class):
         """
-        pred_class: (400, 1000, 5)
-        y_val_class: (1000, 400)
+        pred_class: (252, 1000, 5)
+        y_val_class: (1000, 252)
 
         sampling True and False typical probability density curve
         threshold = 0.753, 0.769, 0.790
@@ -444,8 +444,8 @@ class evaluate():
                               y_val_class,
                               class_threshold=300):
         """
-        pred_class: (400, 1000, 5)
-        y_val_class: (1000, 400)
+        pred_class: (252, 1000, 5)
+        y_val_class: (1000, 252)
 
         true -> average of each label probability -> boxplot
         label = dict, key: 0:4
@@ -515,10 +515,10 @@ class evaluate():
                           class_threshold=300,
                           continuous_threshold=0.3):
         """
-        pred_class: (400, 1000, 5)
-        pred_continuous: (400, 1000)
-        y_val_class: (1000, 400)
-        y_val_continuous: (1000, 400)
+        pred_class: (252, 1000, 5)
+        pred_continuous: (252, 1000)
+        y_val_class: (1000, 252)
+        y_val_continuous: (1000, 252)
         """
         # reliability and nrmse calculation
         accuracy_lst = []
