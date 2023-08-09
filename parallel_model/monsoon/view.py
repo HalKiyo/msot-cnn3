@@ -75,7 +75,7 @@ def true_false_bar(val_pred, val_label_onehot, class_num=5):
     plt.show(block=False)
     return u, counts
 
-def accuracy_map(acc, lat_grid=14, lon_grid=18, discrete=5):
+def accuracy_map(acc, lat_grid=14, lon_grid=18, vmin=0, vmax=1, discrete=5):
     plt.rcParams["font.size"] = 18
     projection = ccrs.PlateCarree(central_longitude=180)
     img_extent = (-120, -30, -15, 55) # location = (15S-55N, 60-150E)
@@ -91,7 +91,7 @@ def accuracy_map(acc, lat_grid=14, lon_grid=18, discrete=5):
                      origin='upper',
                      extent=img_extent,
                      transform=projection,
-                     vmin=0, vmax=1,
+                     vmin=vmin, vmax=vmax,
                      cmap=cm
                      )
 

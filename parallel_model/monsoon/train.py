@@ -249,11 +249,13 @@ class Pixel():
                     else:
                         val_false += 1
                 rate = (val_true)/(val_true + val_false)
+                rate = val_true
                 acc_lst.append(rate)
             acc = np.array(acc_lst).reshape(self.lat_grid, self.lon_grid)
 
         # view accuracy
-        accuracy_map(acc)
+        # percentage or grid_num(maximum252) multiply by 252
+        accuracy_map(acc, vmin=0.8, vmax=0.9)
 
     def draw_class(self, val_index=0):
         """
@@ -414,7 +416,7 @@ class Pixel():
 
             corr = np.array(corr)
             corr = corr.reshape(self.lat_grid, self.lon_grid)
-            ACC_map(corr)
+            ACC_map(corr, vmin=0.8, vmax=0.9)
 
     def draw_continous(self, val_index=0):
         with open(self.continuous_train_val_path, 'rb') as f:
