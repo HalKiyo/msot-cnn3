@@ -122,7 +122,8 @@ def pred_accuracy(true_count, false_count):
 
 def bimodal_dist(true_count_of_each_individual_validation_sample):
     fig, ax = plt.subplots()
-    ax.hist(true_count_of_each_individual_validation_sample, color='g', alpha=0.5)
+    ax.hist(true_count_of_each_individual_validation_sample,
+            color='#FC4E07', alpha=0.8)
     plt.show(block=False)
 
 def view_probability(pred, flag=False):
