@@ -35,7 +35,7 @@ class Pixel():
         ###################################################################################################
         # edit here for parameter
         ###################################################################################################
-        self.val_index = 20 #true_index=330, false_index=20
+        self.val_index = 330 #true_index=330, false_index=20
         self.class_num = 5
         self.descrete_mode = 'EFD'
         self.epochs = 150

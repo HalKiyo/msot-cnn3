@@ -91,7 +91,7 @@ def view_accuracy(acc, lat_grid=4, lon_grid=4, write_text=False):
                      origin='upper',
                      extent=img_extent,
                      transform=projection,
-                     vmin=0, vmax=1,
+                     vmin=0.78, vmax=0.92,
                      cmap='Oranges')
 
     if write_text is True:
