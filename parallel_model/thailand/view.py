@@ -549,3 +549,116 @@ def scatter_and_marginal_and_bimodal(accuracy_lst,
                fontsize = 12)
 
     plt.show(block=False)
+
+def show_accuracy_vs_reliability(accuracy_lst,
+                             reliability_lst,
+                             true_accuracy_lst,
+                             true_reliability_lst,
+                             false_accuracy_lst,
+                             false_reliability_lst,
+                             ):
+    plt.rcParams["font.size"] = 16
+    minimum = 0
+    criteria = 300
+    maximum = 400
+    cm = colors.ListedColormap(["#FC4E07",
+                                "#00AFBB"])
+    bounds = [minimum, criteria, maximum]
+    norm = colors.BoundaryNorm(bounds, cm.N)
+    labels = [f"{i}" for i in bounds]
+
+    fig = plt.figure(figsize=[8, 8])
+    gs = fig.add_gridspec(2,
+                          2,
+                          width_ratios=(4, 1),
+                          height_ratios=(1, 4),
+                          left=0.1,
+                          right=0.9,
+                          bottom=0.2,
+                          top=0.95,
+                          wspace=0.05,
+                          hspace=0.05)
+    ax = fig.add_subplot(gs[1 ,0])
+    #cax = fig.add_axes([0.12, 0.1, 0.58, 0.01])
+    ax_x = fig.add_subplot(gs[0, 0], sharex=ax)
+    ax_y = fig.add_subplot(gs[1, 1], sharey=ax)
+    ax_x.tick_params(axis="x",
+                     labelbottom=False)
+    ax_y.tick_params(axis="y",
+                     labelleft=False)
+
+    size = 200
+    scat = ax.scatter(reliability_lst,
+                      accuracy_lst,
+                      c=np.array(accuracy_lst),
+                      cmap=cm,
+                      norm=norm,
+                      s=size,
+                      alpha=0.5,
+                      )
+    """
+    ax.scatter([0.95],
+               [0.03],
+               c="#00AFBB",
+               cmap=cm,
+               s=size,
+               alpha=0.5,
+               label=(f"True (851 samples)")
+               )
+    ax.scatter([0.78],
+               [0.5],
+               c="#FC4E07",
+               cmap=cm,
+               s=size,
+               alpha=0.5,
+               label=(f"False (146 samples)")
+               )
+    ax.scatter([0.83],
+               [0.47],
+               c="#E7B800",
+               cmap=cm,
+               s=size,
+               alpha=0.5,
+               label=(f"Else (3 samples)")
+               )
+    """
+
+    bplot = ax_x.boxplot([false_reliability_lst, true_reliability_lst],
+                         notch=True,
+                         patch_artist=True,
+                         showfliers=True,
+                         widths=(0.8, 0.8),
+                         vert=False,
+                         labels=['False', 'True'])
+    boxcolor = ['#FC4E07', '#00AFBB']
+    for patch, color in zip(bplot['boxes'], boxcolor):
+        patch.set_facecolor(color)
+
+    ax_y.hist(false_accuracy_lst,
+              bins=10,
+              color="#FC4E07",
+              orientation='horizontal',
+              label='False')
+    ax_y.hist(true_accuracy_lst,
+              bins=1,
+              color="#00AFBB",
+              orientation='horizontal',
+              label='True')
+
+    ax.set_xlabel('Concentration Index (grids_mean)')
+    ax.set_ylabel('true grid count in 20x20 grids')
+
+    """
+    clb = fig.colorbar(scat,
+                       cax=cax,
+                       orientation='horizontal')
+    clb.set_label("Correct grids count in 20x20 grids",
+                   rotation=0)
+    clb.ax.set_xticklabels(labels)
+    ax.legend(bbox_to_anchor=(1, 1),
+               loc='upper right',
+               borderaxespad=0,
+               fontsize = 12)
+    """
+
+    plt.show(block=False)

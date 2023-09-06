@@ -53,10 +53,10 @@ class evaluate():
         self.model = init_model(lat=self.lat, lon=self.lon, var_num=self.var_num, lr=self.lr)
 
         # validation
-        self.diff_bar_view_flag = False
+        self.diff_bar_view_flag = True
         self.true_false_view_flag = True
-        self.box_cross_view_flag = False
-        self.prob_dist_view_flag = False
+        self.box_cross_view_flag = True
+        self.prob_dist_view_flag = True
 
     def load_pred(self):
         x_val, y_val = open_pickle(self.val_path)

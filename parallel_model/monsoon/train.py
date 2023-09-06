@@ -179,7 +179,7 @@ class Pixel():
 #######################################################################################
     def validation_class(self, overwrite=False):
         """
-        averaged gridwise accuracy map 20x20 
+        averaged gridwise accuracy map 14x18 
         (ratio of true or false in grids)
         """
         with open(self.class_train_val_path, 'rb') as f:
@@ -201,7 +201,7 @@ class Pixel():
                 model.load_weights(class_weights_path)
 
                 # prediction
-                pred = model.predict(x_val) # (400, 1000, 5)
+                pred = model.predict(x_val) # (252, 1000, 5)
                 pred_lst.append(pred)
 
                 # real label
@@ -249,7 +249,6 @@ class Pixel():
                     else:
                         val_false += 1
                 rate = (val_true)/(val_true + val_false)
-                rate = val_true
                 acc_lst.append(rate)
             acc = np.array(acc_lst).reshape(self.lat_grid, self.lon_grid)
 
@@ -391,7 +390,7 @@ class Pixel():
                 continuous_weights_path = f"{self.continuous_weights_dir}/epoch{self.continuous_epochs}_batch{self.batch_size}_patience{self.patience_num}_{i}.h5"
                 model.load_weights(continuous_weights_path)
 
-                pred = model.predict(x_val) # (400, 1000)
+                pred = model.predict(x_val) # (252, 1000)
                 pred_lst.append(pred)
 
                 result = model.evaluate(x_val, y_val_px)
@@ -437,7 +436,7 @@ class Pixel():
                               metrics=[self.continuous_metrics])
                 continuous_weights_path = f"{self.continuous_weights_dir}/epoch{self.continuous_epochs}_batch{self.batch_size}_patience{self.patience_num}_{i}.h5"
                 model.load_weights(continuous_weights_path)
-                pred = model.predict(x_val) # (400, 1000)
+                pred = model.predict(x_val) # (252, 1000)
                 result = pred[val_index]
                 pred_lst.append(result)
             pred_arr = np.array(pred_lst)
