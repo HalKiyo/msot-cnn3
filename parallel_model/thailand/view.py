@@ -663,19 +663,36 @@ def show_accuracy_vs_reliability(accuracy_lst,
 
     plt.show(block=False)
 
+#########################################################################################################
+# AFTER 2023/11/30
+# FALSE: color="#FC4E07"
+# TRUE: color="#00AFBB"
+#########################################################################################################
+
 def lineplot(individual_pred,
              individual_val,
              individual_prob,
              reliability_list):
     plt.rcParams["font.size"] = 16
     fig = plt.figure(figsize=[10, 5])
+
+    # observation and prediction at one specific grid
     ax1 = plt.subplot(2, 1, 1)
     ax2 = plt.subplot(2, 1, 2)
     x = np.arange(len(individual_pred))
-    ax1.plot(x, individual_val, marker='s', markersize=7, label='sample_number', c='black', linewidth=4)
-    ax1.plot(x, individual_pred, marker='^', markersize=7, label='deep learning', c='r', alpha=0.5)
+    ax1.plot(x, individual_val, marker='s', markersize=7, label='true data', c='black', linewidth=2)
+    ax1.plot(x, individual_pred, marker='^', markersize=7, label='deep learning', c='r', linewidth=4, alpha=0.4)
     ax1.set_xlim(0, 25)
+
+    # concentration bar plot
+    threshold = 0.88
+    reliability_array = np.array(reliability_list)
+    true = np.where(reliability_array < threshold, 0, reliability_list)
+    false = np.where(reliability_array >= threshold, 0, reliability_list)
     ax2.axhline(y=0.88, color='black', linestyle='--', label='threshold')
-    ax2.bar(x, reliability_list, label='concentration index', color=['green'], alpha=.5)
+    ax2.bar(x, true, label='true concentration index', color=['#00AFBB'], alpha=.5)
+    ax2.bar(x, false, label='false concentration index', color=['#FC4E07'], alpha=.5)
     ax2.set_xlim(0, 25)
+    ax1.legend(bbox_to_anchor=(0.7, 1.2), loc='upper right', borderaxespad=0)
+    ax2.legend()
 
