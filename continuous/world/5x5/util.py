@@ -41,7 +41,7 @@ def shuffle(indata, outdata, vsample, seed=1, model_num=42, year_num=165, lat=20
     val_dct = {'model': val_index//indata.shape[2],
                  'year': val_index%indata.shape[2]}
     x_val = np.array([ indata[:, m, y] for m, y in zip(
-                         val_dct['model'], train_dct['year']) ])
+                         val_dct['model'], val_dct['year']) ])
     y_val = np.array([ outdata[m, y] for m, y in zip(
-                         val_dct['model'], train_dct['year']) ])
+                         val_dct['model'], val_dct['year']) ])
     return x_train, y_train, x_val, y_val, train_dct, val_dct
