@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import matplotlib.colors as colors
 import colormaps as clm
 import cartopy.crs as ccrs
 

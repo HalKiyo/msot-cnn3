@@ -122,8 +122,8 @@ class evaluate():
         view_probability(pred, flag)
 
     def max_probability(self, val_pred, val_label, criteria=200):
-        true = {f"true, false": []}
-        false = {f"true, false": []}
+        true = {"true, false": []}
+        false = {"true, false": []}
 
         for i in range(len(val_label)): # val_num
             px_true = 0
@@ -142,13 +142,13 @@ class evaluate():
 
             # count true events in 'i'th validation sample
             if px_true <= criteria:
-                false[f"true, false"].append(cross_mean)
+                false["true, false"].append(cross_mean)
             else:
-                true[f"true, false"].append(cross_mean)
+                true["true, false"].append(cross_mean)
 
         # draw percentiles
-        t25, t50, t75 = np.percentile(true[f"true, false"], [25, 50, 75])
-        f25, f50, f75 = np.percentile(false[f"true, false"], [25, 50, 75])
+        t25, t50, t75 = np.percentile(true["true, false"], [25, 50, 75])
+        f25, f50, f75 = np.percentile(false["true, false"], [25, 50, 75])
         print(f"true{t25}, {t50}, {t75}")
         print(f"false{f25}, {f50}, {f75}")
 

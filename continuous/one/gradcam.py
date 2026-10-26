@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import tensorflow as tf
 import keras.backend as K
-from keras.layers.core import Lambda
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker

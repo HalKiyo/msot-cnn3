@@ -7,7 +7,6 @@ import numpy as np
 import tensorflow as tf
 
 from model3 import build_model
-from util import load, shuffle, mask
 from view import draw_val, view_probability, box_crossentropy
 from gradcam import grad_cam, show_heatmap, image_preprocess, box_gradcam
 

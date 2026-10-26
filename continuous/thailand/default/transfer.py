@@ -11,18 +11,15 @@
 
 
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] == '3'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import warnings
 warnings.filterwarnings('ignore')
 import pickle
 import keras
-import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
 
 from model3 import build_model
-from util import load, shuffle, mask
-from view import acc_map, show_map
+from util import mask
 
 def main():
     TRANS = trans()
@@ -54,7 +51,7 @@ class trans:
     def training(self, x_train, y_train, x_val, y_val, train_dct, val_dct):
         x_train = mask(x_train)
         x_val = mask(x_val)
-        x_train = x_train.transpose(0, 2, 3, 1),
+        x_train = x_train.transpose(0, 2, 3, 1)
         x_val = x_val.transpose(0, 2, 3, 1)
         y_train = y_train.reshape(len(y_train), self.grid_num)
         y_val = y_val.reshape(len(y_val), self.grid_num)
@@ -66,8 +63,8 @@ class trans:
             model = build_model((self.lat, self.lon, self.var_num))
             old_weights_path = f"{self.old_weights_dir}/epoch{self.epochs}_batch{self.batch_size}_{i}.h5"
             model.load_weights(old_weights_path)
-            for i in range(5):
-                model.layers[i].trainable = False
+            for layer_index in range(5):
+                model.layers[layer_index].trainable = False
             model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
                           loss=self.loss,
                           metrics=[self.metrics])

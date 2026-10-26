@@ -69,7 +69,7 @@ class Pixel():
         self.lat, self.lon = 24, 72
         self.lat_grid, self.lon_grid = 20, 20
         self.grid_num = self.lat_grid*self.lon_grid 
-        self.dir = f"/docker/mnt/d/research/D2/cnn3"
+        self.dir = "/docker/mnt/d/research/D2/cnn3"
         ########################################################################
         ########################### class model setting ########################
         self.class_num = 5

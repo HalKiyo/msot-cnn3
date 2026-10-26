@@ -205,7 +205,7 @@ def scatter_and_marginal_density(accuracy_lst,
                cmap=cm,
                s=size,
                alpha=0.5,
-               label=(f"True (851 samples)")
+               label=("True (851 samples)")
                )
     ax.scatter([0.78],
                [0.5],
@@ -213,7 +213,7 @@ def scatter_and_marginal_density(accuracy_lst,
                cmap=cm,
                s=size,
                alpha=0.5,
-               label=(f"False (146 samples)")
+               label=("False (146 samples)")
                )
     ax.scatter([0.83],
                [0.47],
@@ -221,7 +221,7 @@ def scatter_and_marginal_density(accuracy_lst,
                cmap=cm,
                s=size,
                alpha=0.5,
-               label=(f"Else (3 samples)")
+               label=("Else (3 samples)")
                )
 
     bplot = ax_x.boxplot([false_reliability_lst, true_reliability_lst],

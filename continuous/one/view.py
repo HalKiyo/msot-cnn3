@@ -1,8 +1,4 @@
-import numpy as np
-import matplotlib as mpl
-import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
-import matplotlib.colors as colors
 
 def draw_distribution(data, bnd):
     """

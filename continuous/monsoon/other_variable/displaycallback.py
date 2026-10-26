@@ -1,5 +1,4 @@
 import tensorflow as tf
-import datetime
 
 class DisplayCallBack(tf.keras.callbacks.Callback):
     def __init__(self):

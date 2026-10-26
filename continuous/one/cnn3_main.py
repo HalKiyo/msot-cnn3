@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from preprocess import load, shuffle, mask
 from model3 import build_model
-from gradcam import image_preprocess, grad_cam, show_heatmap, average_heatmap
+from gradcam import image_preprocess, grad_cam, show_heatmap
 
 def main():
     #---0. initial setting
