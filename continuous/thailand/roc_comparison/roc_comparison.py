@@ -5,53 +5,53 @@ from sklearn.metrics import auc
 import matplotlib.pyplot as plt
 
 def main():
-	result_msot_MJJASO = f"/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/1x1" \
-						f"/predictors_coarse_std_Apr_msot-pr_1x1_std_MJJASO_thailand" \
-						f"/epoch100_batch256_seed1.npy"
-	val_msot_MJJASO = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous" \
-					f"/predictors_coarse_std_Apr_msot-pr_1x1_std_MJJASO_thailand.pickle"
+	result_msot_MJJASO = "/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/1x1" \
+						"/predictors_coarse_std_Apr_msot-pr_1x1_std_MJJASO_thailand" \
+						"/epoch100_batch256_seed1.npy"
+	val_msot_MJJASO = "/docker/mnt/d/research/D2/cnn3/train_val/continuous" \
+					"/predictors_coarse_std_Apr_msot-pr_1x1_std_MJJASO_thailand.pickle"
 
-	result_m_MJJASO = f"/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/1x1" \
-					f"/predictors_coarse_std_Apr_m-pr_1x1_std_MJJASO_thailand" \
-					f"/epoch100_batch256_seed1.npy"
-	val_m_MJJASO = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous" \
-					f"/predictors_coarse_std_Apr_m-pr_1x1_std_MJJASO_thailand.pickle"
+	result_m_MJJASO = "/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/1x1" \
+					"/predictors_coarse_std_Apr_m-pr_1x1_std_MJJASO_thailand" \
+					"/epoch100_batch256_seed1.npy"
+	val_m_MJJASO = "/docker/mnt/d/research/D2/cnn3/train_val/continuous" \
+					"/predictors_coarse_std_Apr_m-pr_1x1_std_MJJASO_thailand.pickle"
 
-	result_s_MJJASO = f"/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/1x1" \
-					f"/predictors_coarse_std_Apr_s-pr_1x1_std_MJJASO_thailand" \
-						f"/epoch100_batch256_seed1.npy"
-	val_s_MJJASO = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous" \
-				f"/predictors_coarse_std_Apr_s-pr_1x1_std_MJJASO_thailand.pickle"
+	result_s_MJJASO = "/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/1x1" \
+					"/predictors_coarse_std_Apr_s-pr_1x1_std_MJJASO_thailand" \
+						"/epoch100_batch256_seed1.npy"
+	val_s_MJJASO = "/docker/mnt/d/research/D2/cnn3/train_val/continuous" \
+				"/predictors_coarse_std_Apr_s-pr_1x1_std_MJJASO_thailand.pickle"
 
-	result_o_MJJASO = f"/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/1x1" \
-					f"/predictors_coarse_std_Apr_o-pr_1x1_std_MJJASO_thailand" \
-						f"/epoch100_batch256_seed1.npy"
-	val_o_MJJASO = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous" \
-				f"/predictors_coarse_std_Apr_o-pr_1x1_std_MJJASO_thailand.pickle"
+	result_o_MJJASO = "/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/1x1" \
+					"/predictors_coarse_std_Apr_o-pr_1x1_std_MJJASO_thailand" \
+						"/epoch100_batch256_seed1.npy"
+	val_o_MJJASO = "/docker/mnt/d/research/D2/cnn3/train_val/continuous" \
+				"/predictors_coarse_std_Apr_o-pr_1x1_std_MJJASO_thailand.pickle"
 
-	result_t_MJJASO =    f"/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/1x1" \
-						f"/predictors_coarse_std_Apr_t-pr_1x1_std_MJJASO_thailand" \
-						f"/epoch100_batch256_seed1.npy"
-	val_t_MJJASO = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous" \
-				f"/predictors_coarse_std_Apr_t-pr_1x1_std_MJJASO_thailand.pickle"
+	result_t_MJJASO =    "/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/1x1" \
+						"/predictors_coarse_std_Apr_t-pr_1x1_std_MJJASO_thailand" \
+						"/epoch100_batch256_seed1.npy"
+	val_t_MJJASO = "/docker/mnt/d/research/D2/cnn3/train_val/continuous" \
+				"/predictors_coarse_std_Apr_t-pr_1x1_std_MJJASO_thailand.pickle"
 
-	result_mo_MJJASO =   f"/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/1x1" \
-				f"/predictors_coarse_std_Apr_mo-pr_1x1_std_MJJASO_thailand" \
-				f"/epoch100_batch256_seed1.npy"
-	val_mo_MJJASO = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous" \
-				f"/predictors_coarse_std_Apr_mo-pr_1x1_std_MJJASO_thailand.pickle"
+	result_mo_MJJASO =   "/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/1x1" \
+				"/predictors_coarse_std_Apr_mo-pr_1x1_std_MJJASO_thailand" \
+				"/epoch100_batch256_seed1.npy"
+	val_mo_MJJASO = "/docker/mnt/d/research/D2/cnn3/train_val/continuous" \
+				"/predictors_coarse_std_Apr_mo-pr_1x1_std_MJJASO_thailand.pickle"
 
-	result_so_MJJASO =  f"/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/1x1" \
-					f"/predictors_coarse_std_Apr_so-pr_1x1_std_MJJASO_thailand" \
-					f"/epoch100_batch256_seed1.npy"
-	val_so_MJJASO = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous" \
-					f"/predictors_coarse_std_Apr_so-pr_1x1_std_MJJASO_thailand.pickle"
+	result_so_MJJASO =  "/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/1x1" \
+					"/predictors_coarse_std_Apr_so-pr_1x1_std_MJJASO_thailand" \
+					"/epoch100_batch256_seed1.npy"
+	val_so_MJJASO = "/docker/mnt/d/research/D2/cnn3/train_val/continuous" \
+					"/predictors_coarse_std_Apr_so-pr_1x1_std_MJJASO_thailand.pickle"
 
-	result_ot_MJJASO = f"/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/1x1" \
-					f"/predictors_coarse_std_Apr_ot-pr_1x1_std_MJJASO_thailand" \
-						f"/epoch100_batch256_seed1.npy"
-	val_ot_MJJASO = f"/docker/mnt/d/research/D2/cnn3/train_val/continuous" \
-					f"/predictors_coarse_std_Apr_ot-pr_1x1_std_MJJASO_thailand.pickle" 
+	result_ot_MJJASO = "/docker/mnt/d/research/D2/cnn3/result/continuous/thailand/1x1" \
+					"/predictors_coarse_std_Apr_ot-pr_1x1_std_MJJASO_thailand" \
+						"/epoch100_batch256_seed1.npy"
+	val_ot_MJJASO = "/docker/mnt/d/research/D2/cnn3/train_val/continuous" \
+					"/predictors_coarse_std_Apr_ot-pr_1x1_std_MJJASO_thailand.pickle" 
 
 	input_path_list = [val_msot_MJJASO,
 					val_o_MJJASO,

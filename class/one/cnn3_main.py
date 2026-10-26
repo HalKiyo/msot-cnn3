@@ -3,7 +3,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import warnings
 warnings.filterwarnings('ignore')
 import pickle
-import numpy as np
 import tensorflow as tf
 
 from model3 import build_model

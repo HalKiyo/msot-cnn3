@@ -9,7 +9,7 @@ from sklearn.metrics import auc
 
 from util import open_pickle
 from model3 import init_model
-from view import AE_bar, TF_bar, draw_roc_curve, acc_map, bimodal_dist
+from view import AE_bar, TF_bar, acc_map, bimodal_dist
 import matplotlib.pyplot as plt
 
 def main():

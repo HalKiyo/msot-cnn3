@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 
 def draw_val(val_pred, val_label_one_hot, class_num=5):

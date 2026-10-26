@@ -4,7 +4,6 @@ import tensorflow as tf
 import keras
 import keras.backend as K
 from keras.layers.core import Lambda
-from keras.applications.vgg16 import preprocess_input
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker

@@ -1,8 +1,6 @@
 import numpy as np
-import matplotlib as mpl
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
-import matplotlib.colors as colors
 from matplotlib.colors import Normalize
 
 def acc_map(acc, lat_grid=20, lon_grid=20):

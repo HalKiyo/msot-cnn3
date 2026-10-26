@@ -6,7 +6,6 @@ import pickle
 import numpy as np
 
 from model3 import init_model
-from view import pred_accuracy
 
 def main():
     TEST = test()

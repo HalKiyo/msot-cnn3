@@ -8,8 +8,7 @@ import matplotlib.pyplot as plt
 from util import open_pickle, get_model_index
 from class_model import init_class_model
 from continuous_model import init_continuous_model
-from view import scatter_and_marginal_density, ensemble_step, \
-                 ensemble_violin, gcm_bars, concentration_bar, pdf_box, \
+from view import scatter_and_marginal_density, ensemble_violin, gcm_bars, concentration_bar, pdf_box, \
                 scatter_and_marginal_and_bimodal
 
 def main():
@@ -78,7 +77,7 @@ class evaluate():
         self.lr = 0.0001
         self.lat_grid, self.lon_grid = 20, 20
         self.grid_num = self.lat_grid*self.lon_grid
-        self.dir = f"/docker/mnt/d/research/D2/cnn3"
+        self.dir = "/docker/mnt/d/research/D2/cnn3"
         ###################################################################
         ########################### class model setting ###################
         self.class_num = 5
